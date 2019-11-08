@@ -14,11 +14,13 @@ ItemData::ItemData(const QMimeData *mimeData)
         }
         m_icon = QIcon::fromTheme("");
     }
+
+    m_createTime = QDateTime::currentDateTime();
 }
 
-QIcon *ItemData::icon()
+QIcon ItemData::icon()
 {
-
+    return m_icon;
 }
 
 QString ItemData::title()
@@ -31,24 +33,35 @@ QString ItemData::title()
     case File:
         return tr("File");
     }
+
+    return "";
 }
 
 QString ItemData::subTitle()
 {
+    switch (m_type) {
+    case Image:
+        return "";
+    case Text:
+        return QString(tr("%1 characters")).arg(m_text.length());
+    case File:
+        return "";
+    }
 
+    return "";
 }
 
 QString ItemData::createTime()
 {
-
+    return "";
 }
 
 QString ItemData::contentText()
 {
-
+    return m_text;
 }
 
-QString ItemData::contentImage()
+QPixmap ItemData::contentImage()
 {
-
+    return m_image;
 }
