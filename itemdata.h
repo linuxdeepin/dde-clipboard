@@ -7,6 +7,10 @@
 #include <QObject>
 #include <QPixmap>
 
+#define ITEM_WIDTH 280
+#define ITEM_HEIGHT 200
+#define ITEM_MARGIN 10
+
 class ItemData : public QObject
 {
     Q_OBJECT

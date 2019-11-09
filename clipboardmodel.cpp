@@ -1,8 +1,10 @@
 #include "clipboardmodel.h"
 #include <QApplication>
+#include <QPointer>
 
-ClipboardModel::ClipboardModel(QObject *parent) : QObject(parent)
+ClipboardModel::ClipboardModel(QListView *list, QObject *parent) : QAbstractListModel(parent)
     , m_board(QApplication::clipboard())
+    , m_list(list)
 {
     // 剪切板是否有数据
     if (m_board->ownsClipboard()) {
@@ -12,18 +14,54 @@ ClipboardModel::ClipboardModel(QObject *parent) : QObject(parent)
     connect(m_board, &QClipboard::dataChanged, this, &ClipboardModel::clipDataChanged);
 }
 
-void ClipboardModel::removeItem(ItemData *item)
+void ClipboardModel::clear()
 {
-    m_data.removeOne(item);
-    item->deleteLater();
-
-    emit dataRemoved(item);
+    beginResetModel();
+    m_data.clear();
+    endResetModel();
 }
 
-void ClipboardModel::extract(ItemData *item)
+int ClipboardModel::rowCount(const QModelIndex &parent) const
 {
-    m_data.removeOne(item);
+    Q_UNUSED(parent)
+    return m_data.size();
+}
+
+QVariant ClipboardModel::data(const QModelIndex &index, int role) const
+{
+    Q_UNUSED(role)
+    if (!index.isValid() && m_data.size() <= 0 && index.row() > m_data.size()) {
+        return QVariant();
+    }
+
+    QPointer<ItemData> dt = m_data.at(index.row());
+    return QVariant::fromValue(dt);
+}
+
+Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
+{
+    if (index.isValid()) {
+        if (m_list != nullptr) m_list->openPersistentEditor(index);
+        return QAbstractListModel::flags(index) | Qt::ItemIsEditable;
+    }
+    return QAbstractListModel::flags(index);
+}
+
+void ClipboardModel::removeItem(QModelIndex index)
+{
+    beginRemoveRows(QModelIndex(), index.row(), index.row());
+    auto item = m_data.takeAt(index.row());
+    endRemoveRows();
+
+    item->deleteLater();
+}
+
+void ClipboardModel::extract(QModelIndex index)
+{
+    beginMoveRows(QModelIndex(), index.row(), index.row(), QModelIndex(), 0);
+    auto item = m_data.takeAt(index.row());
     m_data.push_front(item);
+    endMoveRows();
 }
 
 const QList<ItemData *> ClipboardModel::data() const
@@ -33,10 +71,11 @@ const QList<ItemData *> ClipboardModel::data() const
 
 void ClipboardModel::clipDataChanged()
 {
-    const QMimeData *mimeData = m_board->mimeData();
+    beginInsertRows(QModelIndex(), 0, 0);
 
+    const QMimeData *mimeData = m_board->mimeData();
     ItemData *item = new ItemData(mimeData);
     m_data.push_front(item);
 
-    emit dataAdded(item);
+    endInsertRows();
 }

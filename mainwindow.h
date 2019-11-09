@@ -5,9 +5,12 @@
 
 #include "clipboardmodel.h"
 #include "dbusdisplay.h"
+#include "itemdelegate.h"
 
 #include <DBlurEffectWidget>
+#include <DWindowManagerHelper>
 DWIDGET_USE_NAMESPACE
+DGUI_USE_NAMESPACE
 
 class MainWindow : public DBlurEffectWidget
 {
@@ -15,12 +18,9 @@ class MainWindow : public DBlurEffectWidget
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
 public slots:
-    void itemAdded(ItemData *item);
-    void itemRemoved(ItemData *item);
-
     void geometryChanged();
 
 protected:
@@ -28,15 +28,19 @@ protected:
     void leaveEvent(QEvent *event) override;
 
 private:
+    void initUI();
     void initConnect();
 
 private:
     DBusDisplay *m_displayInter;
 
-    QListView m_listview;
+    QListView *m_listview;
     ClipboardModel *m_model;
-    QRect m_geometry;
+    ItemDelegate *m_itemDelegate;
 
+    DWindowManagerHelper *m_wmHelper;
+    QVariantAnimation *m_showAni;
+    QVariantAnimation *m_hideAni;
 };
 
 #endif // MAINWINDOW_H
