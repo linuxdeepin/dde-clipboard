@@ -323,9 +323,9 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
         return;
 
     if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / PixmapWidth;
+        scale = pixmap.width() * 1.0 / PixmapWidth / 2;
     } else {
-        scale = pixmap.height() * 1.0 / PixmapHeight;
+        scale = pixmap.height() * 1.0 / PixmapHeight / 2;
     }
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
