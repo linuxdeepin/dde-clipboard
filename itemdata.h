@@ -32,8 +32,6 @@ public:
     const QPixmap &contentImage();             // 缩略图
     const DataType &type() {return m_type;}
 
-public slots:
-
 private:
     DataType m_type;
     QList<QUrl> m_urls;

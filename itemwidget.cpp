@@ -15,6 +15,8 @@
 #include <QTemporaryFile>
 #include <QApplication>
 
+#include <DFontSizeManager>
+
 static QPixmap GetFileIcon(QString path)
 {
     QFileInfo fileInfo(path);
@@ -62,8 +64,14 @@ ItemTitle::ItemTitle(QWidget *parent)
     setFixedHeight(TitleHeight);
     m_icon->setFixedSize(TitleHeight, TitleHeight);
     m_icon->setFlat(true);
+
+    QFont font = DFontSizeManager::instance()->t4();
+    font.setWeight(75);
+    m_nameLabel->setFont(font);
     m_nameLabel->setAlignment(Qt::AlignLeft);
+
     m_timeLabel->setAlignment(Qt::AlignRight);
+
     m_closeButton->setFlat(true);
     m_closeButton->setIconSize(QSize(TitleHeight / 2, TitleHeight / 2));
     m_closeButton->setFixedSize(TitleHeight, TitleHeight);
@@ -73,6 +81,8 @@ ItemTitle::ItemTitle(QWidget *parent)
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemTitle::onRefreshTime);
 
     connect(m_closeButton, &DIconButton::clicked, this, &ItemTitle::close);
+
+    setFocusPolicy(Qt::NoFocus);
 }
 
 void ItemTitle::setDataName(const QString &text)
@@ -271,7 +281,7 @@ void ItemWidget::initUI()
     setUnHoverAlpha(80);
     setRadius(8);
 
-    setFocusPolicy(Qt::StrongFocus);
+    setFocusPolicy(Qt::NoFocus);
 }
 
 void ItemWidget::initStyle(QPointer<ItemData> data)
@@ -282,6 +292,9 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
 
     switch (data->type()) {
     case ItemData::Text: {
+        QFont font = m_contentLabel->font();
+        font.setItalic(true);
+        m_contentLabel->setFont(font);
         m_contentLabel->setAlignment(Qt::AlignTop);
         setText(data->contentText(), data->subTitle());
     }
@@ -391,6 +404,7 @@ void ItemWidget::leaveEvent(QEvent *event)
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
+    qDebug() << __PRETTY_FUNCTION__;
     Q_EMIT hoverStateChanged(true);
 
     return AlphaWidget::focusInEvent(event);
@@ -398,6 +412,7 @@ void ItemWidget::focusInEvent(QFocusEvent *event)
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
 {
+    qDebug() << __PRETTY_FUNCTION__;
     Q_EMIT hoverStateChanged(false);
 
     return AlphaWidget::focusOutEvent(event);

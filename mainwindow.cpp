@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_hideAni(new QVariantAnimation(this))
 {
     setWindowFlags(Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint);
+//    setWindowFlag(Qt::FramelessWindowHint);
 
     m_showAni->setEasingCurve(QEasingCurve::InOutCubic);
     m_hideAni->setEasingCurve(QEasingCurve::InOutCubic);
@@ -74,8 +75,8 @@ void MainWindow::initUI()
     m_listview->setAutoFillBackground(false);
     m_listview->viewport()->setAutoFillBackground(false);
     m_listview->setFrameStyle(QFrame::NoFrame);
-    m_listview->setUpdatesEnabled(true);
     m_listview->setSelectionMode(QListView::NoSelection);
+    m_listview->setTabKeyNavigation(true);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
@@ -137,4 +138,11 @@ void MainWindow::geometryChanged()
     rect.setWidth(WindowWidth + WindowMargin * 2);
     rect.moveLeft(-rect.width() + WindowMargin + WindowLeave);
     setGeometry(rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin)));
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    DBlurEffectWidget::showEvent(event);
+
+    setFocus();
 }
