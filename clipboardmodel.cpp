@@ -56,6 +56,15 @@ void ClipboardModel::removeItem(QModelIndex index)
     item->deleteLater();
 }
 
+void ClipboardModel::removeData(ItemData *data)
+{
+    beginResetModel();
+
+    m_data.removeOne(data);
+
+    endResetModel();
+}
+
 void ClipboardModel::extract(QModelIndex index)
 {
     beginMoveRows(QModelIndex(), index.row(), index.row(), QModelIndex(), 0);

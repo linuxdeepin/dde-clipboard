@@ -17,17 +17,18 @@ SOURCES += \
         mainwindow.cpp \
         itemdata.cpp \
         clipboardmodel.cpp \
-    itemwidget.cpp \
     dbusdisplay.cpp \
-    itemdelegate.cpp
+    itemdelegate.cpp \
+    itemwidget.cpp
 
 HEADERS += \
         mainwindow.h \
         clipboardmodel.h \
         itemdata.h\
-    itemwidget.h \
     dbusdisplay.h \
-    itemdelegate.h
+    itemdelegate.h \
+    constants.h \
+    itemwidget.h
 
 target.path = /usr/bin/
 INSTALLS += target

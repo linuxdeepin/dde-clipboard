@@ -19,6 +19,8 @@ public:
     // 删除
     void removeItem(QModelIndex index);
 
+    void removeData(ItemData *data);
+
     // 提取到第一个
     void extract(QModelIndex index);
 

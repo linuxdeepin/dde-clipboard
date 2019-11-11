@@ -6,10 +6,9 @@
 #include <QMimeData>
 #include <QObject>
 #include <QPixmap>
+#include <QUrl>
 
-#define ITEM_WIDTH 280
-#define ITEM_HEIGHT 200
-#define ITEM_MARGIN 10
+#include "constants.h"
 
 class ItemData : public QObject
 {
@@ -23,21 +22,24 @@ public:
         File
     };
 
-    QIcon icon();          // 图标
-    QString title();        // 类型名称
-    QString subTitle();     // 字符数，像素信息，文件名称（多个文件显示XXX等X个文件）
-    QString createTime();   // 复制时间
-    QString contentText();  // 内容预览
-    QPixmap contentImage(); // 缩略图
-
-signals:
+    QIcon icon();                               // 图标
+    QString title();                            // 类型名称
+    QString subTitle();                         // 字符数，像素信息，文件名称（多个文件显示XXX等X个文件）
+    const QList<QUrl> &urls();
+    const QDateTime &createTime();              // 复制时间
+    const QString &contentHtml();              // 富文本信息
+    const QString &contentText();              // 内容预览
+    const QPixmap &contentImage();             // 缩略图
+    const DataType &type() {return m_type;}
 
 public slots:
 
 private:
     DataType m_type;
+    QList<QUrl> m_urls;
     QIcon m_icon;
     QPixmap m_image;
+    QString m_html;
     QString m_text;
     QDateTime m_createTime;
 };
