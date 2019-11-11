@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_showAni(new QVariantAnimation(this))
     , m_hideAni(new QVariantAnimation(this))
 {
+    //FIXME：X11BypassWindowManagerHint 会造成无法接受键盘事件，tab order will not take effect
     setWindowFlags(Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint);
 //    setWindowFlag(Qt::FramelessWindowHint);
 
@@ -54,6 +55,7 @@ void MainWindow::initUI()
 
     QPushButton *titleButton = new QPushButton(tr("Clear all"));
     connect(titleButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
+    titleButton->setFocusPolicy(Qt::NoFocus);
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
         QPalette pa = titleLabel->palette();
@@ -77,6 +79,7 @@ void MainWindow::initUI()
     m_listview->setFrameStyle(QFrame::NoFrame);
     m_listview->setSelectionMode(QListView::NoSelection);
     m_listview->setTabKeyNavigation(true);
+    m_listview->setFocusPolicy(Qt::NoFocus);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);

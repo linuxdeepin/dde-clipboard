@@ -281,7 +281,7 @@ void ItemWidget::initUI()
     setUnHoverAlpha(80);
     setRadius(8);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::TabFocus);
 }
 
 void ItemWidget::initStyle(QPointer<ItemData> data)
@@ -404,16 +404,16 @@ void ItemWidget::leaveEvent(QEvent *event)
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
-    qDebug() << __PRETTY_FUNCTION__;
-    Q_EMIT hoverStateChanged(true);
+    QEvent e(QEvent::Enter);
+    qApp->sendEvent(this, &e);
 
     return AlphaWidget::focusInEvent(event);
 }
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
 {
-    qDebug() << __PRETTY_FUNCTION__;
-    Q_EMIT hoverStateChanged(false);
+    QEvent e(QEvent::Leave);
+    qApp->sendEvent(this, &e);
 
     return AlphaWidget::focusOutEvent(event);
 }

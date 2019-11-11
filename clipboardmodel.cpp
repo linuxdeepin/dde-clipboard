@@ -82,15 +82,10 @@ const QList<ItemData *> ClipboardModel::data() const
 
 void ClipboardModel::clipDataChanged()
 {
-    const QMimeData *mimeData = m_board->mimeData();
-    ItemData *item = new ItemData(mimeData);
-
-    if (!m_data.isEmpty() && m_data.first() == item) {//already copied
-        return;
-    }
-
     beginInsertRows(QModelIndex(), 0, 0);
 
+    const QMimeData *mimeData = m_board->mimeData();
+    ItemData *item = new ItemData(mimeData);
     m_data.push_front(item);
 
     endInsertRows();
