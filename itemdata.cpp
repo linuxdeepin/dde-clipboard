@@ -1,6 +1,9 @@
 #include "itemdata.h"
 
 #include <QDebug>
+#include <QApplication>
+#include <QWidget>
+
 ItemData::ItemData(const QMimeData *mimeData)
 {
     if (mimeData->hasImage()) {
@@ -19,7 +22,9 @@ ItemData::ItemData(const QMimeData *mimeData)
         m_type = Text;
     }
 
-    m_icon = QIcon::fromTheme("");
+    //TODO
+    if (qApp->activeWindow())
+        m_icon = /*QIcon::fromTheme("")*/qApp->activeWindow()->windowIcon();
     m_createTime = QDateTime::currentDateTime();
 }
 
@@ -61,22 +66,22 @@ const QList<QUrl> &ItemData::urls()
     return m_urls;
 }
 
-const QDateTime &ItemData::createTime()
+const QDateTime &ItemData::time()
 {
     return m_createTime;
 }
 
-const QString &ItemData::contentHtml()
+const QString &ItemData::html()
 {
     return m_html;
 }
 
-const QString &ItemData::contentText()
+const QString &ItemData::text()
 {
     return m_text;
 }
 
-const QPixmap &ItemData::contentImage()
+const QPixmap &ItemData::pixmap()
 {
     return m_image;
 }

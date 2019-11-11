@@ -83,11 +83,9 @@ class ItemWidget : public AlphaWidget
 public:
     ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *parent = nullptr);
 
-public Q_SLOTS:
-    void onClicked();
-
 Q_SIGNALS:
     void clicked(bool checked = false);
+    void popData(QPointer<ItemData> data);
     void hoverStateChanged(bool);
 
 private:
@@ -110,7 +108,6 @@ private:
     /*Dtk::Widget::DLabel*/PixmapLabel *m_contentLabel = nullptr;
     Dtk::Widget::DLabel *m_statusLabel = nullptr;
     QVBoxLayout *m_layout = nullptr;
-    QClipboard *m_board = nullptr;
 
     QString m_text;
     QPixmap m_pixmap;

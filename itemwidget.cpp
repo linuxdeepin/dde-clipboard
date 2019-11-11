@@ -22,7 +22,7 @@ static QPixmap GetFileIcon(QString path)
 {
     QFileInfo fileInfo(path);
     QFileIconProvider icon;
-    QPixmap pixmap = icon.icon(fileInfo).pixmap(64, 64);
+    QPixmap pixmap = icon.icon(fileInfo).pixmap(PixmapWidth, PixmapWidth);
     return pixmap;
 }
 
@@ -222,7 +222,6 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
     , m_statusLabel(new Dtk::Widget::DLabel(this))
     , m_layout(new QVBoxLayout(this))
-    , m_board(QApplication::clipboard())
 {
     initUI();
     initStyle(m_data);
@@ -231,33 +230,9 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     connect(m_titleWidget, &ItemTitle::close, this, [ = ] {
         m_model->removeData(m_data);
     });
-    connect(this, &ItemWidget::clicked, this, &ItemWidget::onClicked);
-}
-
-void ItemWidget::onClicked()
-{
-    //剪切板上的内容不再进行复制
-    if (m_model->data().indexOf(m_data) == 0) {
-        return;
-    }
-
-    QMimeData *mimeData = new QMimeData;
-    switch (m_data->type()) {
-    case ItemData::Text:
-        mimeData->setText(m_text);
-        mimeData->setHtml(m_text);
-        break;
-    case ItemData::Image:
-        mimeData->setImageData(m_pixmap);
-        break;
-    case ItemData::File:
-        mimeData->setUrls(m_urls);
-        break;
-    default:
-        break;
-    }
-
-    m_board->setMimeData(mimeData);
+    connect(this, &ItemWidget::clicked, this, [ = ] {
+        Q_EMIT popData(m_data);
+    });
 }
 
 void ItemWidget::initUI()
@@ -289,7 +264,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
 {
     setDataName(data->title());
     setIcon(data->icon());
-    setCreateTime(data->createTime());
+    setCreateTime(data->time());
 
     switch (data->type()) {
     case ItemData::Text: {
@@ -297,12 +272,12 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
         font.setItalic(true);
         m_contentLabel->setFont(font);
         m_contentLabel->setAlignment(Qt::AlignTop);
-        setText(data->contentText(), data->subTitle());
+        setText(data->text(), data->subTitle());
     }
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(data->contentImage());
+        setPixmap(data->pixmap());
     }
     break;
     case ItemData::File: {
@@ -323,7 +298,6 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             QList<QPixmap> pixmapList;
             for (int i = 0; i < iconNum; ++i) {
                 pixmapList.push_back(GetFileIcon(data->urls()[i].toString()));
-                qDebug() << data->urls()[i].toString();
             }
             setPixmaps(pixmapList);
         }
