@@ -56,6 +56,17 @@ void ClipboardModel::removeItem(QModelIndex index)
     item->deleteLater();
 }
 
+void ClipboardModel::removeData(ItemData *data)
+{
+    int row = m_data.indexOf(data);
+
+    beginRemoveRows(QModelIndex(), row, row);
+    auto item = m_data.takeAt(m_data.indexOf(data));
+    endRemoveRows();
+
+    item->deleteLater();
+}
+
 void ClipboardModel::extract(QModelIndex index)
 {
     beginMoveRows(QModelIndex(), index.row(), index.row(), QModelIndex(), 0);
@@ -71,10 +82,15 @@ const QList<ItemData *> ClipboardModel::data() const
 
 void ClipboardModel::clipDataChanged()
 {
-    beginInsertRows(QModelIndex(), 0, 0);
-
     const QMimeData *mimeData = m_board->mimeData();
     ItemData *item = new ItemData(mimeData);
+
+    if (!m_data.isEmpty() && m_data.first() == item) {//already copied
+        return;
+    }
+
+    beginInsertRows(QModelIndex(), 0, 0);
+
     m_data.push_front(item);
 
     endInsertRows();

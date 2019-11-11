@@ -9,6 +9,7 @@
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
+
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 
@@ -24,6 +25,7 @@ public slots:
     void geometryChanged();
 
 protected:
+    void showEvent(QShowEvent *event) override;
     void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
 

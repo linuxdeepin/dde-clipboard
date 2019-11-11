@@ -1,20 +1,25 @@
 #include "itemdata.h"
 
+#include <QDebug>
 ItemData::ItemData(const QMimeData *mimeData)
 {
     if (mimeData->hasImage()) {
         m_image = qvariant_cast<QPixmap>(mimeData->imageData());
-        m_icon = QIcon::fromTheme("");
         m_type = Image;
+    } else if (mimeData->hasUrls()) {
+        m_urls = mimeData->urls();
+        m_type = File;
     } else {
         if (mimeData->hasHtml()) {
             m_text = mimeData->html();
-        } else if (mimeData->hasText()) {
+        }
+        if (mimeData->hasText()) {
             m_text = mimeData->text();
         }
-        m_icon = QIcon::fromTheme("");
+        m_type = Text;
     }
 
+    m_icon = QIcon::fromTheme("");
     m_createTime = QDateTime::currentDateTime();
 }
 
@@ -43,7 +48,7 @@ QString ItemData::subTitle()
     case Image:
         return "";
     case Text:
-        return QString(tr("%1 characters")).arg(m_text.length());
+        return QString(tr("%1 characters")).arg(m_text.simplified().length());
     case File:
         return "";
     }
@@ -51,17 +56,27 @@ QString ItemData::subTitle()
     return "";
 }
 
-QString ItemData::createTime()
+const QList<QUrl> &ItemData::urls()
 {
-    return "";
+    return m_urls;
 }
 
-QString ItemData::contentText()
+const QDateTime &ItemData::createTime()
+{
+    return m_createTime;
+}
+
+const QString &ItemData::contentHtml()
+{
+    return m_html;
+}
+
+const QString &ItemData::contentText()
 {
     return m_text;
 }
 
-QPixmap ItemData::contentImage()
+const QPixmap &ItemData::contentImage()
 {
     return m_image;
 }

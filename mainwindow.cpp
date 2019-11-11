@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "constants.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -6,14 +7,6 @@
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
-
-// 边距
-#define WINDOW_MARGIN 10
-
-// 隐藏后的剩余空间
-#define WINDOW_LEAVE 3
-
-#define WINDOW_WIDTH 300
 
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
@@ -26,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_hideAni(new QVariantAnimation(this))
 {
     setWindowFlags(Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint);
+//    setWindowFlag(Qt::FramelessWindowHint);
 
     m_showAni->setEasingCurve(QEasingCurve::InOutCubic);
     m_hideAni->setEasingCurve(QEasingCurve::InOutCubic);
@@ -73,7 +67,7 @@ void MainWindow::initUI()
 
     titleLayout->addWidget(titleLabel, 0, Qt::AlignLeft);
     titleLayout->addWidget(titleButton, 1, Qt::AlignRight);
-    titleWidget->setFixedSize(WINDOW_WIDTH, 56);
+    titleWidget->setFixedSize(WindowWidth, 56);
 
     // list
     m_listview->setModel(m_model);
@@ -81,8 +75,8 @@ void MainWindow::initUI()
     m_listview->setAutoFillBackground(false);
     m_listview->viewport()->setAutoFillBackground(false);
     m_listview->setFrameStyle(QFrame::NoFrame);
-    m_listview->setUpdatesEnabled(true);
     m_listview->setSelectionMode(QListView::NoSelection);
+    m_listview->setTabKeyNavigation(true);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
@@ -118,8 +112,8 @@ void MainWindow::initConnect()
 void MainWindow::enterEvent(QEvent *event)
 {
     if (pos().x() < 0) {
-        m_showAni->setStartValue(QPoint(-width() + WINDOW_LEAVE, WINDOW_MARGIN));
-        m_showAni->setEndValue(QPoint(WINDOW_MARGIN, WINDOW_MARGIN));
+        m_showAni->setStartValue(QPoint(-width() + WindowLeave, WindowMargin));
+        m_showAni->setEndValue(QPoint(WindowMargin, WindowMargin));
         m_showAni->start();
     }
     DBlurEffectWidget::enterEvent(event);
@@ -127,10 +121,10 @@ void MainWindow::enterEvent(QEvent *event)
 
 void MainWindow::leaveEvent(QEvent *event)
 {
-    if (cursor().pos().x() > WINDOW_MARGIN) {
+    if (cursor().pos().x() > WindowMargin) {
         m_showAni->stop();
         m_hideAni->setStartValue(pos());
-        m_hideAni->setEndValue(QPoint(-width() + WINDOW_LEAVE, WINDOW_MARGIN));
+        m_hideAni->setEndValue(QPoint(-width() + WindowLeave, WindowMargin));
         m_hideAni->start();
     }
 
@@ -141,7 +135,14 @@ void MainWindow::geometryChanged()
 {
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
-    rect.setWidth(WINDOW_WIDTH + WINDOW_MARGIN * 2);
-    rect.moveLeft(-rect.width() + WINDOW_MARGIN + WINDOW_LEAVE);
-    setGeometry(rect.marginsRemoved(QMargins(WINDOW_MARGIN, WINDOW_MARGIN, WINDOW_MARGIN, WINDOW_MARGIN)));
+    rect.setWidth(WindowWidth + WindowMargin * 2);
+    rect.moveLeft(-rect.width() + WindowMargin + WindowLeave);
+    setGeometry(rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin)));
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    DBlurEffectWidget::showEvent(event);
+
+    setFocus();
 }
