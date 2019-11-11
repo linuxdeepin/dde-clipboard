@@ -10,12 +10,11 @@
 
 DWIDGET_USE_NAMESPACE
 
-#define MAX(a,b) (a) > (b) ? (a):(b)
-
 class QTimer;
 class QVBoxLayout;
 class ItemTitle;
 class ClipboardModel;
+class PixmapLabel;
 //可调节背景透明度的圆角widget
 class AlphaWidget : public DWidget
 {
@@ -98,6 +97,7 @@ private:
     void setText(const QString &text, const QString &length);
     void setPixmap(const QPixmap &pixmap);
     void setFilePixmap(const QPixmap &pixmap);
+    void setPixmaps(const QList<QPixmap> &list);
     void setDataName(const QString &text);
     void setIcon(const QIcon &icon);
     void setCreateTime(const QDateTime &time);
@@ -107,7 +107,7 @@ private:
     QPointer<ItemData> m_data;
 
     ItemTitle *m_titleWidget = nullptr;
-    Dtk::Widget::DLabel *m_contentLabel = nullptr;
+    /*Dtk::Widget::DLabel*/PixmapLabel *m_contentLabel = nullptr;
     Dtk::Widget::DLabel *m_statusLabel = nullptr;
     QVBoxLayout *m_layout = nullptr;
     QClipboard *m_board = nullptr;

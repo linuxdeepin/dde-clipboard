@@ -1,6 +1,7 @@
 #include "itemwidget.h"
 #include "constants.h"
 #include "clipboardmodel.h"
+#include "pixmaplabel.h"
 
 #include <QPainter>
 #include <QTextOption>
@@ -21,7 +22,7 @@ static QPixmap GetFileIcon(QString path)
 {
     QFileInfo fileInfo(path);
     QFileIconProvider icon;
-    QPixmap pixmap = icon.icon(fileInfo).pixmap(128, 128);
+    QPixmap pixmap = icon.icon(fileInfo).pixmap(64, 64);
     return pixmap;
 }
 
@@ -218,7 +219,7 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     , m_model(model)
     , m_data(data)
     , m_titleWidget(new ItemTitle(this))
-    , m_contentLabel(new Dtk::Widget::DLabel(this))
+    , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
     , m_statusLabel(new Dtk::Widget::DLabel(this))
     , m_layout(new QVBoxLayout(this))
     , m_board(QApplication::clipboard())
@@ -313,12 +314,19 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
         if (data->urls().size() == 1) {
             QFileInfo info(first);
             m_statusLabel->setText(info.fileName());
+            setFilePixmap(GetFileIcon(first));
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
             m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));
-        }
 
-        setFilePixmap(GetFileIcon(first));
+            int iconNum = MIN(3, data->urls().size());
+            QList<QPixmap> pixmapList;
+            for (int i = 0; i < iconNum; ++i) {
+                pixmapList.push_back(GetFileIcon(data->urls()[i].toString()));
+                qDebug() << data->urls()[i].toString();
+            }
+            setPixmaps(pixmapList);
+        }
     }
     break;
     }
@@ -341,9 +349,9 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
         return;
 
     if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / 128;
+        scale = pixmap.width() * 1.0 / PixmapWidth;
     } else {
-        scale = pixmap.height() * 1.0 / 210;
+        scale = pixmap.height() * 1.0 / PixmapHeight;
     }
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
@@ -358,12 +366,17 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
         return;
 
     if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / 128;
+        scale = pixmap.width() * 1.0 / PixmapWidth;
     } else {
-        scale = pixmap.height() * 1.0 / 210;
+        scale = pixmap.height() * 1.0 / PixmapHeight;
     }
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+}
+
+void ItemWidget::setPixmaps(const QList<QPixmap> &list)
+{
+    m_contentLabel->setPixmapList(list);
 }
 
 void ItemWidget::setDataName(const QString &text)
