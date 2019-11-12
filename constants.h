@@ -1,8 +1,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#define MAX(a,b) (a) > (b) ? (a):(b)
-#define MIN(a,b) (a) < (b) ? (a):(b)
+#define MAX(a,b) ((a) > (b) ? (a):(b))
+#define MIN(a,b) ((a) < (b) ? (a):(b))
 
 const static int WindowWidth = 300;
 const static int WindowMargin = 10;     //边距
@@ -14,10 +14,10 @@ const static int ItemHeight = 200;
 const static int ItemMargin = 10;
 
 const static int PixmapWidth = 128;     //图像最大显示宽度
-const static int PixmapHeight = 210;    //图像最大显示高度
+const static int PixmapHeight = 128;    //图像最大显示高度
 const static int FileIconWidth = PixmapWidth / 2;
 const static int FileIconHeight = PixmapHeight / 2;
-const static int PixmapxMargin = 15;
-const static int PixmapyMargin = 5;
+const static int PixmapxStep = 15;
+const static int PixmapyStep = 5;
 
 #endif // CONSTANTS_H

@@ -25,7 +25,6 @@ public:
     void setFilePixmap(const QPixmap &pixmap);          //单个文件
     void setFilePixmaps(const QList<QPixmap> &list);    //多个文件
     void setClipType(const QString &text);              //剪贴类型
-    void setIcon(const QIcon &icon);
     void setCreateTime(const QDateTime &time);
 
     //--- set style
@@ -60,7 +59,6 @@ private:
     QPointer<ItemData> m_data;
 
     // title
-    DIconButton *m_icon = nullptr;
     DLabel *m_nameLabel = nullptr;
     DLabel *m_timeLabel = nullptr;
     DIconButton *m_closeButton = nullptr;

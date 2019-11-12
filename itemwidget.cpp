@@ -13,21 +13,51 @@
 #include <QFileIconProvider>
 #include <QApplication>
 #include <QMouseEvent>
+#include <QDir>
+#include <QTemporaryFile>
+#include <QBitmap>
+#include <QImageReader>
+#include <QFileIconProvider>
 
 #include <DFontSizeManager>
 
 static QPixmap GetFileIcon(QString path)
 {
+    QPixmap pixmap;
+    QFileIconProvider provider;
     QFileInfo fileInfo(path);
-    QFileIconProvider icon;
-    QPixmap pixmap = icon.icon(fileInfo).pixmap(FileIconWidth, FileIconWidth);
+    if (fileInfo.suffix().isEmpty() && QDir(path).exists()) {
+        pixmap = provider.icon(QFileIconProvider::Folder).pixmap(FileIconWidth, FileIconWidth);
+    } else {
+        pixmap = provider.icon(fileInfo).pixmap(FileIconWidth, FileIconWidth);
+    }
     return pixmap;
+}
+
+QPixmap GetRoundPixmap(const QPixmap &pix, int radius)
+{
+    if (pix.isNull()) {
+        return QPixmap();
+    }
+
+    QSize size(pix.size());
+
+    QBitmap mask(size);
+
+    QPainter painter(&mask);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.fillRect(mask.rect(), Qt::white);
+    painter.setBrush(Qt::black);
+    painter.drawRoundedRect(mask.rect(), radius, radius);
+
+    QPixmap image = pix;
+    image.setMask(mask);
+    return image;
 }
 
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
     , m_data(data)
-    , m_icon(new DIconButton(this))
     , m_nameLabel(new QLabel(this))
     , m_timeLabel(new QLabel(this))
     , m_closeButton(new DIconButton(DStyle::StandardPixmap::SP_CloseButton, this))
@@ -68,8 +98,10 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
         scale = pixmap.height() * 1.0 / PixmapHeight;
     }
 
+    qDebug() << "scale:" << scale;
+
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
-    m_statusLabel->setText(QString::number(pixmap.width()) + "*" + QString::number(pixmap.height()) + tr("px"));
+    m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
 }
 
 void ItemWidget::setFilePixmap(const QPixmap &pixmap)
@@ -96,11 +128,6 @@ void ItemWidget::setFilePixmaps(const QList<QPixmap> &list)
 void ItemWidget::setClipType(const QString &text)
 {
     m_nameLabel->setText(text);
-}
-
-void ItemWidget::setIcon(const QIcon &icon)
-{
-    m_icon->setIcon(icon);
 }
 
 void ItemWidget::setCreateTime(const QDateTime &time)
@@ -185,16 +212,12 @@ void ItemWidget::initUI()
     QWidget *titleWidget = new QWidget;
     QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
     titleLayout->setSpacing(0);
-    titleLayout->setMargin(8);
-
-    titleLayout->addWidget(m_icon);
+    titleLayout->setContentsMargins(10, 0, 10, 0);
     titleLayout->addWidget(m_nameLabel);
     titleLayout->addWidget(m_timeLabel);
     titleLayout->addWidget(m_closeButton);
 
     titleWidget->setFixedHeight(TitleHeight);
-    m_icon->setFixedSize(TitleHeight, TitleHeight);
-    m_icon->setFlat(true);
 
     QFont font = DFontSizeManager::instance()->t4();
     font.setWeight(75);
@@ -216,7 +239,7 @@ void ItemWidget::initUI()
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->setMargin(21);
-    layout->addWidget(m_contentLabel, 0, Qt::AlignTop);
+    layout->addWidget(m_contentLabel, 0, Qt::AlignCenter);
     m_layout->addLayout(layout, 0);
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
@@ -236,7 +259,6 @@ void ItemWidget::initUI()
 void ItemWidget::initStyle(QPointer<ItemData> data)
 {
     setClipType(data->title());
-    setIcon(data->icon());
     setCreateTime(data->time());
 
     switch (data->type()) {
@@ -250,7 +272,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(data->pixmap());
+        setPixmap(GetRoundPixmap(data->pixmap(), MIN(data->pixmap().width(), data->pixmap().height()) / 8));
     }
     break;
     case ItemData::File: {
@@ -261,8 +283,17 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
         QString first = data->urls().first().toString();
         if (data->urls().size() == 1) {
             QFileInfo info(first);
+            if (first.startsWith("file://")) {
+                first.replace("file://", "");
+            }
+            //单个文件是图片时显示缩略图
+            if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
+                setPixmap(QPixmap(first));
+            } else {
+                setFilePixmap(GetFileIcon(first));
+            }
+
             m_statusLabel->setText(info.fileName());
-            setFilePixmap(GetFileIcon(first));
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
             m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));

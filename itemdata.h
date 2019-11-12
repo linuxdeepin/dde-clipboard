@@ -22,7 +22,6 @@ public:
         File
     };
 
-    QIcon icon();                               // 图标
     QString title();                            // 类型名称
     QString subTitle();                         // 字符数，像素信息，文件名称（多个文件显示XXX等X个文件）
     const QList<QUrl> &urls();                  // 文件链接
@@ -42,7 +41,6 @@ Q_SIGNALS:
 private:
     DataType m_type;
     QList<QUrl> m_urls;
-    QIcon m_icon;
     QPixmap m_image;
     QString m_html;
     QString m_text;

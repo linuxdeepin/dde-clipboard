@@ -22,15 +22,7 @@ ItemData::ItemData(const QMimeData *mimeData)
         m_type = Text;
     }
 
-    //TODO
-    if (qApp->activeWindow())
-        m_icon = /*QIcon::fromTheme("")*/qApp->activeWindow()->windowIcon();
     m_createTime = QDateTime::currentDateTime();
-}
-
-QIcon ItemData::icon()
-{
-    return m_icon;
 }
 
 QString ItemData::title()
