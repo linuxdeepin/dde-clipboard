@@ -11,96 +11,174 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileIconProvider>
+#include <QApplication>
+#include <QMouseEvent>
 #include <QDir>
 #include <QTemporaryFile>
-#include <QApplication>
+#include <QBitmap>
+#include <QImageReader>
+#include <QFileIconProvider>
 
 #include <DFontSizeManager>
 
 static QPixmap GetFileIcon(QString path)
 {
+    QPixmap pixmap;
+    QFileIconProvider provider;
     QFileInfo fileInfo(path);
-    QFileIconProvider icon;
-    QPixmap pixmap = icon.icon(fileInfo).pixmap(PixmapWidth, PixmapWidth);
+    if (fileInfo.suffix().isEmpty() && QDir(path).exists()) {
+        pixmap = provider.icon(QFileIconProvider::Folder).pixmap(FileIconWidth, FileIconWidth);
+    } else {
+        pixmap = provider.icon(fileInfo).pixmap(FileIconWidth, FileIconWidth);
+    }
     return pixmap;
 }
 
-QIcon fileIcon(const QString &extension)
+QPixmap GetRoundPixmap(const QPixmap &pix, int radius)
 {
-    QFileIconProvider provider;
-    QIcon icon;
-    QString strTemplateName = QDir::tempPath() + QDir::separator() + "_XXXXXX." + extension;
-    QTemporaryFile tmpFile(strTemplateName);
-    tmpFile.setAutoRemove(false);
-
-    if (tmpFile.open()) {
-        tmpFile.close();
-        icon = provider.icon(QFileInfo(strTemplateName));
-        // tmpFile.remove();
-    } else {
-        qCritical() << QString("failed to write temporary file %1").arg(tmpFile.fileName());
+    if (pix.isNull()) {
+        return QPixmap();
     }
 
-    return icon;
+    QSize size(pix.size());
+
+    QBitmap mask(size);
+
+    QPainter painter(&mask);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
+    painter.fillRect(mask.rect(), Qt::white);
+    painter.setBrush(Qt::black);
+    painter.drawRoundedRect(mask.rect(), radius, radius);
+
+    QPixmap image = pix;
+    image.setMask(mask);
+    return image;
 }
 
-ItemTitle::ItemTitle(QWidget *parent)
+ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
-    , m_icon(new DIconButton(this))
+    , m_data(data)
     , m_nameLabel(new QLabel(this))
     , m_timeLabel(new QLabel(this))
-    , m_refreshTimer(new QTimer(this))
     , m_closeButton(new DIconButton(DStyle::StandardPixmap::SP_CloseButton, this))
+    , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
+    , m_statusLabel(new Dtk::Widget::DLabel(this))
+    , m_refreshTimer(new QTimer(this))
+    , m_layout(new QVBoxLayout(this))
 {
-    QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setSpacing(0);
-    layout->setMargin(8);
+    initUI();
+    initStyle(m_data);
 
-    layout->addWidget(m_icon);
-    layout->addWidget(m_nameLabel);
-    layout->addWidget(m_timeLabel);
-    layout->addWidget(m_closeButton);
-
-    setFixedHeight(TitleHeight);
-    m_icon->setFixedSize(TitleHeight, TitleHeight);
-    m_icon->setFlat(true);
-
-    QFont font = DFontSizeManager::instance()->t4();
-    font.setWeight(75);
-    m_nameLabel->setFont(font);
-    m_nameLabel->setAlignment(Qt::AlignLeft);
-
-    m_timeLabel->setAlignment(Qt::AlignRight);
-
-    m_closeButton->setFlat(true);
-    m_closeButton->setIconSize(QSize(TitleHeight / 2, TitleHeight / 2));
-    m_closeButton->setFixedSize(TitleHeight, TitleHeight);
-    m_closeButton->setVisible(false);
-
-    m_refreshTimer->setInterval(60 * 1000);
-    connect(m_refreshTimer, &QTimer::timeout, this, &ItemTitle::onRefreshTime);
-    connect(m_closeButton, &DIconButton::clicked, this, &ItemTitle::close);
-    setFocusPolicy(Qt::NoFocus);
+    connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
+    connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
+    connect(m_closeButton, &DIconButton::clicked, [ = ] {
+        m_data->remove();
+    });
 }
 
-void ItemTitle::setDataName(const QString &text)
+void ItemWidget::setText(const QString &text, const QString &length)
+{
+    m_text = text;
+
+    m_contentLabel->setText(text);
+
+    m_statusLabel->setText(length);
+}
+
+void ItemWidget::setPixmap(const QPixmap &pixmap)
+{
+    m_pixmap = pixmap;
+    qreal scale = 1.0;
+    if (pixmap.size() == QSize(0, 0))
+        return;
+
+    if (pixmap.width() >= pixmap.height()) {
+        scale = pixmap.width() * 1.0 / PixmapWidth;
+    } else {
+        scale = pixmap.height() * 1.0 / PixmapHeight;
+    }
+
+    qDebug() << "scale:" << scale;
+
+    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+    m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+}
+
+void ItemWidget::setFilePixmap(const QPixmap &pixmap)
+{
+    m_pixmap = pixmap;
+    qreal scale = 1.0;
+    if (pixmap.size() == QSize(0, 0))
+        return;
+
+    if (pixmap.width() >= pixmap.height()) {
+        scale = pixmap.width() * 1.0 / FileIconWidth;
+    } else {
+        scale = pixmap.height() * 1.0 / FileIconHeight;
+    }
+
+    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+}
+
+void ItemWidget::setFilePixmaps(const QList<QPixmap> &list)
+{
+    m_contentLabel->setPixmapList(list);
+}
+
+void ItemWidget::setClipType(const QString &text)
 {
     m_nameLabel->setText(text);
 }
 
-void ItemTitle::setIcon(const QIcon &icon)
-{
-    m_icon->setIcon(icon);
-}
-
-void ItemTitle::setCreateTime(const QDateTime &time)
+void ItemWidget::setCreateTime(const QDateTime &time)
 {
     m_time = time;
     onRefreshTime();
 }
 
-void ItemTitle::onHoverStateChanged(bool hover)
+void ItemWidget::setAlpha(int alpha)
 {
+    m_hoverAlpha = alpha;
+    m_unHoverAlpha = alpha;
+
+    update();
+}
+
+int ItemWidget::hoverAlpha() const
+{
+    return m_hoverAlpha;
+}
+
+void ItemWidget::setHoverAlpha(int alpha)
+{
+    m_hoverAlpha = alpha;
+
+    update();
+}
+
+int ItemWidget::unHoverAlpha() const
+{
+    return m_unHoverAlpha;
+}
+
+void ItemWidget::setUnHoverAlpha(int alpha)
+{
+    m_unHoverAlpha = alpha;
+
+    update();
+}
+
+void ItemWidget::setRadius(int radius)
+{
+    m_radius = radius;
+
+    update();
+}
+
+void ItemWidget::onHoverStateChanged(bool hover)
+{
+    m_havor = hover;
+
     if (hover) {
         m_timeLabel->hide();
         m_closeButton->show();
@@ -108,9 +186,11 @@ void ItemTitle::onHoverStateChanged(bool hover)
         m_timeLabel->show();
         m_closeButton->hide();
     }
+
+    update();
 }
 
-void ItemTitle::onRefreshTime()
+void ItemWidget::onRefreshTime()
 {
     m_timeLabel->setText(CreateTimeString(m_time));
 
@@ -126,7 +206,122 @@ void ItemTitle::onRefreshTime()
     m_refreshTimer->start(interval);
 }
 
-QString ItemTitle::CreateTimeString(const QDateTime &time)
+void ItemWidget::initUI()
+{
+    //标题区域
+    QWidget *titleWidget = new QWidget;
+    QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
+    titleLayout->setSpacing(0);
+    titleLayout->setContentsMargins(10, 0, 10, 0);
+    titleLayout->addWidget(m_nameLabel);
+    titleLayout->addWidget(m_timeLabel);
+    titleLayout->addWidget(m_closeButton);
+
+    titleWidget->setFixedHeight(TitleHeight);
+
+    QFont font = DFontSizeManager::instance()->t4();
+    font.setWeight(75);
+    m_nameLabel->setFont(font);
+    m_nameLabel->setAlignment(Qt::AlignLeft);
+    m_timeLabel->setAlignment(Qt::AlignRight);
+
+    m_closeButton->setFlat(true);
+    m_closeButton->setIconSize(QSize(TitleHeight / 2, TitleHeight / 2));
+    m_closeButton->setFixedSize(TitleHeight, TitleHeight);
+    m_closeButton->setVisible(false);
+
+    m_refreshTimer->setInterval(60 * 1000);
+
+    //布局
+    m_layout->setSpacing(0);
+    m_layout->setMargin(0);
+    m_layout->addWidget(titleWidget, 0, Qt::AlignTop);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setContentsMargins(ContentMargin, 0, ContentMargin, 0);
+    layout->addWidget(m_contentLabel, 0, Qt::AlignCenter);
+    m_layout->addLayout(layout, 0);
+    m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
+
+    m_statusLabel->setFixedHeight(StatusBarHeight);
+
+    m_contentLabel->setWordWrap(true);
+    m_contentLabel->setAlignment(Qt::AlignCenter);
+    font = m_contentLabel->font();
+    font.setUnderline(true);
+    m_contentLabel->setFont(font);
+    m_statusLabel->setAlignment(Qt::AlignCenter);
+#if 0//标识显示区域
+    titleWidget->setStyleSheet("background-color:red");
+    m_contentLabel->setStyleSheet("background-color:green");
+    m_statusLabel->setStyleSheet("background-color:red");
+#endif
+    setHoverAlpha(160);
+    setUnHoverAlpha(80);
+    setRadius(8);
+
+    setFocusPolicy(Qt::TabFocus);
+}
+
+void ItemWidget::initStyle(QPointer<ItemData> data)
+{
+    setClipType(data->title());
+    setCreateTime(data->time());
+
+    switch (data->type()) {
+    case ItemData::Text: {
+        QFont font = m_contentLabel->font();
+        font.setItalic(true);
+        m_contentLabel->setFont(font);
+        m_contentLabel->setAlignment(Qt::AlignTop);
+        setText(data->text(), data->subTitle());
+    }
+    break;
+    case ItemData::Image: {
+        m_contentLabel->setAlignment(Qt::AlignCenter);
+        setPixmap(GetRoundPixmap(data->pixmap(), MIN(data->pixmap().width(), data->pixmap().height()) / 8));
+    }
+    break;
+    case ItemData::File: {
+        m_urls = data->urls();
+        if (data->urls().size() == 0)
+            return;
+
+        QString first = data->urls().first().toString();
+        if (data->urls().size() == 1) {
+            QFileInfo info(first);
+            if (first.startsWith("file://")) {
+                first.replace("file://", "");
+            }
+            //单个文件是图片时显示缩略图
+            if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
+                setPixmap(GetRoundPixmap(QPixmap(first), MIN(QPixmap(first).width(), QPixmap(first).height()) / 8));
+            } else {
+                setFilePixmap(GetFileIcon(first));
+            }
+
+            m_statusLabel->setText(info.fileName());
+        } else if (data->urls().size() > 1) {
+            QFileInfo info(first);
+            m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));
+
+            int iconNum = MIN(3, data->urls().size());
+            QList<QPixmap> pixmapList;
+            for (int i = 0; i < iconNum; ++i) {
+                QString filePath = data->urls()[i].toString();
+                if (filePath.startsWith("file://")) {
+                    filePath.replace("file://", "");
+                }
+                pixmapList.push_back(GetFileIcon(filePath));
+            }
+            setFilePixmaps(pixmapList);
+        }
+    }
+    break;
+    }
+}
+
+QString ItemWidget::CreateTimeString(const QDateTime &time)
 {
     QString text;
 
@@ -153,27 +348,7 @@ QString ItemTitle::CreateTimeString(const QDateTime &time)
     return text;
 }
 
-AlphaWidget::AlphaWidget(QWidget *parent)
-    : DWidget(parent)
-{
-}
-
-void AlphaWidget::setAlpha(int alpha)
-{
-    m_hoverAlpha = alpha;
-    m_unHoverAlpha = alpha;
-
-    update();
-}
-
-void AlphaWidget::setRadius(int radius)
-{
-    m_radius = radius;
-
-    update();
-}
-
-void AlphaWidget::paintEvent(QPaintEvent *event)
+void ItemWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
@@ -193,193 +368,25 @@ void AlphaWidget::paintEvent(QPaintEvent *event)
     return QWidget::paintEvent(event);
 }
 
-void AlphaWidget::enterEvent(QEvent *event)
-{
-    m_havor = true;
-
-    update();
-
-    return DWidget::enterEvent(event);
-}
-
-void AlphaWidget::leaveEvent(QEvent *event)
-{
-    m_havor = false;
-
-    update();
-
-    return DWidget::leaveEvent(event);
-}
-
-ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
-    : AlphaWidget(parent)
-    , m_data(data)
-    , m_titleWidget(new ItemTitle(this))
-    , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
-    , m_statusLabel(new Dtk::Widget::DLabel(this))
-    , m_layout(new QVBoxLayout(this))
-{
-    initUI();
-    initStyle(m_data);
-
-    connect(this, &ItemWidget::hoverStateChanged, m_titleWidget, &ItemTitle::onHoverStateChanged);
-    connect(m_titleWidget, &ItemTitle::close, [ = ] {
-        m_data->remove();
-    });
-}
-
-void ItemWidget::initUI()
-{
-    m_layout->setSpacing(0);
-    m_layout->setMargin(0);
-    m_layout->addWidget(m_titleWidget, 0, Qt::AlignTop);
-
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(21);
-    layout->addWidget(m_contentLabel, 0, Qt::AlignTop);
-    m_layout->addLayout(layout, 0);
-    m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
-
-    m_statusLabel->setFixedHeight(StatusBarHeight);
-
-    m_contentLabel->setWordWrap(true);
-    m_contentLabel->setAlignment(Qt::AlignCenter);
-    m_statusLabel->setAlignment(Qt::AlignCenter);
-
-    setHoverAlpha(160);
-    setUnHoverAlpha(80);
-    setRadius(8);
-
-    setFocusPolicy(Qt::TabFocus);
-}
-
-void ItemWidget::initStyle(QPointer<ItemData> data)
-{
-    setDataName(data->title());
-    setIcon(data->icon());
-    setCreateTime(data->time());
-
-    switch (data->type()) {
-    case ItemData::Text: {
-        QFont font = m_contentLabel->font();
-        font.setItalic(true);
-        m_contentLabel->setFont(font);
-        m_contentLabel->setAlignment(Qt::AlignTop);
-        setText(data->text(), data->subTitle());
-    }
-    break;
-    case ItemData::Image: {
-        m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(data->pixmap());
-    }
-    break;
-    case ItemData::File: {
-        m_urls = data->urls();
-        if (data->urls().size() == 0)
-            return;
-
-        QString first = data->urls().first().toString();
-        if (data->urls().size() == 1) {
-            QFileInfo info(first);
-            m_statusLabel->setText(info.fileName());
-            setFilePixmap(GetFileIcon(first));
-        } else if (data->urls().size() > 1) {
-            QFileInfo info(first);
-            m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));
-
-            int iconNum = MIN(3, data->urls().size());
-            QList<QPixmap> pixmapList;
-            for (int i = 0; i < iconNum; ++i) {
-                pixmapList.push_back(GetFileIcon(data->urls()[i].toString()));
-            }
-            setPixmaps(pixmapList);
-        }
-    }
-    break;
-    }
-}
-
-void ItemWidget::setText(const QString &text, const QString &length)
-{
-    m_text = text;
-
-    m_contentLabel->setText(text);
-
-    m_statusLabel->setText(length);
-}
-
-void ItemWidget::setPixmap(const QPixmap &pixmap)
-{
-    m_pixmap = pixmap;
-    qreal scale = 1.0;
-    if (pixmap.size() == QSize(0, 0))
-        return;
-
-    if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / PixmapWidth / 2;
-    } else {
-        scale = pixmap.height() * 1.0 / PixmapHeight / 2;
-    }
-
-    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
-    m_statusLabel->setText(QString::number(pixmap.width()) + "*" + QString::number(pixmap.height()) + tr("px"));
-}
-
-void ItemWidget::setFilePixmap(const QPixmap &pixmap)
-{
-    m_pixmap = pixmap;
-    qreal scale = 1.0;
-    if (pixmap.size() == QSize(0, 0))
-        return;
-
-    if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / PixmapWidth;
-    } else {
-        scale = pixmap.height() * 1.0 / PixmapHeight;
-    }
-
-    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
-}
-
-void ItemWidget::setPixmaps(const QList<QPixmap> &list)
-{
-    m_contentLabel->setPixmapList(list);
-}
-
-void ItemWidget::setDataName(const QString &text)
-{
-    return m_titleWidget->setDataName(text);
-}
-
-void ItemWidget::setIcon(const QIcon &icon)
-{
-    m_titleWidget->setIcon(icon);
-}
-
-void ItemWidget::setCreateTime(const QDateTime &time)
-{
-    m_titleWidget->setCreateTime(time);
-}
-
 void ItemWidget::mousePressEvent(QMouseEvent *event)
 {
     m_data->popTop();
 
-    return AlphaWidget::mousePressEvent(event);
+    return DWidget::mousePressEvent(event);
 }
 
 void ItemWidget::enterEvent(QEvent *event)
 {
     Q_EMIT hoverStateChanged(true);
 
-    return AlphaWidget::enterEvent(event);
+    return DWidget::enterEvent(event);
 }
 
 void ItemWidget::leaveEvent(QEvent *event)
 {
     Q_EMIT hoverStateChanged(false);
 
-    return AlphaWidget::leaveEvent(event);
+    return DWidget::leaveEvent(event);
 }
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
@@ -387,7 +394,7 @@ void ItemWidget::focusInEvent(QFocusEvent *event)
     QEvent e(QEvent::Enter);
     qApp->sendEvent(this, &e);
 
-    return AlphaWidget::focusInEvent(event);
+    return DWidget::focusInEvent(event);
 }
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
@@ -395,5 +402,5 @@ void ItemWidget::focusOutEvent(QFocusEvent *event)
     QEvent e(QEvent::Leave);
     qApp->sendEvent(this, &e);
 
-    return AlphaWidget::focusOutEvent(event);
+    return DWidget::focusOutEvent(event);
 }

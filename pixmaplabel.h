@@ -12,7 +12,8 @@ public:
 
     void setPixmapList(const QList<QPixmap> &list);
 
-    virtual QSize  minimumSizeHint() const override;
+    virtual QSize minimumSizeHint() const override;
+    virtual QSize sizeHint() const override;
 
 private:
     QList<QPixmap> m_pixmapList;

@@ -26,7 +26,12 @@ void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 
 QSize PixmapLabel::minimumSizeHint() const
 {
-    return QSize(128, 128);
+    return QSize(FileIconWidth, FileIconHeight);
+}
+
+QSize PixmapLabel::sizeHint() const
+{
+    return QSize(ItemWidth - ContentMargin * 2, ItemHeight - TitleHeight - StatusBarHeight);
 }
 
 void PixmapLabel::paintEvent(QPaintEvent *event)
@@ -45,9 +50,9 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         if (pix.size() == QSize(0, 0))
             return;
         if (pix.width() >= pix.height()) {
-            scale = pix.width() * 1.0 / PixmapWidth;
+            scale = pix.width() * 1.0 / FileIconWidth;
         } else {
-            scale = pix.height() * 1.0 / PixmapHeight;
+            scale = pix.height() * 1.0 / FileIconHeight;
         }
 
         int x = int(width() - pix.size().width() / scale) / 2;
@@ -60,12 +65,12 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             if (pix.size() == QSize(0, 0))
                 continue;
             if (pix.width() >= pix.height()) {
-                scale = pix.width() * 1.0 / PixmapWidth;
+                scale = pix.width() * 1.0 / FileIconWidth;
             } else {
-                scale = pix.height() * 1.0 / PixmapHeight;
+                scale = pix.height() * 1.0 / FileIconHeight;
             }
-            int x = int(width() - pix.size().width() / scale) / 2 + (i - 1) * PixmapMargin;
-            int y = int(height() - pix.size().height() / scale) / 2 + (i - 1) * PixmapMargin;
+            int x = int(width() - pix.size().width() / scale) / 2 + (i - 1) * PixmapxStep;
+            int y = int(height() - pix.size().height() / scale) / 2 + (i - 1) * PixmapyStep;
 
             painter.drawPixmap(x, y, pix.scaled(pix.size() / scale, Qt::KeepAspectRatio));
         }
