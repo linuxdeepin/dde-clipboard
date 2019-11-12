@@ -17,6 +17,15 @@ PixmapLabel::PixmapLabel(QWidget *parent)
 
 }
 
+void PixmapLabel::setText(const QString &text)
+{
+    QFont font = this->font();
+    font.setUnderline(true);
+    this->setFont(font);
+
+    return DLabel::setText(text);
+}
+
 void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 {
     m_pixmapList = list;
@@ -27,6 +36,11 @@ void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 QSize PixmapLabel::minimumSizeHint() const
 {
     return QSize(FileIconWidth, FileIconHeight);
+}
+
+QSize PixmapLabel::sizeHint() const
+{
+    return QSize(ItemWidth - ContentMargin * 2, ItemHeight - TitleHeight - StatusBarHeight);
 }
 
 void PixmapLabel::paintEvent(QPaintEvent *event)

@@ -238,7 +238,7 @@ void ItemWidget::initUI()
     m_layout->addWidget(titleWidget, 0, Qt::AlignTop);
 
     QHBoxLayout *layout = new QHBoxLayout;
-    layout->setMargin(21);
+    layout->setContentsMargins(ContentMargin, 0, ContentMargin, 0);
     layout->addWidget(m_contentLabel, 0, Qt::AlignCenter);
     m_layout->addLayout(layout, 0);
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
@@ -248,7 +248,11 @@ void ItemWidget::initUI()
     m_contentLabel->setWordWrap(true);
     m_contentLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setAlignment(Qt::AlignCenter);
-
+#if 0//标识显示区域
+    titleWidget->setStyleSheet("background-color:red");
+    m_contentLabel->setStyleSheet("background-color:green");
+    m_statusLabel->setStyleSheet("background-color:red");
+#endif
     setHoverAlpha(160);
     setUnHoverAlpha(80);
     setRadius(8);
