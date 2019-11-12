@@ -82,16 +82,41 @@ const QList<ItemData *> ClipboardModel::data() const
 
 void ClipboardModel::clipDataChanged()
 {
-    const QMimeData *mimeData = m_board->mimeData();
-    ItemData *item = new ItemData(mimeData);
-
-    if (!m_data.isEmpty() && m_data.first() == item) {//already copied
-        return;
-    }
-
     beginInsertRows(QModelIndex(), 0, 0);
 
+    const QMimeData *mimeData = m_board->mimeData();
+    ItemData *item = new ItemData(mimeData);
     m_data.push_front(item);
 
     endInsertRows();
+}
+
+void ClipboardModel::onPopData(ItemData *data)
+{
+    int row = m_data.indexOf(data);
+    if (row == 0)
+        return;
+
+    beginMoveRows(QModelIndex(), row, row, QModelIndex(), 0);
+    auto item = m_data.takeAt(row);
+    m_data.push_front(item);
+    endMoveRows();
+
+    QMimeData *mimeData = new QMimeData;
+    switch (item->type()) {
+    case ItemData::Text:
+        mimeData->setText(item->text());
+        mimeData->setHtml(item->text());
+        break;
+    case ItemData::Image:
+        mimeData->setImageData(item->pixmap());
+        break;
+    case ItemData::File:
+        mimeData->setUrls(item->urls());
+        break;
+    default:
+        break;
+    }
+
+    m_board->setMimeData(mimeData);//会触发增加一次复制的内容
 }

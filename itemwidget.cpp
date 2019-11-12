@@ -1,6 +1,7 @@
 #include "itemwidget.h"
 #include "constants.h"
 #include "clipboardmodel.h"
+#include "pixmaplabel.h"
 
 #include <QPainter>
 #include <QTextOption>
@@ -21,7 +22,7 @@ static QPixmap GetFileIcon(QString path)
 {
     QFileInfo fileInfo(path);
     QFileIconProvider icon;
-    QPixmap pixmap = icon.icon(fileInfo).pixmap(128, 128);
+    QPixmap pixmap = icon.icon(fileInfo).pixmap(PixmapWidth, PixmapWidth);
     return pixmap;
 }
 
@@ -218,10 +219,9 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     , m_model(model)
     , m_data(data)
     , m_titleWidget(new ItemTitle(this))
-    , m_contentLabel(new Dtk::Widget::DLabel(this))
+    , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
     , m_statusLabel(new Dtk::Widget::DLabel(this))
     , m_layout(new QVBoxLayout(this))
-    , m_board(QApplication::clipboard())
 {
     initUI();
     initStyle(m_data);
@@ -230,33 +230,9 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     connect(m_titleWidget, &ItemTitle::close, this, [ = ] {
         m_model->removeData(m_data);
     });
-    connect(this, &ItemWidget::clicked, this, &ItemWidget::onClicked);
-}
-
-void ItemWidget::onClicked()
-{
-    //剪切板上的内容不再进行复制
-    if (m_model->data().indexOf(m_data) == 0) {
-        return;
-    }
-
-    QMimeData *mimeData = new QMimeData;
-    switch (m_data->type()) {
-    case ItemData::Text:
-        mimeData->setText(m_text);
-        mimeData->setHtml(m_text);
-        break;
-    case ItemData::Image:
-        mimeData->setImageData(m_pixmap);
-        break;
-    case ItemData::File:
-        mimeData->setUrls(m_urls);
-        break;
-    default:
-        break;
-    }
-
-    m_board->setMimeData(mimeData);
+    connect(this, &ItemWidget::clicked, this, [ = ] {
+        Q_EMIT popData(m_data);
+    });
 }
 
 void ItemWidget::initUI()
@@ -281,14 +257,14 @@ void ItemWidget::initUI()
     setUnHoverAlpha(80);
     setRadius(8);
 
-    setFocusPolicy(Qt::NoFocus);
+    setFocusPolicy(Qt::TabFocus);
 }
 
 void ItemWidget::initStyle(QPointer<ItemData> data)
 {
     setDataName(data->title());
     setIcon(data->icon());
-    setCreateTime(data->createTime());
+    setCreateTime(data->time());
 
     switch (data->type()) {
     case ItemData::Text: {
@@ -296,12 +272,12 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
         font.setItalic(true);
         m_contentLabel->setFont(font);
         m_contentLabel->setAlignment(Qt::AlignTop);
-        setText(data->contentText(), data->subTitle());
+        setText(data->text(), data->subTitle());
     }
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(data->contentImage());
+        setPixmap(data->pixmap());
     }
     break;
     case ItemData::File: {
@@ -313,12 +289,18 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
         if (data->urls().size() == 1) {
             QFileInfo info(first);
             m_statusLabel->setText(info.fileName());
+            setFilePixmap(GetFileIcon(first));
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
             m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));
-        }
 
-        setFilePixmap(GetFileIcon(first));
+            int iconNum = MIN(3, data->urls().size());
+            QList<QPixmap> pixmapList;
+            for (int i = 0; i < iconNum; ++i) {
+                pixmapList.push_back(GetFileIcon(data->urls()[i].toString()));
+            }
+            setPixmaps(pixmapList);
+        }
     }
     break;
     }
@@ -341,9 +323,9 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
         return;
 
     if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / 128;
+        scale = pixmap.width() * 1.0 / PixmapWidth / 2;
     } else {
-        scale = pixmap.height() * 1.0 / 210;
+        scale = pixmap.height() * 1.0 / PixmapHeight / 2;
     }
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
@@ -358,12 +340,17 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
         return;
 
     if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / 128;
+        scale = pixmap.width() * 1.0 / PixmapWidth;
     } else {
-        scale = pixmap.height() * 1.0 / 210;
+        scale = pixmap.height() * 1.0 / PixmapHeight;
     }
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+}
+
+void ItemWidget::setPixmaps(const QList<QPixmap> &list)
+{
+    m_contentLabel->setPixmapList(list);
 }
 
 void ItemWidget::setDataName(const QString &text)
@@ -404,16 +391,16 @@ void ItemWidget::leaveEvent(QEvent *event)
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
-    qDebug() << __PRETTY_FUNCTION__;
-    Q_EMIT hoverStateChanged(true);
+    QEvent e(QEvent::Enter);
+    qApp->sendEvent(this, &e);
 
     return AlphaWidget::focusInEvent(event);
 }
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
 {
-    qDebug() << __PRETTY_FUNCTION__;
-    Q_EMIT hoverStateChanged(false);
+    QEvent e(QEvent::Leave);
+    qApp->sendEvent(this, &e);
 
     return AlphaWidget::focusOutEvent(event);
 }

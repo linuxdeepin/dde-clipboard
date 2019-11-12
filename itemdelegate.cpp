@@ -20,6 +20,9 @@ QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem 
     ClipboardModel *model = const_cast<ClipboardModel *>(dynamic_cast<const ClipboardModel *>(index.model()));
     Q_ASSERT(model);
     ItemWidget *w = new ItemWidget(model, data, parent);
+    connect(w, &ItemWidget::popData, model, [ = ](QPointer<ItemData> data) {
+        model->onPopData(data);
+    });
     return w;
 }
 

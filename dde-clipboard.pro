@@ -19,7 +19,8 @@ SOURCES += \
         clipboardmodel.cpp \
     dbusdisplay.cpp \
     itemdelegate.cpp \
-    itemwidget.cpp
+    itemwidget.cpp \
+    pixmaplabel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -28,7 +29,8 @@ HEADERS += \
     dbusdisplay.h \
     itemdelegate.h \
     constants.h \
-    itemwidget.h
+    itemwidget.h \
+    pixmaplabel.h
 
 target.path = /usr/bin/
 INSTALLS += target

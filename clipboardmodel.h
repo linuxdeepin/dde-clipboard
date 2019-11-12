@@ -34,6 +34,7 @@ protected:
 
 public slots:
     void clipDataChanged();
+    void onPopData(ItemData *data);
 
 private:
     QList<ItemData *> m_data;
