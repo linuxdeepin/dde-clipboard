@@ -2,6 +2,7 @@
 #include <DApplication>
 #include <DGuiApplicationHelper>
 #include <DLog>
+#include <unistd.h>
 
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
@@ -23,6 +24,11 @@ int main(int argc, char *argv[])
     app.setApplicationDisplayName("DDE Clipboard");
     app.setApplicationVersion("1.0");
     app.loadTranslator();
+
+    if (!DGuiApplicationHelper::setSingleInstance(QString("dde-clipboard_%1").arg(getuid()))) {
+        qDebug() << "set single instance failed!";
+        return -1;
+    }
 
     MainWindow w;
     w.show();
