@@ -85,3 +85,13 @@ const QPixmap &ItemData::pixmap()
 {
     return m_image;
 }
+
+void ItemData::remove()
+{
+    emit distory(this);
+}
+
+void ItemData::popTop()
+{
+    emit reborn(this);
+}

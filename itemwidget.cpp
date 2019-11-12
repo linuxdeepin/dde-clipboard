@@ -1,6 +1,5 @@
 #include "itemwidget.h"
 #include "constants.h"
-#include "clipboardmodel.h"
 #include "pixmaplabel.h"
 
 #include <QPainter>
@@ -80,9 +79,7 @@ ItemTitle::ItemTitle(QWidget *parent)
 
     m_refreshTimer->setInterval(60 * 1000);
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemTitle::onRefreshTime);
-
     connect(m_closeButton, &DIconButton::clicked, this, &ItemTitle::close);
-
     setFocusPolicy(Qt::NoFocus);
 }
 
@@ -214,9 +211,8 @@ void AlphaWidget::leaveEvent(QEvent *event)
     return DWidget::leaveEvent(event);
 }
 
-ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *parent)
+ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : AlphaWidget(parent)
-    , m_model(model)
     , m_data(data)
     , m_titleWidget(new ItemTitle(this))
     , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
@@ -227,11 +223,8 @@ ItemWidget::ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *
     initStyle(m_data);
 
     connect(this, &ItemWidget::hoverStateChanged, m_titleWidget, &ItemTitle::onHoverStateChanged);
-    connect(m_titleWidget, &ItemTitle::close, this, [ = ] {
-        m_model->removeData(m_data);
-    });
-    connect(this, &ItemWidget::clicked, this, [ = ] {
-        Q_EMIT popData(m_data);
+    connect(m_titleWidget, &ItemTitle::close, [ = ] {
+        m_data->remove();
     });
 }
 
@@ -370,7 +363,7 @@ void ItemWidget::setCreateTime(const QDateTime &time)
 
 void ItemWidget::mousePressEvent(QMouseEvent *event)
 {
-    Q_EMIT clicked();
+    m_data->popTop();
 
     return AlphaWidget::mousePressEvent(event);
 }

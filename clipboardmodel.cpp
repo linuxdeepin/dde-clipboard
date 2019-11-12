@@ -47,15 +47,6 @@ Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
     return QAbstractListModel::flags(index);
 }
 
-void ClipboardModel::removeItem(QModelIndex index)
-{
-    beginRemoveRows(QModelIndex(), index.row(), index.row());
-    auto item = m_data.takeAt(index.row());
-    endRemoveRows();
-
-    item->deleteLater();
-}
-
 void ClipboardModel::removeData(ItemData *data)
 {
     int row = m_data.indexOf(data);
@@ -67,17 +58,33 @@ void ClipboardModel::removeData(ItemData *data)
     item->deleteLater();
 }
 
-void ClipboardModel::extract(QModelIndex index)
+void ClipboardModel::extract(ItemData *data)
 {
-    beginMoveRows(QModelIndex(), index.row(), index.row(), QModelIndex(), 0);
-    auto item = m_data.takeAt(index.row());
-    m_data.push_front(item);
-    endMoveRows();
-}
+    int idx = m_data.indexOf(data);
+    if (idx < 1)
+        return;
 
-const QList<ItemData *> ClipboardModel::data() const
-{
-    return m_data;
+    beginRemoveRows(QModelIndex(), idx, idx);
+    m_data.removeOne(data);
+    endRemoveRows();
+
+    QMimeData *mimeData = new QMimeData;
+    switch (data->type()) {
+    case ItemData::Text:
+        mimeData->setText(data->text());
+        mimeData->setHtml(data->text());
+        break;
+    case ItemData::Image:
+        mimeData->setImageData(data->pixmap());
+        break;
+    case ItemData::File:
+        mimeData->setUrls(data->urls());
+        break;
+    }
+
+    m_board->setMimeData(mimeData);//会触发增加一次复制的内容
+
+    data->deleteLater();
 }
 
 void ClipboardModel::clipDataChanged()
@@ -86,37 +93,11 @@ void ClipboardModel::clipDataChanged()
 
     const QMimeData *mimeData = m_board->mimeData();
     ItemData *item = new ItemData(mimeData);
+
+    connect(item, &ItemData::distory, this, &ClipboardModel::removeData);
+    connect(item, &ItemData::reborn, this, &ClipboardModel::extract);
+
     m_data.push_front(item);
 
     endInsertRows();
-}
-
-void ClipboardModel::onPopData(ItemData *data)
-{
-    int row = m_data.indexOf(data);
-    if (row == 0)
-        return;
-
-    beginMoveRows(QModelIndex(), row, row, QModelIndex(), 0);
-    auto item = m_data.takeAt(row);
-    m_data.push_front(item);
-    endMoveRows();
-
-    QMimeData *mimeData = new QMimeData;
-    switch (item->type()) {
-    case ItemData::Text:
-        mimeData->setText(item->text());
-        mimeData->setHtml(item->text());
-        break;
-    case ItemData::Image:
-        mimeData->setImageData(item->pixmap());
-        break;
-    case ItemData::File:
-        mimeData->setUrls(item->urls());
-        break;
-    default:
-        break;
-    }
-
-    m_board->setMimeData(mimeData);//会触发增加一次复制的内容
 }

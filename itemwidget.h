@@ -13,7 +13,6 @@ DWIDGET_USE_NAMESPACE
 class QTimer;
 class QVBoxLayout;
 class ItemTitle;
-class ClipboardModel;
 class PixmapLabel;
 //可调节背景透明度的圆角widget
 class AlphaWidget : public DWidget
@@ -81,11 +80,9 @@ class ItemWidget : public AlphaWidget
 {
     Q_OBJECT
 public:
-    ItemWidget(ClipboardModel *model, QPointer<ItemData> data, QWidget *parent = nullptr);
+    ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
 
 Q_SIGNALS:
-    void clicked(bool checked = false);
-    void popData(QPointer<ItemData> data);
     void hoverStateChanged(bool);
 
 private:
@@ -101,7 +98,6 @@ private:
     void setCreateTime(const QDateTime &time);
 
 private:
-    ClipboardModel *m_model = nullptr;
     QPointer<ItemData> m_data;
 
     ItemTitle *m_titleWidget = nullptr;

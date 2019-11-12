@@ -17,12 +17,7 @@ QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem 
 {
     Q_UNUSED(option);
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
-    ClipboardModel *model = const_cast<ClipboardModel *>(dynamic_cast<const ClipboardModel *>(index.model()));
-    Q_ASSERT(model);
-    ItemWidget *w = new ItemWidget(model, data, parent);
-    connect(w, &ItemWidget::popData, model, [ = ](QPointer<ItemData> data) {
-        model->onPopData(data);
-    });
+    ItemWidget *w = new ItemWidget(data, parent);
     return w;
 }
 

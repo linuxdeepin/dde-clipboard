@@ -32,6 +32,13 @@ public:
     const QPixmap &pixmap();             // 缩略图
     const DataType &type() {return m_type;}
 
+    void remove();
+    void popTop();
+
+Q_SIGNALS:
+    void distory(ItemData *data);
+    void reborn(ItemData *data);
+
 private:
     DataType m_type;
     QList<QUrl> m_urls;
