@@ -22,15 +22,14 @@ ItemData::ItemData(const QMimeData *mimeData)
         m_type = Text;
     }
 
-    //TODO
-    if (qApp->activeWindow())
-        m_icon = /*QIcon::fromTheme("")*/qApp->activeWindow()->windowIcon();
     m_createTime = QDateTime::currentDateTime();
-}
 
-QIcon ItemData::icon()
-{
-    return m_icon;
+    for (int i = 0; i < mimeData->formats().size(); ++i) {
+        m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
+#if 0
+        qDebug() << mimeData->formats()[i] << mimeData->data(mimeData->formats()[i]);
+#endif
+    }
 }
 
 QString ItemData::title()
@@ -84,6 +83,11 @@ const QString &ItemData::text()
 const QPixmap &ItemData::pixmap()
 {
     return m_image;
+}
+
+const QMap<QString, QByteArray> &ItemData::formatMap()
+{
+    return m_formatMap;
 }
 
 void ItemData::remove()
