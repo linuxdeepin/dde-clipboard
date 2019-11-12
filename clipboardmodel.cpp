@@ -82,7 +82,7 @@ void ClipboardModel::extract(ItemData *data)
         break;
     }
 
-    m_board->setMimeData(mimeData);//会触发增加一次复制的内容
+    m_board->setMimeData(mimeData);
 
     data->deleteLater();
 }

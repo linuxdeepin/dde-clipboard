@@ -12,8 +12,12 @@ const static int StatusBarHeight = 38;  //Item状态栏高度
 const static int ItemWidth = WindowWidth - 2 * WindowMargin;
 const static int ItemHeight = 200;
 const static int ItemMargin = 10;
-const static int PixmapWidth = 64;
-const static int PixmapHeight = 105;
-const static int PixmapMargin = 15;
+
+const static int PixmapWidth = 128;     //图像最大显示宽度
+const static int PixmapHeight = 210;    //图像最大显示高度
+const static int FileIconWidth = PixmapWidth / 2;
+const static int FileIconHeight = PixmapHeight / 2;
+const static int PixmapxMargin = 15;
+const static int PixmapyMargin = 5;
 
 #endif // CONSTANTS_H

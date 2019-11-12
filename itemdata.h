@@ -25,11 +25,11 @@ public:
     QIcon icon();                               // 图标
     QString title();                            // 类型名称
     QString subTitle();                         // 字符数，像素信息，文件名称（多个文件显示XXX等X个文件）
-    const QList<QUrl> &urls();
-    const QDateTime &time();              // 复制时间
-    const QString &html();              // 富文本信息
-    const QString &text();              // 内容预览
-    const QPixmap &pixmap();             // 缩略图
+    const QList<QUrl> &urls();                  // 文件链接
+    const QDateTime &time();                    // 复制时间
+    const QString &html();                      // 富文本信息
+    const QString &text();                      // 内容预览
+    const QPixmap &pixmap();                    // 缩略图
     const DataType &type() {return m_type;}
 
     void remove();
