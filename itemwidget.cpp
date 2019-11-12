@@ -45,7 +45,7 @@ QPixmap GetRoundPixmap(const QPixmap &pix, int radius)
     QBitmap mask(size);
 
     QPainter painter(&mask);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
     painter.fillRect(mask.rect(), Qt::white);
     painter.setBrush(Qt::black);
     painter.drawRoundedRect(mask.rect(), radius, radius);
@@ -247,6 +247,9 @@ void ItemWidget::initUI()
 
     m_contentLabel->setWordWrap(true);
     m_contentLabel->setAlignment(Qt::AlignCenter);
+    font = m_contentLabel->font();
+    font.setUnderline(true);
+    m_contentLabel->setFont(font);
     m_statusLabel->setAlignment(Qt::AlignCenter);
 #if 0//标识显示区域
     titleWidget->setStyleSheet("background-color:red");
@@ -292,7 +295,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             }
             //单个文件是图片时显示缩略图
             if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
-                setPixmap(QPixmap(first));
+                setPixmap(GetRoundPixmap(QPixmap(first), MIN(QPixmap(first).width(), QPixmap(first).height()) / 8));
             } else {
                 setFilePixmap(GetFileIcon(first));
             }
@@ -305,7 +308,11 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             int iconNum = MIN(3, data->urls().size());
             QList<QPixmap> pixmapList;
             for (int i = 0; i < iconNum; ++i) {
-                pixmapList.push_back(GetFileIcon(data->urls()[i].toString()));
+                QString filePath = data->urls()[i].toString();
+                if (filePath.startsWith("file://")) {
+                    filePath.replace("file://", "");
+                }
+                pixmapList.push_back(GetFileIcon(filePath));
             }
             setFilePixmaps(pixmapList);
         }

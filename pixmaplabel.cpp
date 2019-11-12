@@ -17,15 +17,6 @@ PixmapLabel::PixmapLabel(QWidget *parent)
 
 }
 
-void PixmapLabel::setText(const QString &text)
-{
-    QFont font = this->font();
-    font.setUnderline(true);
-    this->setFont(font);
-
-    return DLabel::setText(text);
-}
-
 void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 {
     m_pixmapList = list;

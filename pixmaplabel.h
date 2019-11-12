@@ -10,8 +10,6 @@ public:
     PixmapLabel(const QList<QPixmap> &list, QWidget *parent = nullptr);
     PixmapLabel(QWidget *parent = nullptr);
 
-    void setText(const QString &text);
-
     void setPixmapList(const QList<QPixmap> &list);
 
     virtual QSize minimumSizeHint() const override;

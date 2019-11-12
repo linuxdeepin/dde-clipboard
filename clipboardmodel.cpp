@@ -1,6 +1,8 @@
 #include "clipboardmodel.h"
+
 #include <QApplication>
 #include <QPointer>
+#include <QDebug>
 
 ClipboardModel::ClipboardModel(QListView *list, QObject *parent) : QAbstractListModel(parent)
     , m_board(QApplication::clipboard())
@@ -72,7 +74,7 @@ void ClipboardModel::extract(ItemData *data)
     switch (data->type()) {
     case ItemData::Text:
         mimeData->setText(data->text());
-        mimeData->setHtml(data->text());
+        mimeData->setHtml(data->html().isEmpty() ? data->text() : data->html());
         break;
     case ItemData::Image:
         mimeData->setImageData(data->pixmap());
@@ -80,6 +82,12 @@ void ClipboardModel::extract(ItemData *data)
     case ItemData::File:
         mimeData->setUrls(data->urls());
         break;
+    }
+
+    QMapIterator<QString, QByteArray> it(data->formatMap());
+    while (it.hasNext()) {
+        it.next();
+        mimeData->setData(it.key(), it.value());
     }
 
     m_board->setMimeData(mimeData);

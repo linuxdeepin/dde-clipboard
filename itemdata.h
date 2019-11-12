@@ -30,6 +30,7 @@ public:
     const QString &text();                      // 内容预览
     const QPixmap &pixmap();                    // 缩略图
     const DataType &type() {return m_type;}
+    const QMap<QString, QByteArray> &formatMap();
 
     void remove();
     void popTop();
@@ -39,6 +40,7 @@ Q_SIGNALS:
     void reborn(ItemData *data);
 
 private:
+    QMap<QString, QByteArray> m_formatMap;
     DataType m_type;
     QList<QUrl> m_urls;
     QPixmap m_image;
