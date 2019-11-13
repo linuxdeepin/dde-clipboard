@@ -7,7 +7,7 @@
 const static int WindowWidth = 300;
 const static int WindowMargin = 10;     //边距
 const static int WindowLeave = 3;       //隐藏后的剩余空间
-const static int TitleHeight = 30;      //Item标题栏高度
+const static int TitleHeight = 36;      //Item标题栏高度
 const static int StatusBarHeight = 30;  //Item状态栏高度
 const static int ItemWidth = WindowWidth - 2 * WindowMargin;
 const static int ItemHeight = 200;

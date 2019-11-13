@@ -47,18 +47,18 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
     if (m_pixmapList.size() == 1) {
         QPixmap pix = m_pixmapList[0];
-        if (pix.size() == QSize(0, 0))
-            return;
-        if (pix.width() >= pix.height()) {
-            scale = pix.width() * 1.0 / FileIconWidth;
-        } else {
-            scale = pix.height() * 1.0 / FileIconHeight;
+        if (pix.size() != QSize(0, 0)) {
+            if (pix.width() >= pix.height()) {
+                scale = pix.width() * 1.0 / FileIconWidth;
+            } else {
+                scale = pix.height() * 1.0 / FileIconHeight;
+            }
+
+            int x = int(width() - pix.size().width() / scale) / 2;
+            int y = int(height() - pix.size().height() / scale) / 2;
+
+            painter.drawPixmap(x, y, pix.scaled(pix.size() / scale, Qt::KeepAspectRatio));
         }
-
-        int x = int(width() - pix.size().width() / scale) / 2;
-        int y = int(height() - pix.size().height() / scale) / 2;
-
-        painter.drawPixmap(x, y, pix.scaled(pix.size() / scale, Qt::KeepAspectRatio));
     } else {
         for (int i = 0 ; i < m_pixmapList.size(); ++i) {
             QPixmap pix = m_pixmapList[i];

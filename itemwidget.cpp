@@ -387,14 +387,25 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     QPalette pe = this->palette();
     QColor c = pe.color(QPalette::Base);
 
-    QColor brushColor(c);
-    brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);
-    painter.setBrush(brushColor);
-
     QPen borderPen;
     borderPen.setColor(Qt::transparent);
     painter.setPen(borderPen);
-    painter.drawRoundRect(QRectF(0, 0, width(), height()), m_radius, m_radius);
+
+    //裁剪绘制区域
+    QPainterPath path;
+    path.addRoundedRect(rect(), m_radius, m_radius);
+    painter.setClipPath(path);
+
+    //绘制标题区域
+    QColor brushColor(c);
+    brushColor.setAlpha(60);
+    painter.setBrush(brushColor);
+    painter.drawRect(QRect(0, 0, width(), TitleHeight));
+
+    //绘制背景
+    brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);
+    painter.setBrush(brushColor);
+    painter.drawRoundRect(rect(), m_radius, m_radius);
 
     return QWidget::paintEvent(event);
 }
