@@ -54,6 +54,7 @@ private:
     void initUI();
     void initStyle(QPointer<ItemData> data);
     QString CreateTimeString(const QDateTime &time);
+    QPixmap pixmapScaled(const QPixmap &pixmap);
 
 private:
     QPointer<ItemData> m_data;
@@ -73,7 +74,6 @@ private:
     //--- data
     QDateTime m_time;
     QString m_text;
-    QPixmap m_pixmap;
     QList<QUrl> m_urls;
 
     //--- set style

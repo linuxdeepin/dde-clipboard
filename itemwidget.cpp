@@ -87,26 +87,12 @@ void ItemWidget::setText(const QString &text, const QString &length)
 
 void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
-    m_pixmap = pixmap;
-    qreal scale = 1.0;
-    if (pixmap.size() == QSize(0, 0))
-        return;
-
-    if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / PixmapWidth;
-    } else {
-        scale = pixmap.height() * 1.0 / PixmapHeight;
-    }
-
-    qDebug() << "scale:" << scale;
-
-    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+    m_contentLabel->setPixmap(pixmapScaled(pixmap));
     m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
 }
 
 void ItemWidget::setFilePixmap(const QPixmap &pixmap)
 {
-    m_pixmap = pixmap;
     qreal scale = 1.0;
     if (pixmap.size() == QSize(0, 0))
         return;
@@ -253,7 +239,7 @@ void ItemWidget::initUI()
     m_statusLabel->setAlignment(Qt::AlignCenter);
 #if 0//标识显示区域
     titleWidget->setStyleSheet("background-color:red");
-    m_contentLabel->setStyleSheet("background-color:green");
+//    m_contentLabel->setStyleSheet("background-color:green");
     m_statusLabel->setStyleSheet("background-color:red");
 #endif
     setHoverAlpha(160);
@@ -346,6 +332,24 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     }
 
     return text;
+}
+
+QPixmap ItemWidget::pixmapScaled(const QPixmap &pixmap)
+{
+    qDebug() << pixmap.size();
+    qreal scale = 1.0;
+    if (pixmap.size() == QSize(0, 0))
+        return pixmap;
+
+    if (pixmap.width() > pixmap.height()) {
+        scale = pixmap.width() * 1.0 / PixmapWidth;
+    } else {
+        scale = pixmap.height() * 1.0 / PixmapHeight;
+    }
+
+    qDebug() << "scale:" << scale;
+
+    return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
 void ItemWidget::paintEvent(QPaintEvent *event)

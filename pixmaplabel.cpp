@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QDebug>
+#include <QBitmap>
 
 PixmapLabel::PixmapLabel(const QList<QPixmap> &list, QWidget *parent)
     : DLabel(parent)
@@ -41,8 +42,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
     painter.setPen(Qt::transparent);
 
-    painter.drawRoundedRect(rect(), 8, 8);
-
+    //drawPixmaps
     qreal scale = 1.0;
 
     if (m_pixmapList.size() == 1) {
