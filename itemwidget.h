@@ -53,8 +53,10 @@ private Q_SLOTS:
 private:
     void initUI();
     void initStyle(QPointer<ItemData> data);
+
     QString CreateTimeString(const QDateTime &time);
     QPixmap pixmapScaled(const QPixmap &pixmap);
+    QPixmap GetRoundPixmap(const QPixmap &pix);
 
 private:
     QPointer<ItemData> m_data;
@@ -72,9 +74,7 @@ private:
     QVBoxLayout *m_layout = nullptr;
 
     //--- data
-    QDateTime m_time;
-    QString m_text;
-    QList<QUrl> m_urls;
+    QDateTime m_createTime;
 
     //--- set style
     int m_radius = 0;

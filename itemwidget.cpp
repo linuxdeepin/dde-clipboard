@@ -34,27 +34,6 @@ static QPixmap GetFileIcon(QString path)
     return pixmap;
 }
 
-QPixmap GetRoundPixmap(const QPixmap &pix, int radius)
-{
-    if (pix.isNull()) {
-        return QPixmap();
-    }
-
-    QSize size(pix.size());
-
-    QBitmap mask(size);
-
-    QPainter painter(&mask);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::HighQualityAntialiasing);
-    painter.fillRect(mask.rect(), Qt::white);
-    painter.setBrush(Qt::black);
-    painter.drawRoundedRect(mask.rect(), radius, radius);
-
-    QPixmap image = pix;
-    image.setMask(mask);
-    return image;
-}
-
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
     , m_data(data)
@@ -78,8 +57,6 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
 
 void ItemWidget::setText(const QString &text, const QString &length)
 {
-    m_text = text;
-
     m_contentLabel->setText(text);
 
     m_statusLabel->setText(length);
@@ -118,7 +95,7 @@ void ItemWidget::setClipType(const QString &text)
 
 void ItemWidget::setCreateTime(const QDateTime &time)
 {
-    m_time = time;
+    m_createTime = time;
     onRefreshTime();
 }
 
@@ -178,12 +155,12 @@ void ItemWidget::onHoverStateChanged(bool hover)
 
 void ItemWidget::onRefreshTime()
 {
-    m_timeLabel->setText(CreateTimeString(m_time));
+    m_timeLabel->setText(CreateTimeString(m_createTime));
 
     m_refreshTimer->stop();
 
     int interval;
-    int minuteElapsed = m_time.secsTo(QDateTime::currentDateTime()) / 60;
+    int minuteElapsed = m_createTime.secsTo(QDateTime::currentDateTime()) / 60;
     if (minuteElapsed < 60) {
         interval = 60 * 1000;
     } else {
@@ -265,11 +242,10 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(GetRoundPixmap(data->pixmap(), MIN(data->pixmap().width(), data->pixmap().height()) / 8));
+        setPixmap(GetRoundPixmap(data->pixmap()));
     }
     break;
     case ItemData::File: {
-        m_urls = data->urls();
         if (data->urls().size() == 0)
             return;
 
@@ -281,7 +257,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             }
             //单个文件是图片时显示缩略图
             if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
-                setPixmap(GetRoundPixmap(QPixmap(first), MIN(QPixmap(first).width(), QPixmap(first).height()) / 8));
+                setPixmap(GetRoundPixmap(QPixmap(first)));
             } else {
                 setFilePixmap(GetFileIcon(first));
             }
@@ -336,7 +312,6 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
 
 QPixmap ItemWidget::pixmapScaled(const QPixmap &pixmap)
 {
-    qDebug() << pixmap.size();
     qreal scale = 1.0;
     if (pixmap.size() == QSize(0, 0))
         return pixmap;
@@ -350,6 +325,47 @@ QPixmap ItemWidget::pixmapScaled(const QPixmap &pixmap)
     qDebug() << "scale:" << scale;
 
     return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+}
+
+QPixmap ItemWidget::GetRoundPixmap(const QPixmap &pix)
+{
+    if (pix.isNull()) {
+        return QPixmap();
+    }
+
+    int radius;
+    int penWidth;
+    if (pix.width() > pix.height()) {
+        radius = int(8 * 1.0 / PixmapWidth * pix.width());
+        penWidth = int(10 * 1.0 / PixmapWidth * pix.width());
+    } else {
+        radius = int(8 * 1.0 / PixmapHeight * pix.height());
+        penWidth = int(10 * 1.0 / PixmapHeight * pix.height());
+    }
+
+    QPixmap pixmap = pix;
+    //绘制边框
+    QPainter pixPainter(&pixmap);
+    pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    QColor baseColor = palette().color(QPalette::Text);
+    baseColor.setAlpha(200);
+    pixPainter.setPen(QPen(baseColor, penWidth));
+    pixPainter.setBrush(Qt::transparent);
+    pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
+
+    //设置圆角
+    QSize size(pixmap.size());
+    QBitmap mask(size);
+    QPainter painter(&mask);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.fillRect(mask.rect(), Qt::color0);
+    painter.setBrush(Qt::color1);
+    painter.drawRoundedRect(mask.rect(), radius, radius);
+
+    //遮罩
+    QPixmap image = pixmap;
+    image.setMask(mask);
+    return image;
 }
 
 void ItemWidget::paintEvent(QPaintEvent *event)
