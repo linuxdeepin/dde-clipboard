@@ -74,6 +74,7 @@ private:
     QVBoxLayout *m_layout = nullptr;
 
     //--- data
+    QPixmap m_pixmap;       //原始图片
     QDateTime m_createTime;
 
     //--- set style

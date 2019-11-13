@@ -20,6 +20,7 @@
 #include <QFileIconProvider>
 
 #include <DFontSizeManager>
+#include <DGuiApplicationHelper>
 
 static QPixmap GetFileIcon(QString path)
 {
@@ -53,6 +54,9 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     connect(m_closeButton, &DIconButton::clicked, [ = ] {
         m_data->remove();
     });
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
+        setPixmap(m_pixmap);
+    });
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
@@ -64,8 +68,13 @@ void ItemWidget::setText(const QString &text, const QString &length)
 
 void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
-    m_contentLabel->setPixmap(pixmapScaled(pixmap));
-    m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+    qDebug() << pixmap.size();
+    if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image
+                               || m_data->type() == ItemData::File)) {
+        QPixmap pix = GetRoundPixmap(pixmap);
+        m_contentLabel->setPixmap(pixmapScaled(pix));
+        m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+    }
 }
 
 void ItemWidget::setFilePixmap(const QPixmap &pixmap)
@@ -242,7 +251,8 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(GetRoundPixmap(data->pixmap()));
+        m_pixmap = data->pixmap();
+        setPixmap(data->pixmap());
     }
     break;
     case ItemData::File: {
@@ -257,7 +267,8 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             }
             //单个文件是图片时显示缩略图
             if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
-                setPixmap(GetRoundPixmap(QPixmap(first)));
+                m_pixmap = QPixmap(first);
+                setPixmap(QPixmap(first));
             } else {
                 setFilePixmap(GetFileIcon(first));
             }
@@ -334,22 +345,22 @@ QPixmap ItemWidget::GetRoundPixmap(const QPixmap &pix)
     }
 
     int radius;
-    int penWidth;
+    int borderWidth;
     if (pix.width() > pix.height()) {
         radius = int(8 * 1.0 / PixmapWidth * pix.width());
-        penWidth = int(10 * 1.0 / PixmapWidth * pix.width());
+        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
     } else {
         radius = int(8 * 1.0 / PixmapHeight * pix.height());
-        penWidth = int(10 * 1.0 / PixmapHeight * pix.height());
+        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
     }
 
     QPixmap pixmap = pix;
     //绘制边框
     QPainter pixPainter(&pixmap);
     pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    QColor baseColor = palette().color(QPalette::Text);
-    baseColor.setAlpha(200);
-    pixPainter.setPen(QPen(baseColor, penWidth));
+    QColor baseColor = palette().color(QPalette::Base);
+    baseColor.setAlpha(60);
+    pixPainter.setPen(QPen(baseColor, borderWidth));
     pixPainter.setBrush(Qt::transparent);
     pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
 
