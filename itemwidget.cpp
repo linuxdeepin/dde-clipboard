@@ -265,7 +265,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             m_statusLabel->setText(info.fileName());
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
-            m_statusLabel->setText(info.fileName() + tr(" files(%2...)").arg(data->urls().size()));
+            m_statusLabel->setText(tr("%1 files(%2...)").arg(info.fileName()).arg(data->urls().size()));
 
             int iconNum = MIN(3, data->urls().size());
             QList<QPixmap> pixmapList;
@@ -294,11 +294,11 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     } else if (time.secsTo(t) >= 60 && time.secsTo(t) < 2 * 60) { //一分钟
         text = tr("1 minute ago");
     } else if (time.secsTo(t) >= 2 * 60 && time.secsTo(t) < 60 * 60) { //一小时内
-        text = QString::number(time.secsTo(t) / 60) + tr("minutes ago");
+        text = tr("%1 minutes ago").arg(time.secsTo(t) / 60);
     } else if (time.secsTo(t) >= 60 * 60 && time.secsTo(t) < 2 * 60 * 60) {//两小时内
         text = tr("1 hour ago");
     } else if (time.secsTo(t) >= 2 * 60 * 60 && time.daysTo(t) < 1) { //今天凌晨0点以后
-        text = QString::number(time.secsTo(t) / 60 / 60) + tr("hours ago");
+        text = tr("%1 hours ago").arg(time.secsTo(t) / 60 / 60);
     } else if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //今天凌晨0点以前的
         text = tr("Yesterday") + time.toString(" hh:mm");
     } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天凌晨0点以前的
