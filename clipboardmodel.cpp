@@ -98,7 +98,6 @@ void ClipboardModel::extract(ItemData *data)
 void ClipboardModel::clipDataChanged()
 {
     beginInsertRows(QModelIndex(), 0, 0);
-
     const QMimeData *mimeData = m_board->mimeData();
     ItemData *item = new ItemData(mimeData);
 

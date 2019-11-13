@@ -13,7 +13,7 @@ const static int ItemWidth = WindowWidth - 2 * WindowMargin;
 const static int ItemHeight = 200;
 const static int ItemMargin = 10;
 
-const static int PixmapWidth = 128;     //图像最大显示宽度
+const static int PixmapWidth = 180;     //图像最大显示宽度
 const static int PixmapHeight = 128;    //图像最大显示高度
 const static int FileIconWidth = PixmapWidth / 2;
 const static int FileIconHeight = PixmapHeight / 2;
