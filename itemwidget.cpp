@@ -196,6 +196,10 @@ void ItemWidget::initUI()
     m_closeButton->setFixedSize(TitleHeight, TitleHeight);
     m_closeButton->setVisible(false);
 
+    QPalette pe = m_closeButton->palette();
+    pe.setColor(QPalette::Button, pe.color(QPalette::Base));
+    m_closeButton->setPalette(pe);
+
     m_refreshTimer->setInterval(60 * 1000);
 
     //布局
