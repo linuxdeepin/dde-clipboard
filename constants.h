@@ -20,5 +20,6 @@ const static int FileIconHeight = PixmapHeight / 2;
 const static int PixmapxStep = 15;
 const static int PixmapyStep = 5;
 const static int ContentMargin = 21;
+const static int TextContentTopOffset = 20;
 
 #endif // CONSTANTS_H

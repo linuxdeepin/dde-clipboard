@@ -61,6 +61,9 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
 
 void ItemWidget::setText(const QString &text, const QString &length)
 {
+    QFont font = m_contentLabel->font();
+    font.setItalic(true);
+    m_contentLabel->setFont(font);
     m_contentLabel->setText(text);
 
     m_statusLabel->setText(length);
@@ -68,7 +71,6 @@ void ItemWidget::setText(const QString &text, const QString &length)
 
 void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
-    qDebug() << pixmap.size();
     if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image
                                || m_data->type() == ItemData::File)) {
         QPixmap pix = GetRoundPixmap(pixmap);
@@ -89,6 +91,7 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
         scale = pixmap.height() * 1.0 / FileIconHeight;
     }
 
+    m_contentLabel->setAlignment(Qt::AlignCenter);
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
 }
 
@@ -216,12 +219,6 @@ void ItemWidget::initUI()
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
     m_statusLabel->setFixedHeight(StatusBarHeight);
-
-    m_contentLabel->setWordWrap(true);
-    m_contentLabel->setAlignment(Qt::AlignCenter);
-    font = m_contentLabel->font();
-    font.setUnderline(true);
-    m_contentLabel->setFont(font);
     m_statusLabel->setAlignment(Qt::AlignCenter);
 #if 0//标识显示区域
     titleWidget->setStyleSheet("background-color:red");
@@ -242,10 +239,6 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
 
     switch (data->type()) {
     case ItemData::Text: {
-        QFont font = m_contentLabel->font();
-        font.setItalic(true);
-        m_contentLabel->setFont(font);
-        m_contentLabel->setAlignment(Qt::AlignTop);
         setText(data->text(), data->subTitle());
     }
     break;
@@ -276,7 +269,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             m_statusLabel->setText(info.fileName());
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
-            m_statusLabel->setText(tr("%1 files(%2...)").arg(info.fileName()).arg(data->urls().size()));
+            m_statusLabel->setText(tr("%1(%2 files...)").arg(info.fileName()).arg(data->urls().size()));
 
             int iconNum = MIN(3, data->urls().size());
             QList<QPixmap> pixmapList;
@@ -398,7 +391,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
 
     //绘制标题区域
     QColor brushColor(c);
-    brushColor.setAlpha(60);
+    brushColor.setAlpha(80);
     painter.setBrush(brushColor);
     painter.drawRect(QRect(0, 0, width(), TitleHeight));
 

@@ -38,7 +38,6 @@ public:
 
     int radius() {return m_radius;}
     void setRadius(int radius);
-    //--- end
 
 Q_SIGNALS:
     void close();
