@@ -91,7 +91,6 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
         scale = pixmap.height() * 1.0 / FileIconHeight;
     }
 
-    m_contentLabel->setAlignment(Qt::AlignCenter);
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
 }
 
@@ -218,13 +217,10 @@ void ItemWidget::initUI()
     m_layout->addLayout(layout, 0);
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
+    m_contentLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setFixedHeight(StatusBarHeight);
     m_statusLabel->setAlignment(Qt::AlignCenter);
-#if 0//标识显示区域
-    titleWidget->setStyleSheet("background-color:red");
-//    m_contentLabel->setStyleSheet("background-color:green");
-    m_statusLabel->setStyleSheet("background-color:red");
-#endif
+
     setHoverAlpha(160);
     setUnHoverAlpha(80);
     setRadius(8);

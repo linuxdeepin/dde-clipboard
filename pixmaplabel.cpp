@@ -237,14 +237,10 @@ QString PixmapLabel::elideText(const QString &text, const QSizeF &size,
     return lines.join('\n');
 }
 
-
 void PixmapLabel::paintEvent(QPaintEvent *event)
 {
-    qDebug() << __PRETTY_FUNCTION__;
-
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-
     painter.setPen(Qt::transparent);
 
     //drawPixmaps
