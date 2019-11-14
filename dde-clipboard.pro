@@ -41,5 +41,5 @@ target.path = /usr/bin/
 INSTALLS += target
 
 CONFIG(release, debug|release) {
-    !system(translate_generation.sh): error("Failed to generate translation")
+    !system(./translate_generation.sh): error("Failed to generate translation")
 }
