@@ -258,10 +258,16 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
                 setFilePixmap(GetFileIcon(first));
             }
 
-            m_statusLabel->setText(info.fileName());
+            QFontMetrics metrix = m_statusLabel->fontMetrics();
+            QString text = metrix.elidedText(info.fileName(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+            m_statusLabel->setText(text);
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
-            m_statusLabel->setText(tr("%1(%2 files...)").arg(info.fileName()).arg(data->urls().size()));
+
+            QFontMetrics metrix = m_statusLabel->fontMetrics();
+            QString text = metrix.elidedText(tr("%1(%2 files...)").arg(info.fileName()).arg(data->urls().size()),
+                                             Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+            m_statusLabel->setText(text);
 
             int iconNum = MIN(3, data->urls().size());
             QList<QPixmap> pixmapList;
