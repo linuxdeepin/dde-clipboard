@@ -38,7 +38,6 @@ public:
 
     int radius() {return m_radius;}
     void setRadius(int radius);
-    //--- end
 
 Q_SIGNALS:
     void close();
@@ -74,6 +73,7 @@ private:
     QVBoxLayout *m_layout = nullptr;
 
     //--- data
+    QPixmap m_pixmap;       //原始图片
     QDateTime m_createTime;
 
     //--- set style

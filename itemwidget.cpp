@@ -20,6 +20,7 @@
 #include <QFileIconProvider>
 
 #include <DFontSizeManager>
+#include <DGuiApplicationHelper>
 
 static QPixmap GetFileIcon(QString path)
 {
@@ -53,10 +54,16 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     connect(m_closeButton, &DIconButton::clicked, [ = ] {
         m_data->remove();
     });
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
+        setPixmap(m_pixmap);
+    });
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
 {
+    QFont font = m_contentLabel->font();
+    font.setItalic(true);
+    m_contentLabel->setFont(font);
     m_contentLabel->setText(text);
 
     m_statusLabel->setText(length);
@@ -64,8 +71,12 @@ void ItemWidget::setText(const QString &text, const QString &length)
 
 void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
-    m_contentLabel->setPixmap(pixmapScaled(pixmap));
-    m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+    if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image
+                               || m_data->type() == ItemData::File)) {
+        QPixmap pix = GetRoundPixmap(pixmap);
+        m_contentLabel->setPixmap(pixmapScaled(pix));
+        m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+    }
 }
 
 void ItemWidget::setFilePixmap(const QPixmap &pixmap)
@@ -80,6 +91,7 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
         scale = pixmap.height() * 1.0 / FileIconHeight;
     }
 
+    m_contentLabel->setAlignment(Qt::AlignCenter);
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
 }
 
@@ -207,12 +219,6 @@ void ItemWidget::initUI()
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
     m_statusLabel->setFixedHeight(StatusBarHeight);
-
-    m_contentLabel->setWordWrap(true);
-    m_contentLabel->setAlignment(Qt::AlignCenter);
-    font = m_contentLabel->font();
-    font.setUnderline(true);
-    m_contentLabel->setFont(font);
     m_statusLabel->setAlignment(Qt::AlignCenter);
 #if 0//标识显示区域
     titleWidget->setStyleSheet("background-color:red");
@@ -233,16 +239,13 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
 
     switch (data->type()) {
     case ItemData::Text: {
-        QFont font = m_contentLabel->font();
-        font.setItalic(true);
-        m_contentLabel->setFont(font);
-        m_contentLabel->setAlignment(Qt::AlignTop);
         setText(data->text(), data->subTitle());
     }
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        setPixmap(GetRoundPixmap(data->pixmap()));
+        m_pixmap = data->pixmap();
+        setPixmap(data->pixmap());
     }
     break;
     case ItemData::File: {
@@ -257,7 +260,8 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             }
             //单个文件是图片时显示缩略图
             if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
-                setPixmap(GetRoundPixmap(QPixmap(first)));
+                m_pixmap = QPixmap(first);
+                setPixmap(QPixmap(first));
             } else {
                 setFilePixmap(GetFileIcon(first));
             }
@@ -265,7 +269,7 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
             m_statusLabel->setText(info.fileName());
         } else if (data->urls().size() > 1) {
             QFileInfo info(first);
-            m_statusLabel->setText(tr("%1 files(%2...)").arg(info.fileName()).arg(data->urls().size()));
+            m_statusLabel->setText(tr("%1(%2 files...)").arg(info.fileName()).arg(data->urls().size()));
 
             int iconNum = MIN(3, data->urls().size());
             QList<QPixmap> pixmapList;
@@ -334,22 +338,22 @@ QPixmap ItemWidget::GetRoundPixmap(const QPixmap &pix)
     }
 
     int radius;
-    int penWidth;
+    int borderWidth;
     if (pix.width() > pix.height()) {
         radius = int(8 * 1.0 / PixmapWidth * pix.width());
-        penWidth = int(10 * 1.0 / PixmapWidth * pix.width());
+        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
     } else {
         radius = int(8 * 1.0 / PixmapHeight * pix.height());
-        penWidth = int(10 * 1.0 / PixmapHeight * pix.height());
+        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
     }
 
     QPixmap pixmap = pix;
     //绘制边框
     QPainter pixPainter(&pixmap);
     pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    QColor baseColor = palette().color(QPalette::Text);
-    baseColor.setAlpha(200);
-    pixPainter.setPen(QPen(baseColor, penWidth));
+    QColor baseColor = palette().color(QPalette::Base);
+    baseColor.setAlpha(60);
+    pixPainter.setPen(QPen(baseColor, borderWidth));
     pixPainter.setBrush(Qt::transparent);
     pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
 
@@ -376,14 +380,25 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     QPalette pe = this->palette();
     QColor c = pe.color(QPalette::Base);
 
-    QColor brushColor(c);
-    brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);
-    painter.setBrush(brushColor);
-
     QPen borderPen;
     borderPen.setColor(Qt::transparent);
     painter.setPen(borderPen);
-    painter.drawRoundRect(QRectF(0, 0, width(), height()), m_radius, m_radius);
+
+    //裁剪绘制区域
+    QPainterPath path;
+    path.addRoundedRect(rect(), m_radius, m_radius);
+    painter.setClipPath(path);
+
+    //绘制标题区域
+    QColor brushColor(c);
+    brushColor.setAlpha(80);
+    painter.setBrush(brushColor);
+    painter.drawRect(QRect(0, 0, width(), TitleHeight));
+
+    //绘制背景
+    brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);
+    painter.setBrush(brushColor);
+    painter.drawRoundRect(rect(), m_radius, m_radius);
 
     return QWidget::paintEvent(event);
 }
