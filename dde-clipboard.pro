@@ -40,6 +40,10 @@ TRANSLATIONS+= translations/$${TARGET}.ts\
 target.path = /usr/bin/
 INSTALLS += target
 
+translations.path = /usr/share/$${TARGET}/translations
+translations.files = translations/*.qm
+INSTALLS += translations
+
 CONFIG(release, debug|release) {
     !system(./translate_generation.sh): error("Failed to generate translation")
 }
