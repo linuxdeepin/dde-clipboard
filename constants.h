@@ -1,6 +1,12 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <QSize>
+#include <QPixmap>
+#include <QPainter>
+#include <QPalette>
+#include <QBitmap>
+
 #define MAX(a,b) ((a) > (b) ? (a):(b))
 #define MIN(a,b) ((a) < (b) ? (a):(b))
 
@@ -14,12 +20,75 @@ const static int ItemHeight = 200;
 const static int ItemMargin = 10;
 
 const static int PixmapWidth = 180;     //图像最大显示宽度
-const static int PixmapHeight = 128;    //图像最大显示高度
-const static int FileIconWidth = PixmapWidth / 2;
-const static int FileIconHeight = PixmapHeight / 2;
+const static int PixmapHeight = 100;    //图像最大显示高度
+const static int FileIconWidth = PixmapWidth;
+const static int FileIconHeight = PixmapHeight;
 const static int PixmapxStep = 15;
 const static int PixmapyStep = 5;
 const static int ContentMargin = 21;
 const static int TextContentTopOffset = 20;
 
+namespace  Globals {
+/*获取图片缩放比例*/
+static qreal GetScale(QSize size, int targetWidth, int targetHeight)
+{
+    qreal scale = 1.0;
+
+    if (size.width() >= size.height() * (targetWidth * 1.0 / targetHeight)) {
+        scale = size.width() * 1.0 / targetWidth;
+    } else {
+        scale = size.height() * 1.0 / targetHeight;
+    }
+
+    return scale;
+}
+
+static QPixmap pixmapScaled(const QPixmap &pixmap)
+{
+    qreal scale = Globals::GetScale(pixmap.size(), PixmapWidth, PixmapHeight);
+
+    return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+}
+
+static QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
+{
+    if (pix.isNull()) {
+        return QPixmap();
+    }
+
+    int radius;
+    int borderWidth;
+    if (pix.width() > pix.height()) {
+        radius = int(8 * 1.0 / PixmapWidth * pix.width());
+        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
+    } else {
+        radius = int(8 * 1.0 / PixmapHeight * pix.height());
+        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
+    }
+
+    QPixmap pixmap = pix;
+    //绘制边框
+    QPainter pixPainter(&pixmap);
+    pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    borderColor.setAlpha(60);
+    pixPainter.setPen(QPen(borderColor, borderWidth));
+    pixPainter.setBrush(Qt::transparent);
+    pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
+
+    //设置圆角
+    QSize size(pixmap.size());
+    QBitmap mask(size);
+    QPainter painter(&mask);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.fillRect(mask.rect(), Qt::color0);
+    painter.setBrush(Qt::color1);
+    painter.drawRoundedRect(mask.rect(), radius, radius);
+
+    //遮罩
+    QPixmap image = pixmap;
+    image.setMask(mask);
+    return image;
+}
+
+} ;
 #endif // CONSTANTS_H

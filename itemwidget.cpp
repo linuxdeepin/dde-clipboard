@@ -73,23 +73,15 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
     if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image
                                || m_data->type() == ItemData::File)) {
-        QPixmap pix = GetRoundPixmap(pixmap);
-        m_contentLabel->setPixmap(pixmapScaled(pix));
+        QPixmap pix = Globals::GetRoundPixmap(pixmap, palette().color(QPalette::Base));
+        m_contentLabel->setPixmap(Globals::pixmapScaled(pix));
         m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
     }
 }
 
 void ItemWidget::setFilePixmap(const QPixmap &pixmap)
 {
-    qreal scale = 1.0;
-    if (pixmap.size() == QSize(0, 0))
-        return;
-
-    if (pixmap.width() >= pixmap.height()) {
-        scale = pixmap.width() * 1.0 / FileIconWidth;
-    } else {
-        scale = pixmap.height() * 1.0 / FileIconHeight;
-    }
+    qreal scale = Globals::GetScale(pixmap.size(), FileIconWidth, FileIconHeight);
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
 }
@@ -308,64 +300,6 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     }
 
     return text;
-}
-
-QPixmap ItemWidget::pixmapScaled(const QPixmap &pixmap)
-{
-    qreal scale = 1.0;
-    if (pixmap.size() == QSize(0, 0))
-        return pixmap;
-
-    if (pixmap.width() > pixmap.height()) {
-        scale = pixmap.width() * 1.0 / PixmapWidth;
-    } else {
-        scale = pixmap.height() * 1.0 / PixmapHeight;
-    }
-
-    qDebug() << "scale:" << scale;
-
-    return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-}
-
-QPixmap ItemWidget::GetRoundPixmap(const QPixmap &pix)
-{
-    if (pix.isNull()) {
-        return QPixmap();
-    }
-
-    int radius;
-    int borderWidth;
-    if (pix.width() > pix.height()) {
-        radius = int(8 * 1.0 / PixmapWidth * pix.width());
-        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
-    } else {
-        radius = int(8 * 1.0 / PixmapHeight * pix.height());
-        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
-    }
-
-    QPixmap pixmap = pix;
-    //绘制边框
-    QPainter pixPainter(&pixmap);
-    pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    QColor baseColor = palette().color(QPalette::Base);
-    baseColor.setAlpha(60);
-    pixPainter.setPen(QPen(baseColor, borderWidth));
-    pixPainter.setBrush(Qt::transparent);
-    pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
-
-    //设置圆角
-    QSize size(pixmap.size());
-    QBitmap mask(size);
-    QPainter painter(&mask);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    painter.fillRect(mask.rect(), Qt::color0);
-    painter.setBrush(Qt::color1);
-    painter.drawRoundedRect(mask.rect(), radius, radius);
-
-    //遮罩
-    QPixmap image = pixmap;
-    image.setMask(mask);
-    return image;
 }
 
 void ItemWidget::paintEvent(QPaintEvent *event)
