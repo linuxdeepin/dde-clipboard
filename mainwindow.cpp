@@ -39,6 +39,13 @@ MainWindow::~MainWindow()
 
 }
 
+void MainWindow::Show()
+{
+    m_showAni->setStartValue(QPoint(-width() + WindowLeave, WindowMargin));
+    m_showAni->setEndValue(QPoint(WindowMargin, WindowMargin));
+    m_showAni->start();
+}
+
 void MainWindow::initUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -56,6 +63,14 @@ void MainWindow::initUI()
     QPushButton *titleButton = new QPushButton(tr("Clear all"));
     connect(titleButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
     titleButton->setFocusPolicy(Qt::NoFocus);
+
+    QPalette pe = titleButton->palette();
+    QColor base = pe.color(QPalette::Base);
+    base.setAlpha(120);
+    pe.setColor(QPalette::Base, base);
+    pe.setColor(QPalette::Dark, base);
+    pe.setColor(QPalette::Light, base);
+    titleButton->setPalette(pe);
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
         QPalette pa = titleLabel->palette();

@@ -54,8 +54,6 @@ private:
     void initStyle(QPointer<ItemData> data);
 
     QString CreateTimeString(const QDateTime &time);
-    QPixmap pixmapScaled(const QPixmap &pixmap);
-    QPixmap GetRoundPixmap(const QPixmap &pix);
 
 private:
     QPointer<ItemData> m_data;

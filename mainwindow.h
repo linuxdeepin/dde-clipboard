@@ -6,6 +6,7 @@
 #include "clipboardmodel.h"
 #include "dbusdisplay.h"
 #include "itemdelegate.h"
+#include "constants.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
@@ -16,10 +17,12 @@ DGUI_USE_NAMESPACE
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
-
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+public Q_SLOTS:
+    void Show();
 
 public slots:
     void geometryChanged();
