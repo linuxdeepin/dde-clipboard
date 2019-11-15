@@ -72,7 +72,7 @@
     <message>
         <location filename="../src/mainwindow.cpp" line="53"/>
         <source>Clipboard</source>
-        <translation>粘贴板</translation>
+        <translation>剪贴板</translation>
     </message>
     <message>
         <location filename="../src/mainwindow.cpp" line="56"/>

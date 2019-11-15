@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=dde-clipboard
+Exec=/usr/bin/dde-clipboard
+NoDisplay=true
+Terminal=flase
+Type=Application

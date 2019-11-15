@@ -45,6 +45,10 @@ translations.path = /usr/share/$${TARGET}/translations
 translations.files = translations/*.qm
 INSTALLS += translations
 
+autostart.path = /etc/xdg/autostart
+autostart.files = dde-clipboard.desktop
+INSTALLS += autostart
+
 CONFIG(release, debug|release) {
     !system(./translate_generation.sh): error("Failed to generate translation")
 }
