@@ -64,14 +64,6 @@ void MainWindow::initUI()
     connect(titleButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
     titleButton->setFocusPolicy(Qt::NoFocus);
 
-    QPalette pe = titleButton->palette();
-    QColor base = pe.color(QPalette::Base);
-    base.setAlpha(120);
-    pe.setColor(QPalette::Base, base);
-    pe.setColor(QPalette::Dark, base);
-    pe.setColor(QPalette::Light, base);
-    titleButton->setPalette(pe);
-
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
         QPalette pa = titleLabel->palette();
         pa.setBrush(QPalette::WindowText, pa.brightText());
@@ -80,6 +72,14 @@ void MainWindow::initUI()
         pa = titleButton->palette();
         pa.setBrush(QPalette::ButtonText, pa.brightText());
         titleButton->setPalette(pa);
+
+        QPalette pe = this->palette();
+        QColor base = pe.color(QPalette::Base);
+        base.setAlpha(120);
+        pe.setColor(QPalette::Base, base);
+        pe.setColor(QPalette::Dark, base);
+        pe.setColor(QPalette::Light, base);
+        titleButton->setPalette(pe);
     });
 
     titleLayout->addWidget(titleLabel, 0, Qt::AlignLeft);
