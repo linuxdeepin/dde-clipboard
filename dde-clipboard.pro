@@ -12,6 +12,8 @@ TEMPLATE = app
 CONFIG += c++11 link_pkgconfig
 PKGCONFIG += dtkwidget dtkgui
 
+DBUS_ADAPTORS += ./com.deepin.dde.Clipboard.xml
+
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
@@ -21,7 +23,6 @@ SOURCES += \
         itemdelegate.cpp \
         itemwidget.cpp \
         pixmaplabel.cpp
-
 HEADERS += \
         mainwindow.h \
         clipboardmodel.h \

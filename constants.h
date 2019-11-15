@@ -28,6 +28,9 @@ const static int PixmapyStep = 5;
 const static int ContentMargin = 21;
 const static int TextContentTopOffset = 20;
 
+static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
+static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";
+
 namespace  Globals {
 /*获取图片缩放比例*/
 static qreal GetScale(QSize size, int targetWidth, int targetHeight)

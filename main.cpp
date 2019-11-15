@@ -1,4 +1,7 @@
 #include "mainwindow.h"
+#include "constants.h"
+#include "clipboard_adaptor.h"
+
 #include <DApplication>
 #include <DGuiApplicationHelper>
 #include <DLog>
@@ -30,7 +33,17 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    QDBusConnection connection = QDBusConnection::sessionBus();
+
     MainWindow w;
+    ClipboardAdaptor adapt(&w);
+    if (!connection.registerService(DBusClipBoardService)) {
+        qDebug() << "error:" << connection.lastError().message();
+        exit(-1);
+    }
+
+    connection.registerObject(DBusClipBoardPath, &w);
+
     w.show();
 
     return app.exec();

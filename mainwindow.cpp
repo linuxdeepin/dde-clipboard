@@ -39,6 +39,13 @@ MainWindow::~MainWindow()
 
 }
 
+void MainWindow::Show()
+{
+    m_showAni->setStartValue(QPoint(-width() + WindowLeave, WindowMargin));
+    m_showAni->setEndValue(QPoint(WindowMargin, WindowMargin));
+    m_showAni->start();
+}
+
 void MainWindow::initUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout();
