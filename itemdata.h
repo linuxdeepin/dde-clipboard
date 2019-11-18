@@ -28,8 +28,9 @@ public:
     const QDateTime &time();                    // 复制时间
     const QString &html();                      // 富文本信息
     const QString &text();                      // 内容预览
-    const QPixmap &pixmap();                    // 缩略图
+    QPixmap pixmap();                    // 缩略图
     const DataType &type() {return m_type;}
+    const QVariant &imageData();
     const QMap<QString, QByteArray> &formatMap();
 
     void remove();
@@ -43,7 +44,7 @@ private:
     QMap<QString, QByteArray> m_formatMap;
     DataType m_type;
     QList<QUrl> m_urls;
-    QPixmap m_image;
+    QVariant m_variantImage;
     QString m_html;
     QString m_text;
     QDateTime m_createTime;

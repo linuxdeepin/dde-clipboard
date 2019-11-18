@@ -128,11 +128,15 @@ void MainWindow::initConnect()
     });
 
     connect(m_model, &ClipboardModel::dataAdded, this, [ = ] {
-        m_clearButton->show();
+        m_clearButton->setVisible(m_model->data().size() != 0);
     });
 
     connect(m_model, &ClipboardModel::dataAllCleared, this, [ = ] {
-        m_clearButton->hide();
+        m_clearButton->setVisible(m_model->data().size() != 0);
+    });
+
+    connect(m_model, &ClipboardModel::dataRemoved, this, [ & ] {
+        m_clearButton->setVisible(m_model->data().size() != 0);
     });
 }
 
