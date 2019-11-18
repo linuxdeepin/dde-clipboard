@@ -40,4 +40,4 @@ Depends: ${shlibs:Depends},
  dde-api (>=2.92.1)
 Recommends: netselect, deepin-ab-recovery
 Suggests: redshift
-Description: 
+Description: dde-clipboard
