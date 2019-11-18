@@ -18,9 +18,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_showAni(new QVariantAnimation(this))
     , m_hideAni(new QVariantAnimation(this))
 {
-    //FIXME：X11BypassWindowManagerHint 会造成无法接受键盘事件，tab order will not take effect
-    setWindowFlags(Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint);
-//    setWindowFlag(Qt::FramelessWindowHint);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 
     m_showAni->setEasingCurve(QEasingCurve::InOutCubic);
     m_hideAni->setEasingCurve(QEasingCurve::InOutCubic);
@@ -162,13 +160,21 @@ void MainWindow::leaveEvent(QEvent *event)
     DBlurEffectWidget::leaveEvent(event);
 }
 
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event);
+    return;
+}
+
 void MainWindow::geometryChanged()
 {
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
     rect.setWidth(WindowWidth + WindowMargin * 2);
     rect.moveLeft(-rect.width() + WindowMargin + WindowLeave);
-    setGeometry(rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin)));
+    rect = rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin));
+    setFixedSize(rect.size());
+    move(WindowMargin, WindowMargin);
 }
 
 void MainWindow::showEvent(QShowEvent *event)
