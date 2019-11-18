@@ -16,8 +16,11 @@ public:
     // 清空所有剪贴板
     void clear();
 
+    const QList<ItemData *> data();
+
 Q_SIGNALS:
     void dataAdded();
+    void dataRemoved();
     void dataAllCleared();
 
 protected:
@@ -30,6 +33,8 @@ protected:
 
     // 提取到第一个
     void extract(ItemData *data);
+
+    bool isDataValid(const QMimeData *data);
 
 protected slots:
     void clipDataChanged();

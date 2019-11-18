@@ -47,16 +47,8 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     , m_layout(new QVBoxLayout(this))
 {
     initUI();
-    initStyle(m_data);
-
-    connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
-    connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
-    connect(m_closeButton, &DIconButton::clicked, [ = ] {
-        m_data->remove();
-    });
-    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
-        setPixmap(m_pixmap);
-    });
+    initData(m_data);
+    initConnect();
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
@@ -224,7 +216,7 @@ void ItemWidget::initUI()
     setFocusPolicy(Qt::TabFocus);
 }
 
-void ItemWidget::initStyle(QPointer<ItemData> data)
+void ItemWidget::initData(QPointer<ItemData> data)
 {
     setClipType(data->title());
     setCreateTime(data->time());
@@ -283,6 +275,19 @@ void ItemWidget::initStyle(QPointer<ItemData> data)
     }
     break;
     }
+}
+
+void ItemWidget::initConnect()
+{
+    connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
+    connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
+    connect(m_closeButton, &DIconButton::clicked, [ = ] {
+        m_data->remove();
+    });
+
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
+        setPixmap(m_pixmap);
+    });
 }
 
 QString ItemWidget::CreateTimeString(const QDateTime &time)

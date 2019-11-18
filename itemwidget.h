@@ -51,7 +51,8 @@ private Q_SLOTS:
 
 private:
     void initUI();
-    void initStyle(QPointer<ItemData> data);
+    void initData(QPointer<ItemData> data);
+    void initConnect();
 
     QString CreateTimeString(const QDateTime &time);
 

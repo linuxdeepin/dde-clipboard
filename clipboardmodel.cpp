@@ -25,6 +25,11 @@ void ClipboardModel::clear()
     Q_EMIT dataAllCleared();
 }
 
+const QList<ItemData *> ClipboardModel::data()
+{
+    return m_data;
+}
+
 int ClipboardModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
@@ -60,6 +65,8 @@ void ClipboardModel::removeData(ItemData *data)
     endRemoveRows();
 
     item->deleteLater();
+
+    Q_EMIT dataRemoved();
 }
 
 void ClipboardModel::extract(ItemData *data)
@@ -73,18 +80,6 @@ void ClipboardModel::extract(ItemData *data)
     endRemoveRows();
 
     QMimeData *mimeData = new QMimeData;
-    switch (data->type()) {
-    case ItemData::Text:
-        mimeData->setText(data->text());
-        mimeData->setHtml(data->html().isEmpty() ? data->text() : data->html());
-        break;
-    case ItemData::Image:
-        mimeData->setImageData(data->pixmap());
-        break;
-    case ItemData::File:
-        mimeData->setUrls(data->urls());
-        break;
-    }
 
     QMapIterator<QString, QByteArray> it(data->formatMap());
     while (it.hasNext()) {
@@ -92,20 +87,79 @@ void ClipboardModel::extract(ItemData *data)
         mimeData->setData(it.key(), it.value());
     }
 
+    switch (data->type()) {
+    case ItemData::Text:
+        mimeData->setText(data->text());
+        mimeData->setHtml(data->html().isEmpty() ? data->text() : data->html());
+        break;
+    case ItemData::Image:
+        mimeData->setImageData(data->imageData());
+        break;
+    case ItemData::File:
+        mimeData->setUrls(data->urls());
+        break;
+    }
+
     m_board->setMimeData(mimeData);
 
     data->deleteLater();
 }
 
+bool ClipboardModel::isDataValid(const QMimeData *data)
+{
+    //文本全是空格的情况需要过滤
+    if (!data->hasText()
+            && !data->hasUrls()
+            && !data->hasHtml()
+            && !data->hasColor()
+            && !data->hasImage()
+            && data->formats().size() == 0)
+        return false;
+
+    // -- 1有些程序不规范，复制空内容也写入了剪贴板
+    if (data->hasHtml() && data->html().simplified().isEmpty())
+        return false;
+
+    // -- 2
+    if (data->hasText() && data->text().simplified().isEmpty())
+        return false;
+
+    // -- 3
+    if (data->hasImage()) {
+        QPixmap pix = qvariant_cast<QPixmap>(data->imageData());
+        if (pix.size() == QSize(0, 0)) {
+            return false;
+        }
+    }
+
+    // -- 4
+    if (data->hasUrls() && data->urls().size() == 0)
+        return false;
+
+    return true;
+}
+
 void ClipboardModel::clipDataChanged()
 {
-    beginInsertRows(QModelIndex(), 0, 0);
     const QMimeData *mimeData = m_board->mimeData();
-    ItemData *item = new ItemData(mimeData);
+#if 0
+    qDebug() << "hasUrls:" << mimeData->hasUrls();
+    qDebug() << "hasText:" << mimeData->hasText();
+    qDebug() << "hasHtml:" << mimeData->hasHtml();
+    qDebug() << "hasImage:" << mimeData->hasImage();
+    qDebug() << "hasColor:" << mimeData->hasColor();
+    qDebug() << "imageData type:" << mimeData->imageData().type();
+#endif
+    if (!isDataValid(mimeData)) {
+        qDebug() << "data not valid";
+        return;
+    }
 
+    beginInsertRows(QModelIndex(), 0, 0);
+
+    ItemData *item = new ItemData(mimeData);
     connect(item, &ItemData::distory, this, &ClipboardModel::removeData);
     connect(item, &ItemData::reborn, this, &ClipboardModel::extract);
-
     m_data.push_front(item);
 
     endInsertRows();

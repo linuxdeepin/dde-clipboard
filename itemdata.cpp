@@ -7,7 +7,7 @@
 ItemData::ItemData(const QMimeData *mimeData)
 {
     if (mimeData->hasImage()) {
-        m_image = qvariant_cast<QPixmap>(mimeData->imageData());
+        m_variantImage = mimeData->imageData();
         m_type = Image;
     } else if (mimeData->hasUrls()) {
         m_urls = mimeData->urls();
@@ -80,9 +80,15 @@ const QString &ItemData::text()
     return m_text;
 }
 
-const QPixmap &ItemData::pixmap()
+QPixmap ItemData::pixmap()
 {
-    return m_image;
+    QPixmap pix = qvariant_cast<QPixmap>(m_variantImage);
+    return pix;
+}
+
+const QVariant &ItemData::imageData()
+{
+    return m_variantImage;
 }
 
 const QMap<QString, QByteArray> &ItemData::formatMap()
