@@ -16,6 +16,10 @@ public:
     // 清空所有剪贴板
     void clear();
 
+Q_SIGNALS:
+    void dataAdded();
+    void dataAllCleared();
+
 protected:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;

@@ -21,6 +21,8 @@ void ClipboardModel::clear()
     beginResetModel();
     m_data.clear();
     endResetModel();
+
+    Q_EMIT dataAllCleared();
 }
 
 int ClipboardModel::rowCount(const QModelIndex &parent) const
@@ -107,4 +109,6 @@ void ClipboardModel::clipDataChanged()
     m_data.push_front(item);
 
     endInsertRows();
+
+    Q_EMIT dataAdded();
 }
