@@ -60,18 +60,18 @@ void MainWindow::initUI()
     QLabel *titleLabel = new QLabel(tr("Clipboard"));
     titleLabel->setFont(DFontSizeManager::instance()->t3());
 
-    QPushButton *titleButton = new QPushButton(tr("Clear all"));
-    connect(titleButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
-    titleButton->setFocusPolicy(Qt::NoFocus);
+    m_clearButton = new QPushButton(tr("Clear all"));
+    connect(m_clearButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
+    m_clearButton->setFocusPolicy(Qt::NoFocus);
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
         QPalette pa = titleLabel->palette();
         pa.setBrush(QPalette::WindowText, pa.brightText());
         titleLabel->setPalette(pa);
 
-        pa = titleButton->palette();
+        pa = m_clearButton->palette();
         pa.setBrush(QPalette::ButtonText, pa.brightText());
-        titleButton->setPalette(pa);
+        m_clearButton->setPalette(pa);
 
         QPalette pe = this->palette();
         QColor base = pe.color(QPalette::Base);
@@ -79,11 +79,12 @@ void MainWindow::initUI()
         pe.setColor(QPalette::Base, base);
         pe.setColor(QPalette::Dark, base);
         pe.setColor(QPalette::Light, base);
-        titleButton->setPalette(pe);
+        m_clearButton->setPalette(pe);
     });
 
     titleLayout->addWidget(titleLabel, 0, Qt::AlignLeft);
-    titleLayout->addWidget(titleButton, 1, Qt::AlignRight);
+    titleLayout->addWidget(m_clearButton, 1, Qt::AlignRight);
+    m_clearButton->setVisible(false);
     titleWidget->setFixedSize(WindowWidth, 56);
 
     // list
@@ -124,6 +125,14 @@ void MainWindow::initConnect()
             return;
 
         move(value.toPoint());
+    });
+
+    connect(m_model, &ClipboardModel::dataAdded, this, [ = ] {
+        m_clearButton->show();
+    });
+
+    connect(m_model, &ClipboardModel::dataAllCleared, this, [ = ] {
+        m_clearButton->hide();
     });
 }
 

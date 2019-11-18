@@ -92,6 +92,5 @@ static QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
     image.setMask(mask);
     return image;
 }
-
 } ;
 #endif // CONSTANTS_H

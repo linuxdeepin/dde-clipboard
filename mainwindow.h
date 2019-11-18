@@ -14,6 +14,7 @@
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 
+class QPushButton;
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
@@ -39,6 +40,7 @@ private:
 private:
     DBusDisplay *m_displayInter;
 
+    QPushButton *m_clearButton;
     QListView *m_listview;
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
