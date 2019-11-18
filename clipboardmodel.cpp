@@ -142,14 +142,6 @@ bool ClipboardModel::isDataValid(const QMimeData *data)
 void ClipboardModel::clipDataChanged()
 {
     const QMimeData *mimeData = m_board->mimeData();
-#if 0
-    qDebug() << "hasUrls:" << mimeData->hasUrls();
-    qDebug() << "hasText:" << mimeData->hasText();
-    qDebug() << "hasHtml:" << mimeData->hasHtml();
-    qDebug() << "hasImage:" << mimeData->hasImage();
-    qDebug() << "hasColor:" << mimeData->hasColor();
-    qDebug() << "imageData type:" << mimeData->imageData().type();
-#endif
     if (!isDataValid(mimeData)) {
         qDebug() << "data not valid";
         return;
