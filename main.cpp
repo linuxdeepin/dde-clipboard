@@ -17,9 +17,6 @@ int main(int argc, char *argv[])
     DGuiApplicationHelper::setUseInactiveColorGroup(false);
     DGuiApplicationHelper::setColorCompositingEnabled(true);
 
-    DLogManager::registerConsoleAppender();
-    DLogManager::registerFileAppender();
-
     DApplication app(argc, argv);
 
     app.setOrganizationName("deepin");
@@ -32,6 +29,9 @@ int main(int argc, char *argv[])
         qDebug() << "set single instance failed!";
         return -1;
     }
+
+    DLogManager::registerConsoleAppender();
+    DLogManager::registerFileAppender();
 
     QDBusConnection connection = QDBusConnection::sessionBus();
 
