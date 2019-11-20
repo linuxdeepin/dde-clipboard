@@ -30,8 +30,6 @@ public slots:
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
-    void showEvent(QShowEvent *event) override;
-    void hideEvent(QHideEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *e) override;
 
 private:
@@ -46,7 +44,6 @@ private:
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
 
-    bool m_visible;
     DBusDock *m_dockInter;
 };
 

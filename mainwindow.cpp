@@ -19,11 +19,9 @@ MainWindow::MainWindow(QWidget *parent)
     , m_listview(new QListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
-    , m_visible(false)
     , m_dockInter(new DBusDock)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-
 
     initUI();
     initConnect();
@@ -40,11 +38,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    m_visible = !m_visible;
+    setVisible(windowState() == Qt::WindowMinimized || !isVisible());
 
-    setVisible(m_visible);
-
-    if (m_visible) {
+    if (isVisible()) {
         //显示后，在桌面Super+D快捷键，再点击桌面空白处，此时无法show出，需active
         activateWindow();
     }
@@ -129,22 +125,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     return;
-}
-
-void MainWindow::showEvent(QShowEvent *event)
-{
-    DBlurEffectWidget::showEvent(event);
-
-    m_visible = true;
-
-    setFocus();
-}
-
-void MainWindow::hideEvent(QHideEvent *event)
-{
-    DBlurEffectWidget::hideEvent(event);
-
-    m_visible = false;
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *e)
