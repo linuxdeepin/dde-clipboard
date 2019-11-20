@@ -14,22 +14,17 @@ MainWindow::MainWindow(QWidget *parent)
     , m_listview(new QListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
-    , m_wmHelper(DWindowManagerHelper::instance())
-    , m_showAni(new QVariantAnimation(this))
-    , m_hideAni(new QVariantAnimation(this))
+    , m_visible(false)
 {
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 
-    m_showAni->setEasingCurve(QEasingCurve::InOutCubic);
-    m_hideAni->setEasingCurve(QEasingCurve::InOutCubic);
-
-    m_showAni->setDuration(m_wmHelper->hasComposite() ? 300 : 1);
-    m_hideAni->setDuration(m_wmHelper->hasComposite() ? 300 : 1);
 
     initUI();
     initConnect();
 
     geometryChanged();
+
+    installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -37,11 +32,16 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::Show()
+void MainWindow::Toggle()
 {
-    m_showAni->setStartValue(QPoint(-width() + WindowLeave, WindowMargin));
-    m_showAni->setEndValue(QPoint(WindowMargin, WindowMargin));
-    m_showAni->start();
+    m_visible = !m_visible;
+
+    setVisible(m_visible);
+
+    if (m_visible) {
+        //显示后，在桌面Super+D快捷键，再点击桌面空白处，此时无法show出，需active
+        activateWindow();
+    }
 }
 
 void MainWindow::initUI()
@@ -104,27 +104,6 @@ void MainWindow::initConnect()
 {
     connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
 
-    connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, [this] {
-        m_showAni->setDuration(m_wmHelper->hasComposite() ? 300 : 1);
-        m_hideAni->setDuration(m_wmHelper->hasComposite() ? 300 : 1);
-    });
-
-    connect(m_showAni, &QVariantAnimation::valueChanged, [ this ](const QVariant & value) {
-
-        if (m_showAni->state() != QPropertyAnimation::Running)
-            return;
-
-        move(value.toPoint());
-    });
-
-    connect(m_hideAni, &QVariantAnimation::valueChanged, [ this ](const QVariant & value) {
-
-        if (m_hideAni->state() != QPropertyAnimation::Running)
-            return;
-
-        move(value.toPoint());
-    });
-
     connect(m_model, &ClipboardModel::dataAdded, this, [ = ] {
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
@@ -138,32 +117,33 @@ void MainWindow::initConnect()
     });
 }
 
-void MainWindow::enterEvent(QEvent *event)
-{
-    if (pos().x() < 0) {
-        m_showAni->setStartValue(QPoint(-width() + WindowLeave, WindowMargin));
-        m_showAni->setEndValue(QPoint(WindowMargin, WindowMargin));
-        m_showAni->start();
-    }
-    DBlurEffectWidget::enterEvent(event);
-}
-
-void MainWindow::leaveEvent(QEvent *event)
-{
-    if (cursor().pos().x() > WindowMargin) {
-        m_showAni->stop();
-        m_hideAni->setStartValue(pos());
-        m_hideAni->setEndValue(QPoint(-width() + WindowLeave, WindowMargin));
-        m_hideAni->start();
-    }
-
-    DBlurEffectWidget::leaveEvent(event);
-}
-
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     return;
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    DBlurEffectWidget::showEvent(event);
+
+    m_visible = true;
+
+    setFocus();
+}
+
+void MainWindow::hideEvent(QHideEvent *event)
+{
+    DBlurEffectWidget::hideEvent(event);
+
+    m_visible = false;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *e)
+{
+    if (obj)
+        qDebug() << e->type();
+    return false;
 }
 
 void MainWindow::geometryChanged()
@@ -171,15 +151,7 @@ void MainWindow::geometryChanged()
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
     rect.setWidth(WindowWidth + WindowMargin * 2);
-    rect.moveLeft(-rect.width() + WindowMargin + WindowLeave);
     rect = rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin));
-    setFixedSize(rect.size());
-    move(WindowMargin, WindowMargin);
+    setGeometry(rect);
 }
 
-void MainWindow::showEvent(QShowEvent *event)
-{
-    DBlurEffectWidget::showEvent(event);
-
-    setFocus();
-}

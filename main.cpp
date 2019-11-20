@@ -44,7 +44,5 @@ int main(int argc, char *argv[])
 
     connection.registerObject(DBusClipBoardPath, &w);
 
-    w.show();
-
     return app.exec();
 }

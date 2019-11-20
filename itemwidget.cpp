@@ -343,7 +343,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     //绘制背景
     brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);
     painter.setBrush(brushColor);
-    painter.drawRoundRect(rect(), m_radius, m_radius);
+    painter.drawRect(rect());
 
     return QWidget::paintEvent(event);
 }

@@ -13,7 +13,6 @@
 
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
-
 class QPushButton;
 class MainWindow : public DBlurEffectWidget
 {
@@ -23,16 +22,16 @@ public:
     ~MainWindow() override;
 
 public Q_SLOTS:
-    void Show();
+    void Toggle();
 
 public slots:
     void geometryChanged();
 
 protected:
-    void showEvent(QShowEvent *event) override;
-    void enterEvent(QEvent *event) override;
-    void leaveEvent(QEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *e) override;
 
 private:
     void initUI();
@@ -46,9 +45,7 @@ private:
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
 
-    DWindowManagerHelper *m_wmHelper;
-    QVariantAnimation *m_showAni;
-    QVariantAnimation *m_hideAni;
+    bool m_visible;
 };
 
 #endif // MAINWINDOW_H

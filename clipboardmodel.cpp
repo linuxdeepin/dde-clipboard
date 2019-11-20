@@ -107,34 +107,43 @@ void ClipboardModel::extract(ItemData *data)
 
 bool ClipboardModel::isDataValid(const QMimeData *data)
 {
+    qDebug() << "check valid";
     //文本全是空格的情况需要过滤
     if (!data->hasText()
             && !data->hasUrls()
             && !data->hasHtml()
             && !data->hasColor()
-            && !data->hasImage()
-            && data->formats().size() == 0)
+            && !data->hasImage())
         return false;
 
     // -- 1有些程序不规范，复制空内容也写入了剪贴板
-    if (data->hasHtml() && data->html().simplified().isEmpty())
+    if (data->hasHtml() && data->html().simplified().isEmpty()) {
+        qDebug() << "html not valid";
         return false;
+    }
 
     // -- 2
-    if (data->hasText() && data->text().simplified().isEmpty())
+    if (data->hasText() && data->text().simplified().isEmpty()) {
+        qDebug() << "text not valid";
         return false;
+    }
 
     // -- 3
     if (data->hasImage()) {
         QPixmap pix = qvariant_cast<QPixmap>(data->imageData());
         if (pix.size() == QSize(0, 0)) {
-            return false;
+            {
+                qDebug() << "image not valid";
+                return false;
+            }
         }
     }
 
     // -- 4
-    if (data->hasUrls() && data->urls().size() == 0)
+    if (data->hasUrls() && data->urls().size() == 0) {
+        qDebug() << "url not valid";
         return false;
+    }
 
     return true;
 }
