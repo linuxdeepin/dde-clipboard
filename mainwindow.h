@@ -7,6 +7,7 @@
 #include "dbusdisplay.h"
 #include "itemdelegate.h"
 #include "constants.h"
+#include "dbusdock.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
@@ -46,6 +47,7 @@ private:
     ItemDelegate *m_itemDelegate;
 
     bool m_visible;
+    DBusDock *m_dockInter;
 };
 
 #endif // MAINWINDOW_H

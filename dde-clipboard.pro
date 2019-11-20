@@ -22,7 +22,9 @@ SOURCES += \
         dbusdisplay.cpp \
         itemdelegate.cpp \
         itemwidget.cpp \
-        pixmaplabel.cpp
+        pixmaplabel.cpp \
+        dbusdock.cpp \
+        dockrect.cpp
 HEADERS += \
         mainwindow.h \
         clipboardmodel.h \
@@ -31,7 +33,9 @@ HEADERS += \
         itemdelegate.h \
         constants.h \
         itemwidget.h \
-        pixmaplabel.h
+        pixmaplabel.h \
+        dbusdock.h \
+        dockrect.h
 
 DISTFILES += translate_generation.sh
 

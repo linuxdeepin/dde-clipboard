@@ -8,6 +8,11 @@
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
 
+#define DOCK_TOP        0
+#define DOCK_RIGHT      1
+#define DOCK_BOTTOM     2
+#define DOCK_LEFT       3
+
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay(this))
@@ -15,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
     , m_visible(false)
+    , m_dockInter(new DBusDock)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
 
@@ -115,6 +121,8 @@ void MainWindow::initConnect()
     connect(m_model, &ClipboardModel::dataRemoved, this, [ & ] {
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
+
+    connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
@@ -151,7 +159,23 @@ void MainWindow::geometryChanged()
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
     rect.setWidth(WindowWidth + WindowMargin * 2);
+
+    QRect dockRect = m_dockInter->frontendRect();
+
+    switch (m_dockInter->position()) {
+    case DOCK_TOP:
+        rect.moveTop(dockRect.height());
+    case DOCK_BOTTOM:
+        rect.setHeight(rect.height() - dockRect.height());
+        break;
+    case DOCK_LEFT:
+        rect.moveLeft(dockRect.width());
+        break;
+    default:;
+    }
+
     rect = rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin));
     setGeometry(rect);
+    setFixedSize(rect.size());
 }
 
