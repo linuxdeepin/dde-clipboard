@@ -1,3 +1,23 @@
+/*
+ * Copyright (C) 2018 ~ 2025 Deepin Technology Co., Ltd.
+ *
+ * Author:     fanpengcheng <fanpengcheng_cm@deepin.com>
+ *
+ * Maintainer: fanpengcheng <fanpengcheng_cm@deepin.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "itemwidget.h"
 #include "constants.h"
 #include "pixmaplabel.h"
@@ -38,8 +58,8 @@ static QPixmap GetFileIcon(QString path)
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
     , m_data(data)
-    , m_nameLabel(new QLabel(this))
-    , m_timeLabel(new QLabel(this))
+    , m_nameLabel(new DLabel(this))
+    , m_timeLabel(new DLabel(this))
     , m_closeButton(new DIconButton(DStyle::StandardPixmap::SP_CloseButton, this))
     , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
     , m_statusLabel(new Dtk::Widget::DLabel(this))
@@ -240,7 +260,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
         if (data->urls().size() == 1) {
             QFileInfo info(first);
             if (first.startsWith("file://")) {
-                first.replace("file://", "");
+                first = first.mid(QString("file://").length());
             }
             //单个文件是图片时显示缩略图
             if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
@@ -266,7 +286,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
             for (int i = 0; i < iconNum; ++i) {
                 QString filePath = data->urls()[i].toString();
                 if (filePath.startsWith("file://")) {
-                    filePath.replace("file://", "");
+                    filePath = filePath.mid(QString("file://").length());
                 }
                 pixmapList.push_back(GetFileIcon(filePath));
             }
