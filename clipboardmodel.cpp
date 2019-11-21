@@ -28,11 +28,6 @@ ClipboardModel::ClipboardModel(QListView *list, QObject *parent) : QAbstractList
     , m_board(QApplication::clipboard())
     , m_list(list)
 {
-    // 剪切板是否有数据
-    if (m_board->ownsClipboard()) {
-
-    }
-
     connect(m_board, &QClipboard::dataChanged, this, &ClipboardModel::clipDataChanged);
 }
 
