@@ -256,28 +256,28 @@ void ItemWidget::initData(QPointer<ItemData> data)
         if (data->urls().size() == 0)
             return;
 
-        QString first = data->urls().first().toString();
+        QUrl url = data->urls().first();
         if (data->urls().size() == 1) {
-            QFileInfo info(first);
-            if (first.startsWith("file://")) {
-                first = first.mid(QString("file://").length());
-            }
             //单个文件是图片时显示缩略图
-            if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
-                m_pixmap = QPixmap(first);
-                setPixmap(QPixmap(first));
+            QImageReader imageReader(url.path());
+            imageReader.setDecideFormatFromContent(true);
+            if (QImageReader::supportedImageFormats().contains(imageReader.format())) {
+                QImage image = imageReader.read();
+
+                m_pixmap = QPixmap::fromImage(image);
+                setPixmap(m_pixmap);
             } else {
-                setFilePixmap(GetFileIcon(first));
+                setFilePixmap(GetFileIcon(url.path()));
             }
 
             QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString text = metrix.elidedText(info.fileName(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+            QString text = metrix.elidedText(url.fileName(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
+
         } else if (data->urls().size() > 1) {
-            QFileInfo info(first);
 
             QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString text = metrix.elidedText(tr("%1(%2 files...)").arg(info.fileName()).arg(data->urls().size()),
+            QString text = metrix.elidedText(tr("%1(%2 files...)").arg(url.fileName()).arg(data->urls().size()),
                                              Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
