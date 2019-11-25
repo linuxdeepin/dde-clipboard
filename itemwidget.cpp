@@ -298,9 +298,6 @@ void ItemWidget::initData(QPointer<ItemData> data)
     }
     break;
     }
-
-    if (data->select())
-        onHoverStateChanged(true);
 }
 
 void ItemWidget::initConnect()

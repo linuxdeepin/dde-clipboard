@@ -45,12 +45,6 @@ const QList<ItemData *> ClipboardModel::data()
     return m_data;
 }
 
-void ClipboardModel::reset()
-{
-    beginResetModel();
-    endResetModel();
-}
-
 int ClipboardModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)

@@ -83,7 +83,7 @@ QString ItemData::subTitle()
     case Image:
         return "";
     case Text:
-        return QString(tr("%1 characters")).arg(m_text.simplified().length());
+        return QString(tr("%1 characters")).arg(m_text.length());
     case File:
         return "";
     }
@@ -125,11 +125,6 @@ const QVariant &ItemData::imageData()
 const QMap<QString, QByteArray> &ItemData::formatMap()
 {
     return m_formatMap;
-}
-
-void ItemData::setSelect(bool select)
-{
-    m_select = select;
 }
 
 void ItemData::remove()

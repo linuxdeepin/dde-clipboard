@@ -54,9 +54,6 @@ public:
     const QVariant &imageData();
     const QMap<QString, QByteArray> &formatMap();
 
-    bool select() { return m_select;}
-    void setSelect(bool select);
-
     void remove();
     void popTop();
 
@@ -74,8 +71,6 @@ private:
     QString m_html;
     QString m_text;
     QDateTime m_createTime;
-
-    bool m_select = false;
 };
 
 #endif // ITEMDATA_H

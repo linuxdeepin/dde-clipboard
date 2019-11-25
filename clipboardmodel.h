@@ -36,7 +36,6 @@ public:
     const QList<ItemData *> data();
 
 public Q_SLOTS:
-    void reset();
     // 清空所有剪贴板
     void clear();
     // 删除

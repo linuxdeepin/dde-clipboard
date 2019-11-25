@@ -36,6 +36,7 @@ ItemDelegate::ItemDelegate(QObject *parent)
 {
 
 }
+
 void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(painter);
@@ -43,6 +44,7 @@ void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     Q_UNUSED(index);
     return;
 }
+
 QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(option);
