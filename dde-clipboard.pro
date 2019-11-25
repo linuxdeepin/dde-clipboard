@@ -20,22 +20,26 @@ SOURCES += \
         itemdata.cpp \
         clipboardmodel.cpp \
         dbusdisplay.cpp \
-        itemdelegate.cpp \
         itemwidget.cpp \
         pixmaplabel.cpp \
         dbusdock.cpp \
-        dockrect.cpp
+        dockrect.cpp \
+    listview.cpp \
+    itemdelegate.cpp \
+    iconbutton.cpp
 HEADERS += \
         mainwindow.h \
         clipboardmodel.h \
         itemdata.h\
         dbusdisplay.h \
-        itemdelegate.h \
         constants.h \
         itemwidget.h \
         pixmaplabel.h \
         dbusdock.h \
-        dockrect.h
+        dockrect.h \
+    listview.h \
+    itemdelegate.h \
+    iconbutton.h
 
 DISTFILES += translate_generation.sh
 

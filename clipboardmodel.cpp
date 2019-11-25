@@ -45,6 +45,12 @@ const QList<ItemData *> ClipboardModel::data()
     return m_data;
 }
 
+void ClipboardModel::reset()
+{
+    beginResetModel();
+    endResetModel();
+}
+
 int ClipboardModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
@@ -54,7 +60,7 @@ int ClipboardModel::rowCount(const QModelIndex &parent) const
 QVariant ClipboardModel::data(const QModelIndex &index, int role) const
 {
     Q_UNUSED(role)
-    if (!index.isValid() && m_data.size() <= 0 && index.row() > m_data.size()) {
+    if (!index.isValid()) {
         return QVariant();
     }
 
@@ -122,7 +128,6 @@ void ClipboardModel::extract(ItemData *data)
 
 bool ClipboardModel::isDataValid(const QMimeData *data)
 {
-    qDebug() << "check valid";
     //文本全是空格的情况需要过滤
     if (!data->hasText()
             && !data->hasUrls()

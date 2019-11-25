@@ -24,6 +24,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QKeyEvent>
+#include <QScrollBar>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -36,7 +38,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay(this))
-    , m_listview(new QListView(this))
+    , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
     , m_dockInter(new DBusDock)
@@ -110,12 +112,10 @@ void MainWindow::initUI()
     m_listview->setItemDelegate(m_itemDelegate);
     m_listview->setAutoFillBackground(false);
     m_listview->viewport()->setAutoFillBackground(false);
-    m_listview->setFrameStyle(QFrame::NoFrame);
-    m_listview->setSelectionMode(QListView::NoSelection);
-    m_listview->setTabKeyNavigation(true);
-    m_listview->setFocusPolicy(Qt::NoFocus);
-    m_listview->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    m_listview->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_listview->setMouseTracking(true);
+    m_listview->viewport()->setMouseTracking(true);
+    m_listview->setSelectionMode(QListView::SingleSelection);
+    m_listview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
@@ -145,6 +145,12 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     return;
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+//    qDebug() << event->type() << obj;
+    return false;
 }
 
 void MainWindow::geometryChanged()

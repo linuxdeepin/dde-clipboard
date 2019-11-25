@@ -33,10 +33,16 @@ class ClipboardModel : public QAbstractListModel
 public:
     explicit ClipboardModel(QListView *list, QObject *parent = nullptr);
 
+    const QList<ItemData *> data();
+
+public Q_SLOTS:
+    void reset();
     // 清空所有剪贴板
     void clear();
-
-    const QList<ItemData *> data();
+    // 删除
+    void removeData(ItemData *data);
+    // 提取到第一个
+    void extract(ItemData *data);
 
 Q_SIGNALS:
     void dataAdded();
@@ -47,12 +53,6 @@ protected:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
-
-    // 删除
-    void removeData(ItemData *data);
-
-    // 提取到第一个
-    void extract(ItemData *data);
 
     bool isDataValid(const QMimeData *data);
 

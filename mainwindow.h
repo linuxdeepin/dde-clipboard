@@ -28,6 +28,7 @@
 #include "itemdelegate.h"
 #include "constants.h"
 #include "dbusdock.h"
+#include "listview.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
@@ -50,6 +51,7 @@ private Q_SLOTS:
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
     void initUI();
@@ -59,7 +61,7 @@ private:
     DBusDisplay *m_displayInter;
 
     QPushButton *m_clearButton;
-    QListView *m_listview;
+    ListView *m_listview;
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
 
