@@ -60,7 +60,7 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     , m_data(data)
     , m_nameLabel(new DLabel(this))
     , m_timeLabel(new DLabel(this))
-    , m_closeButton(new DIconButton(DStyle::StandardPixmap::SP_CloseButton, this))
+    , m_closeButton(new IconButton(this))
     , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
     , m_statusLabel(new Dtk::Widget::DLabel(this))
     , m_refreshTimer(new QTimer(this))
@@ -204,9 +204,12 @@ void ItemWidget::initUI()
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 
     m_closeButton->setFlat(true);
-    m_closeButton->setIconSize(QSize(TitleHeight / 2, TitleHeight / 2));
-    m_closeButton->setFixedSize(TitleHeight, TitleHeight);
+    m_closeButton->setFixedSize(QSize(TitleHeight, TitleHeight) * 2 / 3);
     m_closeButton->setVisible(false);
+    m_closeButton->setAutoExclusive(true);
+    m_closeButton->setBackgroundRole(DPalette::Button);
+    m_closeButton->setFocusPolicy(Qt::ClickFocus);
+    m_closeButton->setText("X");
 
     QPalette pe = m_closeButton->palette();
     pe.setColor(QPalette::Button, pe.color(QPalette::Base));
@@ -233,7 +236,7 @@ void ItemWidget::initUI()
     setUnHoverAlpha(80);
     setRadius(8);
 
-    setFocusPolicy(Qt::TabFocus);
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 void ItemWidget::initData(QPointer<ItemData> data)
@@ -295,14 +298,20 @@ void ItemWidget::initData(QPointer<ItemData> data)
     }
     break;
     }
+
+    if (data->select())
+        onHoverStateChanged(true);
 }
 
 void ItemWidget::initConnect()
 {
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
     connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
-    connect(m_closeButton, &DIconButton::clicked, [ = ] {
+    connect(m_closeButton, &IconButton::clicked, [ = ] {
         m_data->remove();
+    });
+    connect(this, &ItemWidget::closeHasFocus, this, [&](bool has) {
+        m_closeButton->setFocusState(has);
     });
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
@@ -335,6 +344,28 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     }
 
     return text;
+}
+
+void ItemWidget::keyPressEvent(QKeyEvent *event)
+{
+    switch (event->key()) {
+    case Qt::Key_0:
+        //表示切换‘焦点’，tab按键事件在delegate中已被拦截
+        if (event->text() == "change focus") {
+            Q_EMIT closeHasFocus(m_closeFocus = !m_closeFocus);
+            return ;
+        }
+        break;
+    case Qt::Key_Enter:
+    case Qt::Key_Return: {
+        if (m_closeFocus) {
+            m_data->remove();
+        }
+    }
+    break;
+    }
+
+    return DWidget::keyPressEvent(event);
 }
 
 void ItemWidget::paintEvent(QPaintEvent *event)
@@ -391,16 +422,17 @@ void ItemWidget::leaveEvent(QEvent *event)
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
-    QEvent e(QEvent::Enter);
-    qApp->sendEvent(this, &e);
+    Q_EMIT hoverStateChanged(true);
 
     return DWidget::focusInEvent(event);
 }
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
 {
-    QEvent e(QEvent::Leave);
-    qApp->sendEvent(this, &e);
+    m_closeFocus = false;
+
+    Q_EMIT hoverStateChanged(false);
+    Q_EMIT closeHasFocus(false);
 
     return DWidget::focusOutEvent(event);
 }

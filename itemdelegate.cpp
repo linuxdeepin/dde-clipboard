@@ -24,6 +24,10 @@
 #include "itemwidget.h"
 
 #include <QPointer>
+#include <QDebug>
+#include <QEvent>
+#include <QKeyEvent>
+#include <QApplication>
 
 DWIDGET_USE_NAMESPACE
 
@@ -32,12 +36,19 @@ ItemDelegate::ItemDelegate(QObject *parent)
 {
 
 }
-
+void ItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(painter);
+    Q_UNUSED(option);
+    Q_UNUSED(index);
+    return;
+}
 QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(option);
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
     ItemWidget *w = new ItemWidget(data, parent);
+    w->installEventFilter(parent);
     return w;
 }
 
@@ -54,4 +65,23 @@ void ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewI
     Q_UNUSED(index);
     QRect rect = option.rect;
     editor->setGeometry(rect.x() + ItemMargin, rect.y(), ItemWidth, ItemHeight);
+}
+
+bool ItemDelegate::eventFilter(QObject *obj, QEvent *event)
+{
+    Q_UNUSED(obj);
+    if (QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event)) {
+        switch (keyEvent->key()) {
+        case Qt::Key_Tab:
+        case Qt::Key_Backtab: {
+            QKeyEvent kEvent(QEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "change focus");
+            qApp->sendEvent(obj, &kEvent);
+        }
+        return true;
+        default:
+            break;
+        }
+    }
+
+    return false;
 }

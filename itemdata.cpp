@@ -127,6 +127,11 @@ const QMap<QString, QByteArray> &ItemData::formatMap()
     return m_formatMap;
 }
 
+void ItemData::setSelect(bool select)
+{
+    m_select = select;
+}
+
 void ItemData::remove()
 {
     emit distory(this);

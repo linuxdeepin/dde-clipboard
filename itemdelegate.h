@@ -28,9 +28,13 @@ class ItemDelegate : public QStyledItemDelegate
 public:
     ItemDelegate(QObject *parent = nullptr);
 
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
+
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;
     void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
 };
 
 #endif // LISTDELEGATE_H

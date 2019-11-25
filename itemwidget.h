@@ -21,13 +21,13 @@
 #ifndef ITEMBASEWIDGET_H
 #define ITEMBASEWIDGET_H
 #include <DWidget>
-#include <DIconButton>
 #include <DLabel>
 
 #include <QDateTime>
 #include <QPointer>
 
 #include "itemdata.h"
+#include "iconbutton.h"
 
 DWIDGET_USE_NAMESPACE
 
@@ -62,6 +62,7 @@ public:
 Q_SIGNALS:
     void close();
     void hoverStateChanged(bool);
+    void closeHasFocus(bool has);
 
 public Q_SLOTS:
     void onHoverStateChanged(bool hover);
@@ -82,7 +83,7 @@ private:
     // title
     DLabel *m_nameLabel = nullptr;
     DLabel *m_timeLabel = nullptr;
-    DIconButton *m_closeButton = nullptr;
+    IconButton *m_closeButton = nullptr;
 
     // content
     PixmapLabel *m_contentLabel = nullptr;
@@ -100,8 +101,10 @@ private:
     int m_hoverAlpha = 0;
     int m_unHoverAlpha = 0;
     bool m_havor = false;
+    bool m_closeFocus = false;  //关闭按钮是否置于选中状态
 
 protected:
+    virtual void keyPressEvent(QKeyEvent *event) override;
     virtual void paintEvent(QPaintEvent *event) override;
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void enterEvent(QEvent *event) override;
