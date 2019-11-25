@@ -37,6 +37,7 @@ public:
     explicit ItemData(const QMimeData *mimeData);
 
     enum DataType {
+        Unknown,
         Text,
         Image,
         File
@@ -56,13 +57,15 @@ public:
     void remove();
     void popTop();
 
+    bool isEqual(const ItemData *other);
+
 Q_SIGNALS:
     void distory(ItemData *data);
     void reborn(ItemData *data);
 
 private:
     QMap<QString, QByteArray> m_formatMap;
-    DataType m_type;
+    DataType m_type = Unknown;
     QList<QUrl> m_urls;
     QVariant m_variantImage;
     QString m_html;

@@ -28,17 +28,28 @@ ItemData::ItemData(const QMimeData *mimeData)
 {
     if (mimeData->hasImage()) {
         m_variantImage = mimeData->imageData();
+        if (m_variantImage.isNull())
+            return;
+
         m_type = Image;
     } else if (mimeData->hasUrls()) {
         m_urls = mimeData->urls();
+        if (!m_urls.count())
+            return;
+
         m_type = File;
     } else {
-        if (mimeData->hasHtml()) {
-            m_text = mimeData->html();
-        }
         if (mimeData->hasText()) {
             m_text = mimeData->text();
+        } else if (mimeData->hasHtml()) {
+            m_text = mimeData->html();
+        } else {
+            return;
         }
+
+        if (m_text.isEmpty())
+            return;
+
         m_type = Text;
     }
 
@@ -124,4 +135,31 @@ void ItemData::remove()
 void ItemData::popTop()
 {
     emit reborn(this);
+}
+
+bool ItemData::isEqual(const ItemData *other)
+{
+    if (m_type != other->m_type)
+        return false;
+
+    switch (m_type) {
+    case Text:
+        return m_text == other->m_text;
+    case File: {
+        if (m_urls.size() != other->m_urls.size())
+            return false;
+
+        foreach (auto url, m_urls) {
+            if (url != other->m_urls.at(0))
+                return false;
+        }
+
+        return true;
+    }
+    case Image: {
+        return false;
+    }
+    default:
+        return false;
+    }
 }

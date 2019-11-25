@@ -54,12 +54,12 @@ int ClipboardModel::rowCount(const QModelIndex &parent) const
 QVariant ClipboardModel::data(const QModelIndex &index, int role) const
 {
     Q_UNUSED(role)
-    if (!index.isValid() && m_data.size() <= 0 && index.row() > m_data.size()) {
-        return QVariant();
+    if (index.isValid() && index.row() < m_data.size()) {
+        QPointer<ItemData> dt = m_data.at(index.row());
+        return QVariant::fromValue(dt);
     }
 
-    QPointer<ItemData> dt = m_data.at(index.row());
-    return QVariant::fromValue(dt);
+    return QVariant();
 }
 
 Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
@@ -166,14 +166,21 @@ bool ClipboardModel::isDataValid(const QMimeData *data)
 void ClipboardModel::clipDataChanged()
 {
     const QMimeData *mimeData = m_board->mimeData();
-    if (!isDataValid(mimeData)) {
-        qDebug() << "data not valid";
+    ItemData *item = new ItemData(mimeData);
+    if (item->type() == ItemData::Unknown) {
+        item->deleteLater();
         return;
+    }
+
+    if (m_data.size()) {
+        if (item->isEqual(m_data.first())) {
+            item->deleteLater();
+            return;
+        }
     }
 
     beginInsertRows(QModelIndex(), 0, 0);
 
-    ItemData *item = new ItemData(mimeData);
     connect(item, &ItemData::distory, this, &ClipboardModel::removeData);
     connect(item, &ItemData::reborn, this, &ClipboardModel::extract);
     m_data.push_front(item);
