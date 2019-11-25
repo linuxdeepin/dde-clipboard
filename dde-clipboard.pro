@@ -53,6 +53,10 @@ autostart.path = /etc/xdg/autostart
 autostart.files = dde-clipboard.desktop
 INSTALLS += autostart
 
+services.path = /share/dbus-1/services
+services.files = com.deepin.dde.Clipboard.service
+INSTALLS += services
+
 CONFIG(release, debug|release) {
     !system(./translate_generation.sh): error("Failed to generate translation")
 }
