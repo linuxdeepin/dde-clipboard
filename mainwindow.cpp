@@ -114,6 +114,8 @@ void MainWindow::initUI()
     m_listview->setSelectionMode(QListView::NoSelection);
     m_listview->setTabKeyNavigation(true);
     m_listview->setFocusPolicy(Qt::NoFocus);
+    m_listview->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    m_listview->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);

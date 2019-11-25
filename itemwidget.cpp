@@ -87,7 +87,7 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
                                || m_data->type() == ItemData::File)) {
         QPixmap pix = Globals::GetRoundPixmap(pixmap, palette().color(QPalette::Base));
         m_contentLabel->setPixmap(Globals::pixmapScaled(pix));
-        m_statusLabel->setText(QString::number(pixmap.width()) + "X" + QString::number(pixmap.height()) + tr("px"));
+        m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
     }
 }
 
@@ -200,8 +200,8 @@ void ItemWidget::initUI()
     QFont font = DFontSizeManager::instance()->t4();
     font.setWeight(75);
     m_nameLabel->setFont(font);
-    m_nameLabel->setAlignment(Qt::AlignLeft);
-    m_timeLabel->setAlignment(Qt::AlignRight);
+    m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+    m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 
     m_closeButton->setFlat(true);
     m_closeButton->setIconSize(QSize(TitleHeight / 2, TitleHeight / 2));
