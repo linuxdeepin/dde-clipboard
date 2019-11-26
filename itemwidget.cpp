@@ -175,7 +175,7 @@ void ItemWidget::onRefreshTime()
     m_refreshTimer->stop();
 
     int interval;
-    int minuteElapsed = m_createTime.secsTo(QDateTime::currentDateTime()) / 60;
+    int minuteElapsed = int(m_createTime.secsTo(QDateTime::currentDateTime()) / 60);
     if (minuteElapsed < 60) {
         interval = 60 * 1000;
     } else {
@@ -297,6 +297,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
         }
     }
     break;
+    default:
+        break;
     }
 }
 
@@ -322,21 +324,21 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
 
     QDateTime t = QDateTime::currentDateTime();
 
-    if (time.secsTo(t) < 60) {//60秒以内
+    if (time.secsTo(t) < 60 && time.secsTo(t) >= 0) { //60秒以内
         text = tr("Now");
     } else if (time.secsTo(t) >= 60 && time.secsTo(t) < 2 * 60) { //一分钟
         text = tr("1 minute ago");
-    } else if (time.secsTo(t) >= 2 * 60 && time.secsTo(t) < 60 * 60) { //一小时内
+    } else if (time.secsTo(t) >= 2 * 60 && time.secsTo(t) < 60 * 60) { //多少分钟前
         text = tr("%1 minutes ago").arg(time.secsTo(t) / 60);
-    } else if (time.secsTo(t) >= 60 * 60 && time.secsTo(t) < 2 * 60 * 60) {//两小时内
+    } else if (time.secsTo(t) >= 60 * 60 && time.secsTo(t) < 2 * 60 * 60) {//一小时前
         text = tr("1 hour ago");
-    } else if (time.secsTo(t) >= 2 * 60 * 60 && time.daysTo(t) < 1) { //今天凌晨0点以后
+    } else if (time.secsTo(t) >= 2 * 60 * 60 && time.daysTo(t) < 1) { //多少小时前(0点以后)
         text = tr("%1 hours ago").arg(time.secsTo(t) / 60 / 60);
-    } else if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //今天凌晨0点以前的
+    } else if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //昨天发生的
         text = tr("Yesterday") + time.toString(" hh:mm");
-    } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天凌晨0点以前的
+    } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天以前，一周以内
         text = time.toString("ddd hh:mm");
-    } else if (time.daysTo(t) >= 7) { //一周前0点以前的
+    } else if (time.daysTo(t) >= 7) { //一周前以前的
         text = time.toString("yyyy/MM/dd");
     }
 
@@ -393,7 +395,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     painter.setBrush(brushColor);
     painter.drawRect(rect());
 
-    return QWidget::paintEvent(event);
+    return DWidget::paintEvent(event);
 }
 
 void ItemWidget::mousePressEvent(QMouseEvent *event)

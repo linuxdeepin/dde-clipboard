@@ -116,6 +116,7 @@ void MainWindow::initUI()
     m_listview->viewport()->setMouseTracking(true);
     m_listview->setSelectionMode(QListView::SingleSelection);
     m_listview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_listview->setFrameShape(QFrame::NoFrame);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);

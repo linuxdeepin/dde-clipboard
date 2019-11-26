@@ -72,9 +72,9 @@ QString ItemData::title()
         return tr("Text");
     case File:
         return tr("File");
+    default:
+        return "";
     }
-
-    return "";
 }
 
 QString ItemData::subTitle()
@@ -86,9 +86,9 @@ QString ItemData::subTitle()
         return QString(tr("%1 characters")).arg(m_text.length());
     case File:
         return "";
+    default:
+        return "";
     }
-
-    return "";
 }
 
 const QList<QUrl> &ItemData::urls()

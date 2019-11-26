@@ -286,10 +286,10 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 //draw lines
     if (!m_text.isEmpty()) {
         int lineNum = 4;
-        int lineHeight = (height() - TextContentTopOffset) / 4;
+        int lineHeight = (height() - TextContentTopMargin) / 4;
         for (int i  = 0 ; i < lineNum; ++i) {
-            QPoint start(0, (i + 1)*lineHeight + TextContentTopOffset);
-            QPoint end(width(), (i + 1)*lineHeight + TextContentTopOffset);
+            QPoint start(0, (i + 1)*lineHeight + TextContentTopMargin);
+            QPoint end(width(), (i + 1)*lineHeight + TextContentTopMargin);
             painter.setPen(QPen(palette().color(QPalette::Shadow), 2));
             painter.drawLine(start, end);
         }
@@ -304,7 +304,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             if (textIndex > (maxLineCount - 1)) {
                 break;
             }
-            QRect textRect(0, rectIndex * lineHeight + TextContentTopOffset, width(), lineHeight);
+            QRect textRect(0, rectIndex * lineHeight + TextContentTopMargin, width(), lineHeight);
             QTextOption option;
             option.setAlignment(Qt::AlignBottom);
             painter.setPen(palette().color(QPalette::Text));

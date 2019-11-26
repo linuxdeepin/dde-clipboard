@@ -38,7 +38,6 @@ const static int StatusBarHeight = 30;  //Item状态栏高度
 const static int ItemWidth = WindowWidth - 2 * WindowMargin;
 const static int ItemHeight = 200;
 const static int ItemMargin = 10;
-
 const static int PixmapWidth = 180;     //图像最大显示宽度
 const static int PixmapHeight = 100;    //图像最大显示高度
 const static int FileIconWidth = PixmapWidth;
@@ -46,7 +45,7 @@ const static int FileIconHeight = PixmapHeight;
 const static int PixmapxStep = 15;
 const static int PixmapyStep = 5;
 const static int ContentMargin = 21;
-const static int TextContentTopOffset = 20;
+const static int TextContentTopMargin = 20;
 
 static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
 static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";
