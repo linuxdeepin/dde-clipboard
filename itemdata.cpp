@@ -129,7 +129,7 @@ const QMap<QString, QByteArray> &ItemData::formatMap()
 
 void ItemData::remove()
 {
-    emit distory(this);
+    emit destroy(this);
 }
 
 void ItemData::popTop()

@@ -80,34 +80,17 @@ void MainWindow::initUI()
     QLabel *titleLabel = new QLabel(tr("Clipboard"));
     titleLabel->setFont(DFontSizeManager::instance()->t3());
 
-    m_clearButton = new QPushButton(tr("Clear all"));
-    connect(m_clearButton, &QPushButton::clicked, m_model, &ClipboardModel::clear);
-    m_clearButton->setFocusPolicy(Qt::NoFocus);
+    m_clearButton = new IconButton(tr("Clear all"));
+    connect(m_clearButton, &IconButton::clicked, m_model, &ClipboardModel::clear);
 
-    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
-        QPalette pa = titleLabel->palette();
-        pa.setBrush(QPalette::WindowText, pa.brightText());
-        titleLabel->setPalette(pa);
-
-        pa = m_clearButton->palette();
-        pa.setBrush(QPalette::ButtonText, pa.brightText());
-        m_clearButton->setPalette(pa);
-
-        QPalette pe = this->palette();
-        QColor base = pe.color(QPalette::Base);
-        base.setAlpha(120);
-        pe.setColor(QPalette::Base, base);
-        pe.setColor(QPalette::Dark, base);
-        pe.setColor(QPalette::Light, base);
-        m_clearButton->setPalette(pe);
-    });
-
-    titleLayout->addWidget(titleLabel, 0, Qt::AlignLeft);
-    titleLayout->addWidget(m_clearButton, 1, Qt::AlignRight);
+    titleLayout->addWidget(titleLabel);
+    titleLayout->addWidget(m_clearButton);
+    m_clearButton->setFixedSize(100, 36);
+    m_clearButton->setBackOpacity(200);
+    m_clearButton->setRadius(8);
     m_clearButton->setVisible(false);
-    titleWidget->setFixedSize(WindowWidth, 56);
+    titleWidget->setFixedSize(WindowWidth, WindowTitleHeight);
 
-    // list
     m_listview->setModel(m_model);
     m_listview->setItemDelegate(m_itemDelegate);
 
@@ -120,15 +103,7 @@ void MainWindow::initConnect()
 {
     connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
 
-    connect(m_model, &ClipboardModel::dataAdded, this, [ = ] {
-        m_clearButton->setVisible(m_model->data().size() != 0);
-    });
-
-    connect(m_model, &ClipboardModel::dataAllCleared, this, [ = ] {
-        m_clearButton->setVisible(m_model->data().size() != 0);
-    });
-
-    connect(m_model, &ClipboardModel::dataRemoved, this, [ & ] {
+    connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
 
@@ -139,12 +114,6 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     return;
-}
-
-bool MainWindow::eventFilter(QObject *obj, QEvent *event)
-{
-//    qDebug() << event->type() << obj;
-    return false;
 }
 
 void MainWindow::geometryChanged()

@@ -166,7 +166,6 @@ void ItemWidget::onHoverStateChanged(bool hover)
     if (hover) {
         m_timeLabel->hide();
         m_closeButton->show();
-        m_closeButton->raise();
     } else {
         m_timeLabel->show();
         m_closeButton->hide();
@@ -202,7 +201,7 @@ void ItemWidget::initUI()
     titleLayout->addWidget(m_timeLabel);
     titleLayout->addWidget(m_closeButton);
 
-    titleWidget->setFixedHeight(TitleHeight);
+    titleWidget->setFixedHeight(ItemTitleHeight);
 
     QFont font = DFontSizeManager::instance()->t4();
     font.setWeight(75);
@@ -210,7 +209,8 @@ void ItemWidget::initUI()
     m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 
-    m_closeButton->setFixedSize(QSize(TitleHeight, TitleHeight) * 2 / 3);
+    m_closeButton->setFixedSize(QSize(ItemTitleHeight, ItemTitleHeight) * 2 / 3);
+    m_closeButton->setRadius(ItemTitleHeight);
     m_closeButton->setVisible(false);
     m_closeButton->setText("X");
 
@@ -232,7 +232,7 @@ void ItemWidget::initUI()
     m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
     m_contentLabel->setAlignment(Qt::AlignCenter);
-    m_statusLabel->setFixedHeight(StatusBarHeight);
+    m_statusLabel->setFixedHeight(ItemStatusBarHeight);
     m_statusLabel->setAlignment(Qt::AlignCenter);
 
     setHoverAlpha(160);
@@ -391,7 +391,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     QColor brushColor(c);
     brushColor.setAlpha(80);
     painter.setBrush(brushColor);
-    painter.drawRect(QRect(0, 0, width(), TitleHeight));
+    painter.drawRect(QRect(0, 0, width(), ItemTitleHeight));
 
     //绘制背景
     brushColor.setAlpha(m_havor ? m_hoverAlpha : m_unHoverAlpha);

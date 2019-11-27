@@ -60,7 +60,7 @@ public:
     bool isEqual(const ItemData *other);
 
 Q_SIGNALS:
-    void distory(ItemData *data);
+    void destroy(ItemData *data);
     void reborn(ItemData *data);
 
 private:

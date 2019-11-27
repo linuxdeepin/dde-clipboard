@@ -64,7 +64,7 @@ QSize PixmapLabel::minimumSizeHint() const
 
 QSize PixmapLabel::sizeHint() const
 {
-    return QSize(ItemWidth - ContentMargin * 2, ItemHeight - TitleHeight);
+    return QSize(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight);
 }
 
 void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption::WrapMode wordWrap,

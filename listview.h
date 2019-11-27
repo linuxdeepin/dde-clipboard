@@ -8,10 +8,9 @@ class ListView : public QListView
 public:
     ListView(QWidget *parent = nullptr);
 
-    void keyPressEvent(QKeyEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void enterEvent(QEvent *event) override;
-    void leaveEvent(QEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void enterEvent(QEvent *event) override;
+    virtual void leaveEvent(QEvent *event) override;
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);

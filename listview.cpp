@@ -43,14 +43,6 @@ void ListView::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void ListView::mouseMoveEvent(QMouseEvent *event)
-{
-    const QModelIndex &index = indexAt(event->pos());
-    if (index.isValid()) {
-        setCurrentIndex(index);
-    }
-}
-
 void ListView::enterEvent(QEvent *event)
 {
     activateWindow();

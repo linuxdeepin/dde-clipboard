@@ -37,7 +37,7 @@ void ClipboardModel::clear()
     m_data.clear();
     endResetModel();
 
-    Q_EMIT dataAllCleared();
+    Q_EMIT dataChanged();
 }
 
 const QList<ItemData *> ClipboardModel::data()
@@ -71,7 +71,7 @@ Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
     return QAbstractListModel::flags(index);
 }
 
-void ClipboardModel::removeData(ItemData *data)
+void ClipboardModel::destroy(ItemData *data)
 {
     int row = m_data.indexOf(data);
 
@@ -81,10 +81,10 @@ void ClipboardModel::removeData(ItemData *data)
 
     item->deleteLater();
 
-    Q_EMIT dataRemoved();
+    Q_EMIT dataChanged();
 }
 
-void ClipboardModel::extract(ItemData *data)
+void ClipboardModel::reborn(ItemData *data)
 {
     int idx = m_data.indexOf(data);
     if (idx < 1)
@@ -113,53 +113,13 @@ void ClipboardModel::extract(ItemData *data)
     case ItemData::File:
         mimeData->setUrls(data->urls());
         break;
+    default:
+        break;
     }
 
     m_board->setMimeData(mimeData);
 
     data->deleteLater();
-}
-
-bool ClipboardModel::isDataValid(const QMimeData *data)
-{
-    //文本全是空格的情况需要过滤
-    if (!data->hasText()
-            && !data->hasUrls()
-            && !data->hasHtml()
-            && !data->hasColor()
-            && !data->hasImage())
-        return false;
-
-    // -- 1有些程序不规范，复制空内容也写入了剪贴板
-    if (data->hasHtml() && data->html().simplified().isEmpty()) {
-        qDebug() << "html not valid";
-        return false;
-    }
-
-    // -- 2
-    if (data->hasText() && data->text().simplified().isEmpty()) {
-        qDebug() << "text not valid";
-        return false;
-    }
-
-    // -- 3
-    if (data->hasImage()) {
-        QPixmap pix = qvariant_cast<QPixmap>(data->imageData());
-        if (pix.size() == QSize(0, 0)) {
-            {
-                qDebug() << "image not valid";
-                return false;
-            }
-        }
-    }
-
-    // -- 4
-    if (data->hasUrls() && data->urls().size() == 0) {
-        qDebug() << "url not valid";
-        return false;
-    }
-
-    return true;
 }
 
 void ClipboardModel::clipDataChanged()
@@ -180,11 +140,11 @@ void ClipboardModel::clipDataChanged()
 
     beginInsertRows(QModelIndex(), 0, 0);
 
-    connect(item, &ItemData::distory, this, &ClipboardModel::removeData);
-    connect(item, &ItemData::reborn, this, &ClipboardModel::extract);
+    connect(item, &ItemData::destroy, this, &ClipboardModel::destroy);
+    connect(item, &ItemData::reborn, this, &ClipboardModel::reborn);
     m_data.push_front(item);
 
     endInsertRows();
 
-    Q_EMIT dataAdded();
+    Q_EMIT dataChanged();
 }
