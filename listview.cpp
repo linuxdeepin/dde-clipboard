@@ -1,15 +1,19 @@
 #include "listview.h"
-#include "itemdata.h"
 
 #include <QEvent>
 #include <QKeyEvent>
-#include <QPointer>
 #include <QDebug>
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
 {
-    viewport()->installEventFilter(this);
+    setAutoFillBackground(false);
+    viewport()->setAutoFillBackground(false);
+    setSelectionMode(QListView::SingleSelection);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setFrameShape(QFrame::NoFrame);
+    setMouseTracking(true);
+    viewport()->setMouseTracking(true);
 }
 
 void ListView::keyPressEvent(QKeyEvent *event)
@@ -47,14 +51,6 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
     }
 }
 
-void ListView::mousePressEvent(QMouseEvent *event)
-{
-    const QModelIndex index = indexAt(event->pos());
-    Q_EMIT extract(index);
-
-    return QListView::mousePressEvent(event);
-}
-
 void ListView::enterEvent(QEvent *event)
 {
     activateWindow();
@@ -66,18 +62,3 @@ void ListView::leaveEvent(QEvent *event)
 {
     return QListView::leaveEvent(event);
 }
-
-bool ListView::eventFilter(QObject *obj, QEvent *event)
-{
-    Q_UNUSED(obj);
-    //FIXME: viewport能接收到hovermove事件,但是listview却接收不到mousemove事件
-    if (event->type() == QEvent::HoverMove) {
-        if (QHoverEvent *hEvent = static_cast<QHoverEvent *>(event)) {
-            QMouseEvent mEvent(QEvent::MouseMove, hEvent->pos(), Qt::NoButton, Qt::NoButton, hEvent->modifiers());
-            mouseMoveEvent(&mEvent);
-            return true;
-        }
-    }
-    return false;
-}
-

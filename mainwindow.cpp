@@ -110,13 +110,6 @@ void MainWindow::initUI()
     // list
     m_listview->setModel(m_model);
     m_listview->setItemDelegate(m_itemDelegate);
-    m_listview->setAutoFillBackground(false);
-    m_listview->viewport()->setAutoFillBackground(false);
-    m_listview->setMouseTracking(true);
-    m_listview->viewport()->setMouseTracking(true);
-    m_listview->setSelectionMode(QListView::SingleSelection);
-    m_listview->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_listview->setFrameShape(QFrame::NoFrame);
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);

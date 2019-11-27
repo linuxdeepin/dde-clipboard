@@ -10,10 +10,8 @@ public:
 
     void keyPressEvent(QKeyEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
     void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
-    bool eventFilter(QObject *obj, QEvent *event) override;
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);

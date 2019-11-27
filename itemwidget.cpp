@@ -61,14 +61,20 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     , m_nameLabel(new DLabel(this))
     , m_timeLabel(new DLabel(this))
     , m_closeButton(new IconButton(this))
-    , m_contentLabel(new PixmapLabel/*Dtk::Widget::DLabel*/(this))
-    , m_statusLabel(new Dtk::Widget::DLabel(this))
+    , m_contentLabel(new PixmapLabel(this))
+    , m_statusLabel(new DLabel(this))
     , m_refreshTimer(new QTimer(this))
     , m_layout(new QVBoxLayout(this))
 {
     initUI();
     initData(m_data);
     initConnect();
+
+    setMouseTracking(true);
+    m_contentLabel->setMouseTracking(true);
+    m_nameLabel->setMouseTracking(true);
+    m_timeLabel->setMouseTracking(true);
+    m_statusLabel->setMouseTracking(true);
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
@@ -160,6 +166,7 @@ void ItemWidget::onHoverStateChanged(bool hover)
     if (hover) {
         m_timeLabel->hide();
         m_closeButton->show();
+        m_closeButton->raise();
     } else {
         m_timeLabel->show();
         m_closeButton->hide();
@@ -203,12 +210,8 @@ void ItemWidget::initUI()
     m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 
-    m_closeButton->setFlat(true);
     m_closeButton->setFixedSize(QSize(TitleHeight, TitleHeight) * 2 / 3);
     m_closeButton->setVisible(false);
-    m_closeButton->setAutoExclusive(true);
-    m_closeButton->setBackgroundRole(DPalette::Button);
-    m_closeButton->setFocusPolicy(Qt::ClickFocus);
     m_closeButton->setText("X");
 
     QPalette pe = m_closeButton->palette();
@@ -408,12 +411,12 @@ void ItemWidget::mousePressEvent(QMouseEvent *event)
 void ItemWidget::enterEvent(QEvent *event)
 {
     Q_EMIT hoverStateChanged(true);
-
     return DWidget::enterEvent(event);
 }
 
 void ItemWidget::leaveEvent(QEvent *event)
 {
+    Q_EMIT closeHasFocus(false);
     Q_EMIT hoverStateChanged(false);
 
     return DWidget::leaveEvent(event);

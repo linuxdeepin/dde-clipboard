@@ -87,7 +87,7 @@ private:
 
     // content
     PixmapLabel *m_contentLabel = nullptr;
-    Dtk::Widget::DLabel *m_statusLabel = nullptr;
+    DLabel *m_statusLabel = nullptr;
 
     QTimer *m_refreshTimer = nullptr;
     QVBoxLayout *m_layout = nullptr;
