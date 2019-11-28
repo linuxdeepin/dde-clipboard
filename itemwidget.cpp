@@ -177,17 +177,6 @@ void ItemWidget::onHoverStateChanged(bool hover)
 void ItemWidget::onRefreshTime()
 {
     m_timeLabel->setText(CreateTimeString(m_createTime));
-
-    m_refreshTimer->stop();
-
-    int interval;
-    int minuteElapsed = int(m_createTime.secsTo(QDateTime::currentDateTime()) / 60);
-    if (minuteElapsed < 60) {
-        interval = 60 * 1000;
-    } else {
-        interval = 60 * 60 * 1000;
-    }
-    m_refreshTimer->start(interval);
 }
 
 void ItemWidget::initUI()
@@ -246,7 +235,6 @@ void ItemWidget::initData(QPointer<ItemData> data)
 {
     setClipType(data->title());
     setCreateTime(data->time());
-
     switch (data->type()) {
     case ItemData::Text: {
         setText(data->text(), data->subTitle());
@@ -308,6 +296,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
 void ItemWidget::initConnect()
 {
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
+    m_refreshTimer->start();
     connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
     connect(m_closeButton, &IconButton::clicked, [ = ] {
         m_data->remove();

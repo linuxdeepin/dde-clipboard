@@ -124,6 +124,7 @@ void ClipboardModel::reborn(ItemData *data)
 
 void ClipboardModel::clipDataChanged()
 {
+    qDebug() << "clipboard data changed";
     const QMimeData *mimeData = m_board->mimeData();
     ItemData *item = new ItemData(mimeData);
     if (item->type() == ItemData::Unknown) {
@@ -132,7 +133,7 @@ void ClipboardModel::clipDataChanged()
     }
 
     if (m_data.size()) {
-        if (item->isEqual(m_data.first())) {
+        if (item->isEqual(m_data.first()) /*&& !item->isValid()*/) {
             item->deleteLater();
             return;
         }

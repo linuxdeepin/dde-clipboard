@@ -139,27 +139,20 @@ void ItemData::popTop()
 
 bool ItemData::isEqual(const ItemData *other)
 {
-    if (m_type != other->m_type)
+    qDebug() << m_formatMap["TIMESTAMP"];
+    if (m_formatMap["TIMESTAMP"].isEmpty()) {//FIXME:深度截图，概率性没有TIMESTAMP
         return false;
-
-    switch (m_type) {
-    case Text:
-        return m_text == other->m_text;
-    case File: {
-        if (m_urls.size() != other->m_urls.size())
-            return false;
-
-        foreach (auto url, m_urls) {
-            if (url != other->m_urls.at(0))
-                return false;
-        }
-
+    }
+    if (m_formatMap["TIMESTAMP"] == QByteArray::fromHex("00000000")) { //FIXME:qq截图的时间戳不变，这里特殊处理
+        return false;
+    }
+    if (m_formatMap["TIMESTAMP"] == other->m_formatMap["TIMESTAMP"]) {
         return true;
     }
-    case Image: {
-        return false;
-    }
-    default:
-        return false;
-    }
+    return false;
+}
+
+bool ItemData::isValid()
+{
+    return !m_formatMap["TIMESTAMP"].isEmpty();
 }

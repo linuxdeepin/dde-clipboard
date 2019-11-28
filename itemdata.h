@@ -58,6 +58,7 @@ public:
     void popTop();
 
     bool isEqual(const ItemData *other);
+    bool isValid();
 
 Q_SIGNALS:
     void destroy(ItemData *data);
