@@ -26,6 +26,7 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QScreen>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -120,9 +121,13 @@ void MainWindow::geometryChanged()
 {
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
-    rect.setWidth(WindowWidth + WindowMargin * 2);
+    qreal scale = qApp->primaryScreen()->devicePixelRatio();
+    rect.setWidth(scale * (WindowWidth + WindowMargin * 2));
+    rect.setHeight(std::round(qreal(rect.height()) / scale));
 
     QRect dockRect = m_dockInter->frontendRect();
+    dockRect.setWidth(std::round(qreal(dockRect.width()) / scale));
+    dockRect.setHeight(std::round(qreal(dockRect.height()) / scale));
 
     switch (m_dockInter->position()) {
     case DOCK_TOP:
