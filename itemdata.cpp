@@ -140,15 +140,23 @@ void ItemData::popTop()
 bool ItemData::isEqual(const ItemData *other)
 {
     qDebug() << m_formatMap["TIMESTAMP"];
+
+    //转移系统剪贴板所有权时造成的两次内容变化不需要显示，以下为与系统约定好的标识
+    if (m_formatMap["FROM_DEEPIN_CLIPBOARD_MANAGER"] == "1") {
+        return true;
+    }
+
     if (m_formatMap["TIMESTAMP"].isEmpty()) {//FIXME:深度截图，概率性没有TIMESTAMP
         return false;
     }
+
     if (m_formatMap["TIMESTAMP"] == QByteArray::fromHex("00000000")) { //FIXME:qq截图的时间戳不变，这里特殊处理
         return false;
     }
     if (m_formatMap["TIMESTAMP"] == other->m_formatMap["TIMESTAMP"]) {
         return true;
     }
+
     return false;
 }
 
