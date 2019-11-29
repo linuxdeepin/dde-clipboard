@@ -57,7 +57,7 @@ autostart.path = /etc/xdg/autostart
 autostart.files = dde-clipboard.desktop
 INSTALLS += autostart
 
-services.path = /share/dbus-1/services
+services.path = /usr/share/dbus-1/services
 services.files = com.deepin.dde.Clipboard.service
 INSTALLS += services
 
