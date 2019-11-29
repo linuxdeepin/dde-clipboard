@@ -9,6 +9,7 @@ public:
     ListView(QWidget *parent = nullptr);
 
     virtual void keyPressEvent(QKeyEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
     virtual void enterEvent(QEvent *event) override;
     virtual void leaveEvent(QEvent *event) override;
 

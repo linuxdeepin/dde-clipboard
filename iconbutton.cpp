@@ -15,15 +15,9 @@ IconButton::IconButton(QWidget *parent)
 }
 
 IconButton::IconButton(const QString &text, QWidget *parent)
-    : DWidget(parent)
-    , m_text(text)
-    , m_hasFocus(false)
-    , m_hover(false)
-    , m_opacity(0)
-    , m_radius(8)
-    , m_hasBackColor(false)
+    : IconButton(parent)
 {
-
+    setText(text);
 }
 
 void IconButton::setText(const QString &text)
