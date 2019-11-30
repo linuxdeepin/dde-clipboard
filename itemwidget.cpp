@@ -69,12 +69,6 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     initUI();
     initData(m_data);
     initConnect();
-
-    setMouseTracking(true);
-    m_contentLabel->setMouseTracking(true);
-    m_nameLabel->setMouseTracking(true);
-    m_timeLabel->setMouseTracking(true);
-    m_statusLabel->setMouseTracking(true);
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
@@ -201,11 +195,6 @@ void ItemWidget::initUI()
     m_closeButton->setFixedSize(QSize(ItemTitleHeight, ItemTitleHeight) * 2 / 3);
     m_closeButton->setRadius(ItemTitleHeight);
     m_closeButton->setVisible(false);
-    m_closeButton->setText("X");
-
-    QPalette pe = m_closeButton->palette();
-    pe.setColor(QPalette::Button, pe.color(QPalette::Base));
-    m_closeButton->setPalette(pe);
 
     m_refreshTimer->setInterval(60 * 1000);
 
@@ -229,6 +218,12 @@ void ItemWidget::initUI()
     setRadius(8);
 
     setFocusPolicy(Qt::StrongFocus);
+
+    setMouseTracking(true);
+    m_contentLabel->setMouseTracking(true);
+    m_nameLabel->setMouseTracking(true);
+    m_timeLabel->setMouseTracking(true);
+    m_statusLabel->setMouseTracking(true);
 }
 
 void ItemWidget::initData(QPointer<ItemData> data)

@@ -1,6 +1,7 @@
 #include "iconbutton.h"
 
 #include <QPainter>
+#include <QIcon>
 
 IconButton::IconButton(QWidget *parent)
     : DWidget(parent)
@@ -32,7 +33,7 @@ void IconButton::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this);
 
-    painter.setRenderHint(QPainter::Antialiasing);
+   painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     QColor color;
     if (m_hasBackColor) {
@@ -40,7 +41,7 @@ void IconButton::paintEvent(QPaintEvent *event)
         color.setAlpha(m_hover ? m_opacity : (m_opacity / 2));
     } else {
         color = palette().color(QPalette::WindowText);
-        color.setAlpha(m_hasFocus ? 80 : (m_hover ? 40 : 0));
+        color.setAlpha(m_hasFocus ? 80 : (m_hover ? 50 : 20));
     }
 
     painter.setPen(Qt::NoPen);
@@ -51,6 +52,12 @@ void IconButton::paintEvent(QPaintEvent *event)
     option.setAlignment(Qt::AlignCenter);
     painter.setPen(palette().color(QPalette::WindowText));
     painter.drawText(rect(), m_text, option);
+
+    if(m_text.isEmpty())
+    {
+        QPixmap pix = QIcon::fromTheme(QLatin1String("window-close")).pixmap(128);
+        painter.drawPixmap(rect(),pix);
+    }
 }
 
 void IconButton::setFocusState(bool has)
