@@ -122,7 +122,7 @@ void MainWindow::geometryChanged()
     // 屏幕尺寸
     QRect rect = m_displayInter->primaryRawRect();
     qreal scale = qApp->primaryScreen()->devicePixelRatio();
-    rect.setWidth(scale * (WindowWidth + WindowMargin * 2));
+    rect.setWidth(WindowWidth + WindowMargin * 2);
     rect.setHeight(std::round(qreal(rect.height()) / scale));
 
     QRect dockRect = m_dockInter->frontendRect();
