@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = dde-clipboard
 TEMPLATE = app
 CONFIG += c++11 link_pkgconfig
-PKGCONFIG += dtkwidget dtkgui
+PKGCONFIG += dtkwidget dtkgui gio-qt
 
 DBUS_ADAPTORS += ./com.deepin.dde.Clipboard.xml
 

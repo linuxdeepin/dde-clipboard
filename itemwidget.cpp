@@ -38,21 +38,36 @@
 #include <QBitmap>
 #include <QImageReader>
 #include <QFileIconProvider>
+#include <QMimeDatabase>
+#include <QIcon>
+#include <QScopedPointer>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
 
+#include "dgiofile.h"
+#include "dgiofileinfo.h"
+
 static QPixmap GetFileIcon(QString path)
 {
-    QPixmap pixmap;
-    QFileIconProvider provider;
-    QFileInfo fileInfo(path);
-    if (fileInfo.suffix().isEmpty() && QDir(path).exists()) {
-        pixmap = provider.icon(QFileIconProvider::Folder).pixmap(FileIconWidth, FileIconWidth);
-    } else {
-        pixmap = provider.icon(fileInfo).pixmap(FileIconWidth, FileIconWidth);
+    QFileInfo info(path);
+    QIcon icon;
+    QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
+    QExplicitlySharedDataPointer<DGioFileInfo> fileinfo = file->createFileInfo();
+    if (!fileinfo) {
+        return icon.pixmap(FileIconWidth, FileIconWidth);
     }
-    return pixmap;
+
+    QStringList icons = fileinfo->themedIconNames();
+    if (!icons.isEmpty()) return QIcon::fromTheme(icons.first()).pixmap(FileIconWidth, FileIconWidth);
+    QString iconStr(fileinfo->iconString());
+    if (iconStr.startsWith('/')) {
+        icon = QIcon(iconStr);
+    } else {
+        icon = QIcon::fromTheme(iconStr);
+    }
+
+    return icon.pixmap(FileIconWidth, FileIconWidth);
 }
 
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
