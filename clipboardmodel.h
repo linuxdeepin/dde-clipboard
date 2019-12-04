@@ -42,6 +42,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void dataChanged();
+    void dataComing();
 
 protected:
     int rowCount(const QModelIndex &parent) const override;

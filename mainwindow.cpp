@@ -108,6 +108,10 @@ void MainWindow::initConnect()
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
 
+    connect(m_model, &ClipboardModel::dataComing, this, [ = ] {
+            m_listview->scrollToTop();
+    });
+
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 }
 
