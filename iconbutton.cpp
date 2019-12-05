@@ -2,6 +2,8 @@
 
 #include <QPainter>
 #include <QIcon>
+#include <QStyle>
+#include <QDebug>
 
 IconButton::IconButton(QWidget *parent)
     : DWidget(parent)
@@ -33,7 +35,7 @@ void IconButton::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this);
 
-   painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     QColor color;
     if (m_hasBackColor) {
@@ -53,10 +55,9 @@ void IconButton::paintEvent(QPaintEvent *event)
     painter.setPen(palette().color(QPalette::WindowText));
     painter.drawText(rect(), m_text, option);
 
-    if(m_text.isEmpty())
-    {
-        QPixmap pix = QIcon::fromTheme(QLatin1String("window-close")).pixmap(128);
-        painter.drawPixmap(rect(),pix);
+    if (m_text.isEmpty()) {
+        QPixmap pix = style()->standardIcon(QStyle::SP_TitleBarCloseButton).pixmap(width());
+        painter.drawPixmap(rect(), pix);
     }
 }
 

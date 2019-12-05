@@ -12,6 +12,7 @@ public:
     virtual void mouseMoveEvent(QMouseEvent *event) override;
     virtual void enterEvent(QEvent *event) override;
     virtual void leaveEvent(QEvent *event) override;
+    virtual void showEvent(QShowEvent *event) override;
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);

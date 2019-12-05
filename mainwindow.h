@@ -37,9 +37,11 @@
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 class QPushButton;
+class QPropertyAnimation;
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
+    Q_PROPERTY(int width WRITE setFixedWidth)
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -49,12 +51,15 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void geometryChanged();
+    void showAni();
+    void hideAni();
 
 protected:
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
     void initUI();
+    void initAni();
     void initConnect();
 
 private:
@@ -66,6 +71,12 @@ private:
     ItemDelegate *m_itemDelegate;
 
     DBusDock *m_dockInter;
+
+    QTime m_aniTickTime;
+    QPropertyAnimation *m_inAni;
+    QPropertyAnimation *m_outAni;
+    QRect m_rect;
+    bool m_start;
 };
 
 #endif // MAINWINDOW_H

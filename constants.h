@@ -46,6 +46,7 @@ const static int PixmapxStep = 15;
 const static int PixmapyStep = 5;
 const static int ContentMargin = 21;
 const static int TextContentTopMargin = 20;
+const static int AnimationTime = 300;           //ms
 
 static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
 static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";

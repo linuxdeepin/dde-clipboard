@@ -63,3 +63,10 @@ void ListView::leaveEvent(QEvent *event)
 {
     return QListView::leaveEvent(event);
 }
+
+void ListView::showEvent(QShowEvent *event)
+{
+    setFocus();
+
+    return QListView::showEvent(event);
+}

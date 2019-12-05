@@ -27,6 +27,7 @@
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QScreen>
+#include <QPropertyAnimation>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -43,10 +44,12 @@ MainWindow::MainWindow(QWidget *parent)
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
     , m_dockInter(new DBusDock)
+    , m_inAni(new QPropertyAnimation(this))
+    , m_outAni(new QPropertyAnimation(this))
+    , m_start(false)
 {
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-
     initUI();
+    initAni();
     initConnect();
 
     geometryChanged();
@@ -59,16 +62,24 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    setVisible(windowState() == Qt::WindowMinimized || !isVisible());
+    if(m_aniTickTime.elapsed() < AnimationTime && m_start)
+        return;
+
+    m_start = true;
+    m_aniTickTime.restart();
 
     if (isVisible()) {
-        //显示后，在桌面Super+D快捷键，再点击桌面空白处，此时无法show出，需active
-        activateWindow();
+        hideAni();
+    }
+    else {
+        showAni();
     }
 }
 
 void MainWindow::initUI()
 {
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -94,10 +105,26 @@ void MainWindow::initUI()
 
     m_listview->setModel(m_model);
     m_listview->setItemDelegate(m_itemDelegate);
+    m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
     setLayout(mainLayout);
+}
+
+void MainWindow::initAni()
+{
+    m_inAni->setEasingCurve(QEasingCurve::OutCirc);
+    m_inAni->setPropertyName("width");
+    m_inAni->setTargetObject(this);
+    m_inAni->setDuration(AnimationTime);
+
+    m_outAni->setEasingCurve(QEasingCurve::OutCubic);
+    m_outAni->setPropertyName("width");
+    m_outAni->setTargetObject(this);
+    m_outAni->setDuration(AnimationTime);
+
+    m_aniTickTime.start();
 }
 
 void MainWindow::initConnect()
@@ -109,7 +136,7 @@ void MainWindow::initConnect()
     });
 
     connect(m_model, &ClipboardModel::dataComing, this, [ = ] {
-            m_listview->scrollToTop();
+        m_listview->scrollToTop();
     });
 
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
@@ -148,6 +175,30 @@ void MainWindow::geometryChanged()
 
     rect = rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin));
     setGeometry(rect);
+    m_rect = rect;
     setFixedSize(rect.size());
 }
 
+void MainWindow::showAni()
+{
+    show();
+
+    //显示后，在桌面Super+D快捷键，再点击桌面空白处，此时无法show出，需active
+    activateWindow();
+
+    m_inAni->setStartValue(this->width());
+    m_inAni->setEndValue(m_rect.width());
+    m_inAni->start();
+}
+
+void MainWindow::hideAni()
+{
+    //避免动画过程中listview中的item获得焦点，从而变颜色
+    setFocus();
+
+    m_outAni->setStartValue(this->width());
+    m_outAni->setEndValue(0);
+    m_outAni->start();
+
+    QTimer::singleShot(AnimationTime,[=]{setVisible(false);});
+}
