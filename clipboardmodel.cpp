@@ -146,6 +146,5 @@ void ClipboardModel::clipDataChanged()
 
     endInsertRows();
 
-    Q_EMIT dataComing();
     Q_EMIT dataChanged();
 }

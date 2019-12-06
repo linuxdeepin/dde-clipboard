@@ -28,6 +28,8 @@
 #include <QScrollBar>
 #include <QScreen>
 #include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QSequentialAnimationGroup>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -40,13 +42,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay(this))
+    , m_dockInter(new DBusDock)
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
-    , m_dockInter(new DBusDock)
-    , m_inAni(new QPropertyAnimation(this))
-    , m_outAni(new QPropertyAnimation(this))
-    , m_start(false)
+    , m_aniGroup(new QSequentialAnimationGroup(this))
+    , m_heightAniGroup(new QParallelAnimationGroup(this))
+    , m_widthAni(new QPropertyAnimation(this))
+    , m_heightAni(new QPropertyAnimation(this))
+    , m_yAni(new QPropertyAnimation(this))
 {
     initUI();
     initAni();
@@ -62,11 +66,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    if(m_aniTickTime.elapsed() < AnimationTime && m_start)
+    if(m_aniGroup->state() == QAbstractAnimation::Running)
         return;
-
-    m_start = true;
-    m_aniTickTime.restart();
 
     if (isVisible()) {
         hideAni();
@@ -74,78 +75,6 @@ void MainWindow::Toggle()
     else {
         showAni();
     }
-}
-
-void MainWindow::initUI()
-{
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(0);
-
-    // title
-    QWidget *titleWidget = new QWidget;
-    QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
-    titleLayout->setContentsMargins(20, 0, 10, 0);
-
-    QLabel *titleLabel = new QLabel(tr("Clipboard"));
-    titleLabel->setFont(DFontSizeManager::instance()->t3());
-
-    m_clearButton = new IconButton(tr("Clear all"));
-    connect(m_clearButton, &IconButton::clicked, m_model, &ClipboardModel::clear);
-
-    titleLayout->addWidget(titleLabel);
-    titleLayout->addWidget(m_clearButton);
-    m_clearButton->setFixedSize(100, 36);
-    m_clearButton->setBackOpacity(200);
-    m_clearButton->setRadius(8);
-    m_clearButton->setVisible(false);
-    titleWidget->setFixedSize(WindowWidth, WindowTitleHeight);
-
-    m_listview->setModel(m_model);
-    m_listview->setItemDelegate(m_itemDelegate);
-    m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
-
-    mainLayout->addWidget(titleWidget);
-    mainLayout->addWidget(m_listview);
-    setLayout(mainLayout);
-}
-
-void MainWindow::initAni()
-{
-    m_inAni->setEasingCurve(QEasingCurve::OutCirc);
-    m_inAni->setPropertyName("width");
-    m_inAni->setTargetObject(this);
-    m_inAni->setDuration(AnimationTime);
-
-    m_outAni->setEasingCurve(QEasingCurve::OutCubic);
-    m_outAni->setPropertyName("width");
-    m_outAni->setTargetObject(this);
-    m_outAni->setDuration(AnimationTime);
-
-    m_aniTickTime.start();
-}
-
-void MainWindow::initConnect()
-{
-    connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
-
-    connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
-        m_clearButton->setVisible(m_model->data().size() != 0);
-    });
-
-    connect(m_model, &ClipboardModel::dataComing, this, [ = ] {
-        m_listview->scrollToTop();
-    });
-
-    connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
-}
-
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    Q_UNUSED(event);
-    return;
 }
 
 void MainWindow::geometryChanged()
@@ -177,22 +106,108 @@ void MainWindow::geometryChanged()
     setGeometry(rect);
     m_rect = rect;
     setFixedSize(rect.size());
+
+    //init animation by 'm_rect'
+    m_widthAni->setStartValue(m_rect.width());
+    m_widthAni->setEndValue(2);
+    m_heightAni->setStartValue(m_rect.height());
+    m_heightAni->setEndValue(0);
+    m_yAni->setStartValue(m_rect.y());
+    m_yAni->setEndValue(m_rect.y() + m_rect.height()/2);
 }
 
 void MainWindow::showAni()
 {
+    move(m_rect.x(),m_rect.y() + m_rect.height()/2);
+    setFixedWidth(2);
+
     show();
 
-    m_inAni->setStartValue(this->width());
-    m_inAni->setEndValue(m_rect.width());
-    m_inAni->start();
+    m_aniGroup->setDirection(QAbstractAnimation::Backward);
+    m_aniGroup->start();
 }
 
 void MainWindow::hideAni()
 {
-    m_outAni->setStartValue(this->width());
-    m_outAni->setEndValue(0);
-    m_outAni->start();
+    m_aniGroup->setDirection(QAbstractAnimation::Forward);
+    m_aniGroup->start();
 
-    QTimer::singleShot(AnimationTime,[=]{setVisible(false);});
+    QTimer::singleShot(m_aniGroup->duration(),this,[=]{setVisible(false);});
+}
+
+void MainWindow::setY(int y)
+{
+    move(this->x(),y);
+}
+
+void MainWindow::initUI()
+{
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    QWidget *titleWidget = new QWidget;
+    QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
+    titleLayout->setContentsMargins(20, 0, 10, 0);
+
+    QLabel *titleLabel = new QLabel(tr("Clipboard"));
+    titleLabel->setFont(DFontSizeManager::instance()->t3());
+
+    m_clearButton = new IconButton(tr("Clear all"));
+    connect(m_clearButton, &IconButton::clicked, m_model, &ClipboardModel::clear);
+
+    titleLayout->addWidget(titleLabel);
+    titleLayout->addWidget(m_clearButton);
+    m_clearButton->setFixedSize(100, 36);
+    m_clearButton->setBackOpacity(200);
+    m_clearButton->setRadius(8);
+    m_clearButton->setVisible(false);
+    titleWidget->setFixedSize(WindowWidth, WindowTitleHeight);
+
+    m_listview->setModel(m_model);
+    m_listview->setItemDelegate(m_itemDelegate);
+    m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
+
+    mainLayout->addWidget(titleWidget);
+    mainLayout->addWidget(m_listview);
+    setLayout(mainLayout);
+}
+
+void MainWindow::initAni()
+{
+    m_widthAni->setEasingCurve(QEasingCurve::InQuad);
+    m_widthAni->setPropertyName("width");
+    m_widthAni->setTargetObject(this);
+    m_widthAni->setDuration(AnimationTime);
+
+    m_heightAni->setEasingCurve(QEasingCurve::InExpo);
+    m_heightAni->setPropertyName("height");
+    m_heightAni->setTargetObject(this);
+    m_heightAni->setDuration(AnimationTime);
+
+    m_yAni->setEasingCurve(QEasingCurve::InExpo);
+    m_yAni->setPropertyName("y");
+    m_yAni->setTargetObject(this);
+    m_yAni->setDuration(AnimationTime);
+
+    //控制基线动画，并行
+    m_heightAniGroup->addAnimation(m_heightAni);
+    m_heightAniGroup->addAnimation(m_yAni);
+
+    //控制消失动画，序列
+    m_aniGroup->addAnimation(m_widthAni);
+    m_aniGroup->addAnimation(m_heightAniGroup);
+}
+
+void MainWindow::initConnect()
+{
+    connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
+
+    connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
+        m_clearButton->setVisible(m_model->data().size() != 0);
+    });
+
+    connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 }
