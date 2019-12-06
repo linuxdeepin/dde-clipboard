@@ -57,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
     initConnect();
 
     geometryChanged();
+
+    installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -66,13 +68,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    if(m_aniGroup->state() == QAbstractAnimation::Running)
+    if (m_aniGroup->state() == QAbstractAnimation::Running)
         return;
 
     if (isVisible()) {
         hideAni();
-    }
-    else {
+    } else {
         showAni();
     }
 }
@@ -83,11 +84,11 @@ void MainWindow::geometryChanged()
     QRect rect = m_displayInter->primaryRawRect();
     qreal scale = qApp->primaryScreen()->devicePixelRatio();
     rect.setWidth(WindowWidth + WindowMargin * 2);
-    rect.setHeight(std::round(qreal(rect.height()) / scale));
+    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
 
     QRect dockRect = m_dockInter->frontendRect();
-    dockRect.setWidth(std::round(qreal(dockRect.width()) / scale));
-    dockRect.setHeight(std::round(qreal(dockRect.height()) / scale));
+    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
+    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
 
     switch (m_dockInter->position()) {
     case DOCK_TOP:
@@ -113,12 +114,12 @@ void MainWindow::geometryChanged()
     m_heightAni->setStartValue(m_rect.height());
     m_heightAni->setEndValue(0);
     m_yAni->setStartValue(m_rect.y());
-    m_yAni->setEndValue(m_rect.y() + m_rect.height()/2);
+    m_yAni->setEndValue(m_rect.y() + m_rect.height() / 2);
 }
 
 void MainWindow::showAni()
 {
-    move(m_rect.x(),m_rect.y() + m_rect.height()/2);
+    move(m_rect.x(), m_rect.y() + m_rect.height() / 2);
     setFixedWidth(2);
 
     show();
@@ -132,12 +133,12 @@ void MainWindow::hideAni()
     m_aniGroup->setDirection(QAbstractAnimation::Forward);
     m_aniGroup->start();
 
-    QTimer::singleShot(m_aniGroup->duration(),this,[=]{setVisible(false);});
+    QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
 }
 
 void MainWindow::setY(int y)
 {
-    move(this->x(),y);
+    move(this->x(), y);
 }
 
 void MainWindow::initUI()
@@ -210,4 +211,22 @@ void MainWindow::initConnect()
     });
 
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == this) {
+        if (event->type() == QEvent::WindowDeactivate
+                && m_aniGroup->state() != QAbstractAnimation::Running) {
+            hideAni();
+        }
+    }
+    return false;
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    //禁止窗口被拖动
+    Q_UNUSED(event);
+    return;
 }

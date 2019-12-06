@@ -64,6 +64,10 @@ private:
     void initAni();
     void initConnect();
 
+protected:
+    virtual bool eventFilter(QObject *obj,QEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+
 private:
     DBusDisplay *m_displayInter;
     DBusDock *m_dockInter;
