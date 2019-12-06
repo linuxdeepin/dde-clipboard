@@ -183,12 +183,12 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
                         path.lineTo(lastLineRect.right() + backgroundRadius, lastLineRect.bottom() - backgroundRadius * 2);
                         path.arcTo(lastLineRect.right() + backgroundRadius, lastLineRect.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 180, 90);
 
-//                        path.arcTo(lastLineRect.x() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
-//                        path.lineTo(lastLineRect.x() - backgroundReaius * 3, lastLineRect.bottom());
-//                        path.moveTo(lastLineRect.right(), lastLineRect.bottom());
-//                        path.arcTo(lastLineRect.right() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 270, 90);
-//                        path.arcTo(lastLineRect.right() + backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
-//                        path.lineTo(lastLineRect.right(), lastLineRect.bottom());
+                        //                        path.arcTo(lastLineRect.x() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
+                        //                        path.lineTo(lastLineRect.x() - backgroundReaius * 3, lastLineRect.bottom());
+                        //                        path.moveTo(lastLineRect.right(), lastLineRect.bottom());
+                        //                        path.arcTo(lastLineRect.right() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 270, 90);
+                        //                        path.arcTo(lastLineRect.right() + backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
+                        //                        path.lineTo(lastLineRect.right(), lastLineRect.bottom());
 
                         path.addRoundedRect(backBounding, backgroundRadius, backgroundRadius);
                         lastLineRect = rect;
@@ -221,12 +221,12 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
 
         offset.setY(offset.y() + lineHeight);
 
-//        // find '\n'
-//        int text_length_line = line.textLength();
-//        for (int start = line.textStart(); start < line.textStart() + text_length_line; ++start) {
-//            if (text.at(start) == '\n')
-//                height += lineHeight;
-//        }
+        //        // find '\n'
+        //        int text_length_line = line.textLength();
+        //        for (int start = line.textStart(); start < line.textStart() + text_length_line; ++start) {
+        //            if (text.at(start) == '\n')
+        //                height += lineHeight;
+        //        }
 
         if (lines) {
             lines->append(text.mid(line.textStart(), line.textLength()));
@@ -239,6 +239,22 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
     }
 
     layout->endLayout();
+}
+
+QPair<QString,int> PixmapLabel::getNextValidString(const QStringList &list, int from)
+{
+    if(from < 0 || from > list.size() - 1)
+        return QPair<QString,int>("",list.size() - 1);
+
+    for(int i = from;i<list.size(); ++i)
+    {
+        if(!list.at(i).trimmed().isEmpty())
+        {
+            return QPair<QString,int>(list.at(i).trimmed(),i + 1);
+        }
+    }
+
+    return QPair<QString,int>("",list.size() - 1);
 }
 
 QString PixmapLabel::elideText(const QString &text, const QSizeF &size,
@@ -283,7 +299,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         }
     }
 
-//draw lines
+    //draw lines
     if (!m_text.isEmpty()) {
         int lineNum = 4;
         int lineHeight = (height() - TextContentTopMargin) / 4;
@@ -300,6 +316,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
         static const int maxLineCount = 4;
         int textIndex = 0;
+        int lineFrom = 0;
         for (int rectIndex = 0; textIndex < labelTexts.length(); rectIndex++, textIndex++) {
             if (textIndex > (maxLineCount - 1)) {
                 break;
@@ -308,13 +325,10 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             QTextOption option;
             option.setAlignment(Qt::AlignBottom);
             painter.setPen(palette().color(QPalette::Text));
-            if (labelTexts.at(textIndex).simplified().isEmpty()) {
-                textIndex ++ ;
-                if (textIndex >= labelTexts.length() || textIndex > (maxLineCount - 1)) {
-                    break;
-                }
-            }
-            painter.drawText(textRect, labelTexts.at(textIndex).trimmed(), option);
+
+            QPair<QString,int> pair = getNextValidString(labelTexts,lineFrom);
+            lineFrom = pair.second;
+            painter.drawText(textRect, pair.first.trimmed(), option);
         }
     }
     return DLabel::paintEvent(event);

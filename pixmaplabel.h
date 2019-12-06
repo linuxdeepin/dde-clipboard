@@ -64,6 +64,10 @@ private:
     QString m_text;
     QList<QPixmap> m_pixmapList;
 
+private:
+    //return para:《有效字符，截止行》
+    QPair<QString,int> getNextValidString(const QStringList &list,int from);
+
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
 };
