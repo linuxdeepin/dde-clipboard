@@ -52,21 +52,14 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
     return QListView::mouseMoveEvent(event);
 }
 
-void ListView::enterEvent(QEvent *event)
-{
-    activateWindow();
-
-    return QListView::enterEvent(event);
-}
-
-void ListView::leaveEvent(QEvent *event)
-{
-    return QListView::leaveEvent(event);
-}
-
 void ListView::showEvent(QShowEvent *event)
 {
     setFocus();
+
+    activateWindow();
+
+    scrollTo(model()->index(-1,-1));
+    setCurrentIndex(model()->index(-1,-1));
 
     return QListView::showEvent(event);
 }

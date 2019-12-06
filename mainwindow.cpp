@@ -183,9 +183,6 @@ void MainWindow::showAni()
 {
     show();
 
-    //显示后，在桌面Super+D快捷键，再点击桌面空白处，此时无法show出，需active
-    activateWindow();
-
     m_inAni->setStartValue(this->width());
     m_inAni->setEndValue(m_rect.width());
     m_inAni->start();
@@ -193,9 +190,6 @@ void MainWindow::showAni()
 
 void MainWindow::hideAni()
 {
-    //避免动画过程中listview中的item获得焦点，从而变颜色
-    setFocus();
-
     m_outAni->setStartValue(this->width());
     m_outAni->setEndValue(0);
     m_outAni->start();
