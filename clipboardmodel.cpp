@@ -94,6 +94,8 @@ void ClipboardModel::reborn(ItemData *data)
     m_data.removeOne(data);
     endRemoveRows();
 
+    //TODO  是文件时，判断文件是否还存在，不存在需要提示【等待设计图】
+
     QMimeData *mimeData = new QMimeData;
 
     QMapIterator<QString, QByteArray> it(data->formatMap());
