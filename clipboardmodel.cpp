@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QPointer>
 #include <QDebug>
+#include <QDir>
 
 ClipboardModel::ClipboardModel(QListView *list, QObject *parent) : QAbstractListModel(parent)
     , m_board(QApplication::clipboard())
@@ -93,8 +94,6 @@ void ClipboardModel::reborn(ItemData *data)
     beginRemoveRows(QModelIndex(), idx, idx);
     m_data.removeOne(data);
     endRemoveRows();
-
-    //TODO  是文件时，判断文件是否还存在，不存在需要提示【等待设计图】
 
     QMimeData *mimeData = new QMimeData;
 

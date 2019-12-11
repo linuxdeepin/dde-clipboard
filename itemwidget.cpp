@@ -98,7 +98,7 @@ static QPixmap GetFileIcon(QString path)
     QFileInfo info(path);
     QIcon icon;
 
-    if (!QDir().exists(path)) {
+    if (!QFileInfo::exists(path)) {
         return QPixmap();
     }
     QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
@@ -482,6 +482,33 @@ void ItemWidget::paintEvent(QPaintEvent *event)
 
 void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
+    if (!m_enabled) {
+        return DWidget::mousePressEvent(event);
+    }
+
+    if (m_data->type() == ItemData::File) {
+        QList<QUrl> urls = m_data->urls();
+        bool has = false;
+        foreach (auto url, urls) {
+            //mid(6)是为了去掉url里面的"file://"部分
+            if (QDir().exists(url.toString().mid(6))) {
+                has = true;
+            }
+        }
+        if (!has) {
+            m_enabled = false;
+            //源文件被删除需要提示
+            m_contentLabel->setEnabled(false);
+            QFontMetrics metrix = m_statusLabel->fontMetrics();
+            QString tips = tr("(File deleted)");
+            int tipsWidth = metrix.width(tips);
+            QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
+            m_statusLabel->setText(text + tips);
+
+            return DWidget::mousePressEvent(event);
+        }
+    }
+
     m_data->popTop();
 
     return DWidget::mousePressEvent(event);

@@ -278,6 +278,10 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setPen(Qt::transparent);
 
+    QStyle *style = QWidget::style();
+    QStyleOption opt;
+    opt.initFrom(this);
+
     //drawPixmaps
     if (m_pixmapList.size() == 1) {
         QPixmap pix = m_pixmapList[0];
@@ -285,7 +289,8 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         int x = int(width() - pix.size().width() / scale) / 2;
         int y = int(height() - pix.size().height() / scale) / 2;
 
-        painter.drawPixmap(x, y, pix.scaled(pix.size() / scale, Qt::KeepAspectRatio));
+        QPixmap newPix = pix.scaled(pix.size() / scale, Qt::KeepAspectRatio);
+        style->drawItemPixmap(&painter, QRect(QPoint(x, y),newPix.size()), Qt::AlignCenter, newPix);
     } else {
         for (int i = 0 ; i < m_pixmapList.size(); ++i) {
             QPixmap pix = m_pixmapList[i];
@@ -295,7 +300,10 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             int x = int(width() - pix.size().width() / scale) / 2 + (i - 1) * PixmapxStep;
             int y = int(height() - pix.size().height() / scale) / 2 + (i - 1) * PixmapyStep;
 
-            painter.drawPixmap(x, y, pix.scaled(pix.size() / scale, Qt::KeepAspectRatio));
+            if (!isEnabled())
+                pix = style->generatedIconPixmap(QIcon::Disabled, pix, &opt);
+            QPixmap newPix = pix.scaled(pix.size() / scale, Qt::KeepAspectRatio);
+            style->drawItemPixmap(&painter, QRect(QPoint(x, y),newPix.size()), Qt::AlignCenter, newPix);
         }
     }
 
