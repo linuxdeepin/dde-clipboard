@@ -480,7 +480,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
     return DWidget::paintEvent(event);
 }
 
-void ItemWidget::mousePressEvent(QMouseEvent *event)
+void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     m_data->popTop();
 

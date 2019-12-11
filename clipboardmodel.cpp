@@ -122,6 +122,8 @@ void ClipboardModel::reborn(ItemData *data)
     m_board->setMimeData(mimeData);
 
     data->deleteLater();
+
+    Q_EMIT dataReborn();
 }
 
 void ClipboardModel::clipDataChanged()

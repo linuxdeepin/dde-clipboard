@@ -210,14 +210,17 @@ void MainWindow::initConnect()
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
 
+    connect(m_model, &ClipboardModel::dataReborn, this, [ = ] {
+        hideAni();
+    });
+
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == this) {
-        if (event->type() == QEvent::WindowDeactivate
-                && m_aniGroup->state() != QAbstractAnimation::Running) {
+        if (event->type() == QEvent::WindowDeactivate) {
             hideAni();
         }
     }
