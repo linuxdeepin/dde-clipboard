@@ -46,19 +46,19 @@ MainWindow::MainWindow(QWidget *parent)
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
-    , m_aniGroup(new QSequentialAnimationGroup(this))
-    , m_heightAniGroup(new QParallelAnimationGroup(this))
     , m_widthAni(new QPropertyAnimation(this))
-    , m_heightAni(new QPropertyAnimation(this))
-    , m_yAni(new QPropertyAnimation(this))
+    , m_wmHelper(DWindowManagerHelper::instance())
 {
     initUI();
     initAni();
     initConnect();
 
     geometryChanged();
+    CompositeChanged();
 
     installEventFilter(this);
+
+    m_tickTime.start();
 }
 
 MainWindow::~MainWindow()
@@ -68,7 +68,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    if (m_aniGroup->state() == QAbstractAnimation::Running)
+    if (m_widthAni->state() == QAbstractAnimation::Running)
         return;
 
     if (isVisible()) {
@@ -111,34 +111,58 @@ void MainWindow::geometryChanged()
     //init animation by 'm_rect'
     m_widthAni->setStartValue(m_rect.width());
     m_widthAni->setEndValue(2);
-    m_heightAni->setStartValue(m_rect.height());
-    m_heightAni->setEndValue(0);
-    m_yAni->setStartValue(m_rect.y());
-    m_yAni->setEndValue(m_rect.y() + m_rect.height() / 2);
 }
 
 void MainWindow::showAni()
 {
-    move(m_rect.x(), m_rect.y() + m_rect.height() / 2);
-    setFixedWidth(2);
+    if (!m_hasComposite && m_tickTime.elapsed() < 100) {
+        return;
+    }
+
+    m_tickTime.restart();
+
+    if (!m_hasComposite) {
+        move(m_rect.x(), m_rect.y());
+        setFixedWidth(m_rect.width());
+        show();
+        return;
+    }
+
+    move(m_rect.x(), m_rect.y());
+    setFixedWidth(0);
 
     show();
 
-    m_aniGroup->setDirection(QAbstractAnimation::Backward);
-    m_aniGroup->start();
+    m_widthAni->setDirection(QAbstractAnimation::Backward);
+    m_widthAni->start();
 }
 
 void MainWindow::hideAni()
 {
-    m_aniGroup->setDirection(QAbstractAnimation::Forward);
-    m_aniGroup->start();
+    if (!m_hasComposite && m_tickTime.elapsed() < 100) {
+        return;
+    }
 
-    QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
+    m_tickTime.restart();
+
+    if (!m_hasComposite) {
+        hide();
+        return;
+    }
+    m_widthAni->setDirection(QAbstractAnimation::Forward);
+    m_widthAni->start();
+
+    QTimer::singleShot(m_widthAni->duration(), this, [ = ] {setVisible(false);});
 }
 
 void MainWindow::setY(int y)
 {
     move(this->x(), y);
+}
+
+void MainWindow::CompositeChanged()
+{
+    m_hasComposite = m_wmHelper->hasComposite();
 }
 
 void MainWindow::initUI()
@@ -174,6 +198,8 @@ void MainWindow::initUI()
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
     setLayout(mainLayout);
+
+    setFocusPolicy(Qt::NoFocus);
 }
 
 void MainWindow::initAni()
@@ -182,24 +208,6 @@ void MainWindow::initAni()
     m_widthAni->setPropertyName("width");
     m_widthAni->setTargetObject(this);
     m_widthAni->setDuration(AnimationTime);
-
-    m_heightAni->setEasingCurve(QEasingCurve::InExpo);
-    m_heightAni->setPropertyName("height");
-    m_heightAni->setTargetObject(this);
-    m_heightAni->setDuration(AnimationTime);
-
-    m_yAni->setEasingCurve(QEasingCurve::InExpo);
-    m_yAni->setPropertyName("y");
-    m_yAni->setTargetObject(this);
-    m_yAni->setDuration(AnimationTime);
-
-    //控制基线动画，并行
-    m_heightAniGroup->addAnimation(m_heightAni);
-    m_heightAniGroup->addAnimation(m_yAni);
-
-    //控制消失动画，序列
-    m_aniGroup->addAnimation(m_widthAni);
-    m_aniGroup->addAnimation(m_heightAniGroup);
 }
 
 void MainWindow::initConnect()
@@ -215,13 +223,25 @@ void MainWindow::initConnect()
     });
 
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+
+    connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == this) {
         if (event->type() == QEvent::WindowDeactivate) {
-            hideAni();
+
+            m_tickTime.restart();
+
+            if (!m_hasComposite) {
+                hide();
+                return false;
+            }
+            m_widthAni->setDirection(QAbstractAnimation::Forward);
+            m_widthAni->start();
+
+            QTimer::singleShot(m_widthAni->duration(), this, [ = ] {setVisible(false);});
         }
     }
     return false;

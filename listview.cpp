@@ -3,6 +3,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QTimer>
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
@@ -54,12 +55,10 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
 
 void ListView::showEvent(QShowEvent *event)
 {
-    setFocus();
-
     activateWindow();
 
-    scrollTo(model()->index(-1,-1));
-    setCurrentIndex(model()->index(-1,-1));
+    scrollTo(model()->index(-1, -1));
+    setCurrentIndex(model()->index(-1, -1));
 
     return QListView::showEvent(event);
 }

@@ -44,8 +44,6 @@ class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
     Q_PROPERTY(int width WRITE setFixedWidth)
-    Q_PROPERTY(int height WRITE setFixedHeight)
-    Q_PROPERTY(int y WRITE setY)
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -58,6 +56,7 @@ private Q_SLOTS:
     void showAni();
     void hideAni();
     void setY(int y);
+    void CompositeChanged();
 
 private:
     void initUI();
@@ -77,13 +76,15 @@ private:
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
 
-    QSequentialAnimationGroup *m_aniGroup;
-    QParallelAnimationGroup *m_heightAniGroup;
     QPropertyAnimation *m_widthAni;
-    QPropertyAnimation *m_heightAni;
-    QPropertyAnimation *m_yAni;
 
     QRect m_rect;
+
+    DWindowManagerHelper *m_wmHelper;
+
+    bool m_hasComposite = false;
+
+    QTime m_tickTime;
 };
 
 #endif // MAINWINDOW_H
