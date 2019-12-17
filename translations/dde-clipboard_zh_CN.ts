@@ -4,78 +4,78 @@
 <context>
     <name>ItemData</name>
     <message>
-        <location filename="../src/itemdata.cpp" line="39"/>
+        <location filename="../itemdata.cpp" line="70"/>
         <source>Picture</source>
         <translation>图片</translation>
     </message>
     <message>
-        <location filename="../src/itemdata.cpp" line="41"/>
+        <location filename="../itemdata.cpp" line="72"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location filename="../src/itemdata.cpp" line="43"/>
+        <location filename="../itemdata.cpp" line="74"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../src/itemdata.cpp" line="55"/>
+        <location filename="../itemdata.cpp" line="86"/>
         <source>%1 characters</source>
-        <translation>%1 字符</translation>
+        <translation>%1 个字符</translation>
     </message>
 </context>
 <context>
     <name>ItemWidget</name>
     <message>
-        <location filename="../src/itemwidget.cpp" line="68"/>
-        <source>px</source>
-        <translation>unfinished</translation>
+        <location filename="../itemwidget.cpp" line="364"/>
+        <source>%1(%2 files...)</source>
+        <translation>%1 等%2个文件</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="268"/>
-        <source>%1 files(%2...)</source>
-        <translation>%1 等X%2文件</translation>
-    </message>
-    <message>
-        <location filename="../src/itemwidget.cpp" line="293"/>
+        <location filename="../itemwidget.cpp" line="410"/>
         <source>Now</source>
         <translation>现在</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="295"/>
+        <location filename="../itemwidget.cpp" line="412"/>
         <source>1 minute ago</source>
         <translation>1 分钟前</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="297"/>
+        <location filename="../itemwidget.cpp" line="414"/>
         <source>%1 minutes ago</source>
         <translation>%1 分钟前</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="299"/>
+        <location filename="../itemwidget.cpp" line="416"/>
         <source>1 hour ago</source>
         <translation>1 小时前</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="301"/>
+        <location filename="../itemwidget.cpp" line="418"/>
         <source>%1 hours ago</source>
         <translation>%1 小时前</translation>
     </message>
     <message>
-        <location filename="../src/itemwidget.cpp" line="303"/>
+        <location filename="../itemwidget.cpp" line="420"/>
         <source>Yesterday</source>
         <translation>昨天</translation>
+    </message>
+    <message>
+        <location filename="../itemwidget.cpp" line="503"/>
+        <source>(File deleted)</source>
+        <translation>（源文件已被删除）</translation>
     </message>
 </context>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/mainwindow.cpp" line="53"/>
+        <location filename="../mainwindow.cpp" line="180"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location filename="../src/mainwindow.cpp" line="56"/>
+        <location filename="../mainwindow.cpp" line="183"/>
         <source>Clear all</source>
         <translation>全部清除</translation>
     </message>
