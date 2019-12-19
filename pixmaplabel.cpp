@@ -45,7 +45,7 @@ PixmapLabel::PixmapLabel(QWidget *parent)
 
 void PixmapLabel::setText(const QString &text)
 {
-    m_text = text;
+    m_text = text.left(1024);//减少elideText计算消耗
 
     update();
 }
@@ -241,20 +241,18 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
     layout->endLayout();
 }
 
-QPair<QString,int> PixmapLabel::getNextValidString(const QStringList &list, int from)
+QPair<QString, int> PixmapLabel::getNextValidString(const QStringList &list, int from)
 {
-    if(from < 0 || from > list.size() - 1)
-        return QPair<QString,int>("",list.size() - 1);
+    if (from < 0 || from > list.size() - 1)
+        return QPair<QString, int>("", list.size() - 1);
 
-    for(int i = from;i<list.size(); ++i)
-    {
-        if(!list.at(i).trimmed().isEmpty())
-        {
-            return QPair<QString,int>(list.at(i).trimmed(),i + 1);
+    for (int i = from; i < list.size(); ++i) {
+        if (!list.at(i).trimmed().isEmpty()) {
+            return QPair<QString, int>(list.at(i).trimmed(), i + 1);
         }
     }
 
-    return QPair<QString,int>("",list.size() - 1);
+    return QPair<QString, int>("", list.size() - 1);
 }
 
 QString PixmapLabel::elideText(const QString &text, const QSizeF &size,
@@ -290,7 +288,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         int y = int(height() - pix.size().height() / scale) / 2;
 
         QPixmap newPix = pix.scaled(pix.size() / scale, Qt::KeepAspectRatio);
-        style->drawItemPixmap(&painter, QRect(QPoint(x, y),newPix.size()), Qt::AlignCenter, newPix);
+        style->drawItemPixmap(&painter, QRect(QPoint(x, y), newPix.size()), Qt::AlignCenter, newPix);
     } else {
         for (int i = 0 ; i < m_pixmapList.size(); ++i) {
             QPixmap pix = m_pixmapList[i];
@@ -303,7 +301,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             if (!isEnabled())
                 pix = style->generatedIconPixmap(QIcon::Disabled, pix, &opt);
             QPixmap newPix = pix.scaled(pix.size() / scale, Qt::KeepAspectRatio);
-            style->drawItemPixmap(&painter, QRect(QPoint(x, y),newPix.size()), Qt::AlignCenter, newPix);
+            style->drawItemPixmap(&painter, QRect(QPoint(x, y), newPix.size()), Qt::AlignCenter, newPix);
         }
     }
 
@@ -334,7 +332,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             option.setAlignment(Qt::AlignBottom);
             painter.setPen(palette().color(QPalette::Text));
 
-            QPair<QString,int> pair = getNextValidString(labelTexts,lineFrom);
+            QPair<QString, int> pair = getNextValidString(labelTexts, lineFrom);
             lineFrom = pair.second;
             painter.drawText(textRect, pair.first.trimmed(), option);
         }

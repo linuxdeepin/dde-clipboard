@@ -1,4 +1,5 @@
 #include "listview.h"
+#include "refreshtimer.h"
 
 #include <QEvent>
 #include <QKeyEvent>
@@ -55,6 +56,7 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
 
 void ListView::showEvent(QShowEvent *event)
 {
+    RefreshTimer::instance()->forceRefresh();
     activateWindow();
 
     scrollTo(model()->index(-1, -1));

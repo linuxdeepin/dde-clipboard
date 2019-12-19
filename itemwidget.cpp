@@ -21,6 +21,7 @@
 #include "itemwidget.h"
 #include "constants.h"
 #include "pixmaplabel.h"
+#include "refreshtimer.h"
 
 #include <QPainter>
 #include <QTextOption>
@@ -387,6 +388,7 @@ void ItemWidget::initConnect()
 {
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
     m_refreshTimer->start();
+    connect(RefreshTimer::instance(), &RefreshTimer::forceRefresh, this, &ItemWidget::onRefreshTime);
     connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
     connect(m_closeButton, &IconButton::clicked, [ = ] {
         m_data->remove();
@@ -406,7 +408,13 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
 
     QDateTime t = QDateTime::currentDateTime();
 
-    if (time.secsTo(t) < 60 && time.secsTo(t) >= 0) { //60秒以内
+    if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //昨天发生的
+        text = tr("Yesterday") + time.toString(" hh:mm");
+    } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天以前，一周以内
+        text = time.toString("ddd hh:mm");
+    } else if (time.daysTo(t) >= 7) { //一周前以前的
+        text = time.toString("yyyy/MM/dd");
+    } else if (time.secsTo(t) < 60 && time.secsTo(t) >= 0) { //60秒以内
         text = tr("Now");
     } else if (time.secsTo(t) >= 60 && time.secsTo(t) < 2 * 60) { //一分钟
         text = tr("1 minute ago");
@@ -416,12 +424,6 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
         text = tr("1 hour ago");
     } else if (time.secsTo(t) >= 2 * 60 * 60 && time.daysTo(t) < 1) { //多少小时前(0点以后)
         text = tr("%1 hours ago").arg(time.secsTo(t) / 60 / 60);
-    } else if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //昨天发生的
-        text = tr("Yesterday") + time.toString(" hh:mm");
-    } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天以前，一周以内
-        text = time.toString("ddd hh:mm");
-    } else if (time.daysTo(t) >= 7) { //一周前以前的
-        text = time.toString("yyyy/MM/dd");
     }
 
     return text;

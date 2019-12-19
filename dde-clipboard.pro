@@ -39,7 +39,8 @@ HEADERS += \
         dockrect.h \
     listview.h \
     itemdelegate.h \
-    iconbutton.h
+    iconbutton.h \
+    refreshtimer.h
 
 DISTFILES += translate_generation.sh
 
