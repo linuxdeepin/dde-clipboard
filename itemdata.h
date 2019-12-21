@@ -53,6 +53,7 @@ public:
     const DataType &type() {return m_type;}
     const QVariant &imageData();
     const QMap<QString, QByteArray> &formatMap();
+    const QList<FileIconData> &IconDataList();
 
     void remove();
     void popTop();
@@ -72,6 +73,7 @@ private:
     QString m_html;
     QString m_text;
     QDateTime m_createTime;
+    QList<FileIconData> m_iconDataList;
 };
 
 #endif // ITEMDATA_H

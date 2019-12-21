@@ -287,6 +287,8 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         int x = int(width() - pix.size().width() / scale) / 2;
         int y = int(height() - pix.size().height() / scale) / 2;
 
+        if (!isEnabled())
+            pix = style->generatedIconPixmap(QIcon::Disabled, pix, &opt);
         QPixmap newPix = pix.scaled(pix.size() / scale, Qt::KeepAspectRatio);
         style->drawItemPixmap(&painter, QRect(QPoint(x, y), newPix.size()), Qt::AlignCenter, newPix);
     } else {

@@ -59,8 +59,10 @@ void ListView::showEvent(QShowEvent *event)
     RefreshTimer::instance()->forceRefresh();
     activateWindow();
 
-    scrollTo(model()->index(-1, -1));
-    setCurrentIndex(model()->index(-1, -1));
+    QTimer::singleShot(0, this, [ = ] {
+        scrollToTop();
+        setCurrentIndex(model()->index(0, 0));
+    });
 
     return QListView::showEvent(event);
 }

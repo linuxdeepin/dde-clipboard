@@ -148,6 +148,26 @@ static QPixmap GetFileIcon(QString path)
     return pix;
 }
 
+static QPixmap GetFileIcon(const FileIconData &data)
+{
+    QIcon icon;
+    QStringList icons = data.cornerIconList;
+    QPixmap pix = data.fileIcon.pixmap(QSize(FileIconWidth, FileIconWidth));
+    if (icons.isEmpty()) {
+        return pix;
+    }
+
+    QPainter painter(&pix);
+    painter.setRenderHints(painter.renderHints() | QPainter::SmoothPixmapTransform);
+    QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
+    for (int i = 0; i < icons.size(); ++i) {
+        painter.drawPixmap(cornerGeometryList.at(i).toRect(),
+                           getIconPixmap(QIcon::fromTheme(icons.at(i)), QSize(24, 24), painter.device()->devicePixelRatioF(), QIcon::Normal, QIcon::On));
+    }
+
+    return pix;
+}
+
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
     , m_data(data)
@@ -192,6 +212,14 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
     qreal scale = Globals::GetScale(pixmap.size(), FileIconWidth, FileIconHeight);
 
     m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+}
+
+void ItemWidget::setFilePixmap(const FileIconData &data, bool setRadius)
+{
+    QPixmap pix = GetFileIcon(data);
+    if (setRadius)
+        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+    setFilePixmap(pix);
 }
 
 void ItemWidget::setFilePixmaps(const QList<QPixmap> &list)
@@ -343,15 +371,18 @@ void ItemWidget::initData(QPointer<ItemData> data)
 
         QUrl url = data->urls().first();
         if (data->urls().size() == 1) {
-            //单个文件是图片时显示缩略图
-            QImageReader imageReader(url.path());
-            imageReader.setDecideFormatFromContent(true);
-            if (QImageReader::supportedImageFormats().contains(imageReader.format())) {
-                QImage image = imageReader.read();
-
-                m_pixmap = QPixmap::fromImage(image);
-                setPixmap(m_pixmap);
+            if (data->IconDataList().size() == data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
+                QFileInfo info(url.path());
+                //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
+                if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
+                    FileIconData iconData = data->IconDataList().first();
+                    iconData.cornerIconList.clear();
+                    setFilePixmap(iconData, true);
+                } else {
+                    setFilePixmap(data->IconDataList().first());
+                }
             } else {
+                //文件管理器未提供，正常获取图标
                 setFilePixmap(GetFileIcon(url.path()));
             }
 
@@ -360,22 +391,34 @@ void ItemWidget::initData(QPointer<ItemData> data)
             m_statusLabel->setText(text);
 
         } else if (data->urls().size() > 1) {
-
             QFontMetrics metrix = m_statusLabel->fontMetrics();
             QString text = metrix.elidedText(tr("%1(%2 files...)").arg(url.fileName()).arg(data->urls().size()),
                                              Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
-            int iconNum = MIN(3, data->urls().size());
-            QList<QPixmap> pixmapList;
-            for (int i = 0; i < iconNum; ++i) {
-                QString filePath = data->urls()[i].toString();
-                if (filePath.startsWith("file://")) {
-                    filePath = filePath.mid(QString("file://").length());
+            //判断文件管理器是否提供
+            if (data->IconDataList().size() == data->urls().size()) {
+                QList<QPixmap> pixmapList;
+                foreach (auto iconData, data->IconDataList()) {
+                    QPixmap pix = GetFileIcon(iconData);
+                    pixmapList.push_back(pix);
                 }
-                pixmapList.push_back(GetFileIcon(filePath));
+                qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
+                    return pix1.size().width() < pix2.size().width();
+                });
+                setFilePixmaps(pixmapList);
+            } else {
+                int iconNum = MIN(3, data->urls().size());
+                QList<QPixmap> pixmapList;
+                for (int i = 0; i < iconNum; ++i) {
+                    QString filePath = data->urls()[i].toString();
+                    if (filePath.startsWith("file://")) {
+                        filePath = filePath.mid(QString("file://").length());
+                    }
+                    pixmapList.push_back(GetFileIcon(filePath));
+                }
+                setFilePixmaps(pixmapList);
             }
-            setFilePixmaps(pixmapList);
         }
     }
     break;

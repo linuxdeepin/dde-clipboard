@@ -34,7 +34,7 @@
     <message>
         <location filename="../itemwidget.cpp" line="410"/>
         <source>Now</source>
-        <translation>现在</translation>
+        <translation>刚刚</translation>
     </message>
     <message>
         <location filename="../itemwidget.cpp" line="412"/>

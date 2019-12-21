@@ -36,26 +36,27 @@
 
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
+
 class QPushButton;
 class QPropertyAnimation;
-class QSequentialAnimationGroup;
 class QParallelAnimationGroup;
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
     Q_PROPERTY(int width WRITE setFixedWidth)
+    Q_PROPERTY(int x WRITE setX)
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
 public Q_SLOTS:
     void Toggle();
+    void showAni();
+    void hideAni();
 
 private Q_SLOTS:
     void geometryChanged();
-    void showAni();
-    void hideAni();
-    void setY(int y);
+    void setX(int x);
     void CompositeChanged();
 
 private:
@@ -64,19 +65,22 @@ private:
     void initConnect();
 
 protected:
-    virtual bool eventFilter(QObject *obj,QEvent *event) override;
+    virtual bool eventFilter(QObject *obj, QEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
     DBusDisplay *m_displayInter;
     DBusDock *m_dockInter;
 
+    DWidget *m_content;
     IconButton *m_clearButton;
     ListView *m_listview;
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
 
+    QPropertyAnimation *m_xAni;
     QPropertyAnimation *m_widthAni;
+    QParallelAnimationGroup *m_aniGroup;
 
     QRect m_rect;
 

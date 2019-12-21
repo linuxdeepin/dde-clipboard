@@ -88,8 +88,10 @@ void ClipboardModel::destroy(ItemData *data)
 void ClipboardModel::reborn(ItemData *data)
 {
     int idx = m_data.indexOf(data);
-    if (idx < 1)
+    if (idx < 1) {
+        Q_EMIT dataReborn();
         return;
+    }
 
     beginRemoveRows(QModelIndex(), idx, idx);
     m_data.removeOne(data);

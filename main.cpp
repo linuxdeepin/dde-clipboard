@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     connection.registerObject(DBusClipBoardPath, &w);
 
 #ifdef QT_DEBUG
-    w.show();
+    w.showAni();
 #endif
 
     return app.exec();

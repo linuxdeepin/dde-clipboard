@@ -55,6 +55,17 @@ ItemData::ItemData(const QMimeData *mimeData)
 
     m_createTime = QDateTime::currentDateTime();
 
+    if (mimeData->formats().contains("x-dfm-copied/file-icons")) {
+        QByteArray buf = mimeData->data("x-dfm-copied/file-icons");
+        QDataStream stream(&buf, QIODevice::ReadOnly);
+        for (int i = 0; i < mimeData->urls().size(); ++i) {
+            FileIconData data;
+            stream >> data.cornerIconList >> data.fileIcon;
+            //暂时不适用文件管理器提供的图标，其提供缩略图暂时有问题
+//            m_iconDataList.push_back(data);
+        }
+    }
+
     for (int i = 0; i < mimeData->formats().size(); ++i) {
         m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
 #if 0
@@ -125,6 +136,11 @@ const QVariant &ItemData::imageData()
 const QMap<QString, QByteArray> &ItemData::formatMap()
 {
     return m_formatMap;
+}
+
+const QList<FileIconData> &ItemData::IconDataList()
+{
+    return m_iconDataList;
 }
 
 void ItemData::remove()

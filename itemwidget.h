@@ -43,6 +43,7 @@ public:
     void setText(const QString &text, const QString &length);
     void setPixmap(const QPixmap &pixmap);              //设置图像缩略图
     void setFilePixmap(const QPixmap &pixmap);          //单个文件
+    void setFilePixmap(const FileIconData &data, bool setRadius = false);
     void setFilePixmaps(const QList<QPixmap> &list);    //多个文件
     void setClipType(const QString &text);              //剪贴类型
     void setCreateTime(const QDateTime &time);

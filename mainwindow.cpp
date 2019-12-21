@@ -28,8 +28,7 @@
 #include <QScrollBar>
 #include <QScreen>
 #include <QPropertyAnimation>
-#include <QSequentialAnimationGroup>
-#include <QSequentialAnimationGroup>
+#include <QParallelAnimationGroup>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -43,10 +42,13 @@ MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay(this))
     , m_dockInter(new DBusDock)
+    , m_content(new DWidget(parent))
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate)
+    , m_xAni(new QPropertyAnimation(this))
     , m_widthAni(new QPropertyAnimation(this))
+    , m_aniGroup(new QParallelAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
 {
     initUI();
@@ -68,7 +70,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::Toggle()
 {
-    if (m_widthAni->state() == QAbstractAnimation::Running)
+    if (m_aniGroup->state() == QAbstractAnimation::Running)
         return;
 
     if (isVisible()) {
@@ -103,14 +105,18 @@ void MainWindow::geometryChanged()
     default:;
     }
 
-    rect = rect.marginsRemoved(QMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin));
+    rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, WindowMargin));
     setGeometry(rect);
     m_rect = rect;
     setFixedSize(rect.size());
+    m_content->setFixedSize(rect.size());
 
     //init animation by 'm_rect'
+    m_xAni->setStartValue(WindowMargin);
+    m_xAni->setEndValue(0);
+
     m_widthAni->setStartValue(m_rect.width());
-    m_widthAni->setEndValue(2);
+    m_widthAni->setEndValue(0);
 }
 
 void MainWindow::showAni()
@@ -122,7 +128,7 @@ void MainWindow::showAni()
     m_tickTime.restart();
 
     if (!m_hasComposite) {
-        move(m_rect.x(), m_rect.y());
+        move(m_rect.x() + WindowMargin, m_rect.y());
         setFixedWidth(m_rect.width());
         show();
         return;
@@ -132,9 +138,8 @@ void MainWindow::showAni()
     setFixedWidth(0);
 
     show();
-
-    m_widthAni->setDirection(QAbstractAnimation::Backward);
-    m_widthAni->start();
+    m_aniGroup->setDirection(QAbstractAnimation::Backward);
+    m_aniGroup->start();
 }
 
 void MainWindow::hideAni()
@@ -149,15 +154,15 @@ void MainWindow::hideAni()
         hide();
         return;
     }
-    m_widthAni->setDirection(QAbstractAnimation::Forward);
-    m_widthAni->start();
+    m_aniGroup->setDirection(QAbstractAnimation::Forward);
+    m_aniGroup->start();
 
-    QTimer::singleShot(m_widthAni->duration(), this, [ = ] {setVisible(false);});
+    QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
 }
 
-void MainWindow::setY(int y)
+void MainWindow::setX(int x)
 {
-    move(this->x(), y);
+    move(m_rect.x() + x, m_rect.y());
 }
 
 void MainWindow::CompositeChanged()
@@ -197,17 +202,31 @@ void MainWindow::initUI()
 
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
-    setLayout(mainLayout);
+
+    m_content->setLayout(mainLayout);
+
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+    layout->addWidget(m_content);
 
     setFocusPolicy(Qt::NoFocus);
 }
 
 void MainWindow::initAni()
 {
-    m_widthAni->setEasingCurve(QEasingCurve::InQuad);
+    m_xAni->setEasingCurve(QEasingCurve::Linear);
+    m_xAni->setPropertyName("x");
+    m_xAni->setTargetObject(this);
+    m_xAni->setDuration(AnimationTime);
+
+    m_widthAni->setEasingCurve(QEasingCurve::Linear);
     m_widthAni->setPropertyName("width");
     m_widthAni->setTargetObject(this);
     m_widthAni->setDuration(AnimationTime);
+
+    m_aniGroup->addAnimation(m_xAni);
+    m_aniGroup->addAnimation(m_widthAni);
 }
 
 void MainWindow::initConnect()
@@ -225,6 +244,11 @@ void MainWindow::initConnect()
     connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
+
+    connect(m_widthAni, &QVariantAnimation::valueChanged, this, [ = ](QVariant value) {
+        int width = value.toInt();
+        m_content->move(width - 300, m_content->pos().y());
+    });
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
@@ -238,10 +262,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
                 hide();
                 return false;
             }
-            m_widthAni->setDirection(QAbstractAnimation::Forward);
-            m_widthAni->start();
+            m_aniGroup->setDirection(QAbstractAnimation::Forward);
+            m_aniGroup->start();
 
-            QTimer::singleShot(m_widthAni->duration(), this, [ = ] {setVisible(false);});
+            QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
         }
     }
     return false;

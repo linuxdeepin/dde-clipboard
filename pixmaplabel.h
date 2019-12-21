@@ -66,7 +66,7 @@ private:
 
 private:
     //return para:《有效字符，截止行》
-    QPair<QString,int> getNextValidString(const QStringList &list,int from);
+    QPair<QString, int> getNextValidString(const QStringList &list, int from);
 
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
