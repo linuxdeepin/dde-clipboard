@@ -168,6 +168,11 @@ static QPixmap GetFileIcon(const FileIconData &data)
     return pix;
 }
 
+/*!
+ * \~chinese \class ItemWidget
+ * \~chinese \brief 负责剪贴块数据的展示。
+ * \~chinese 传入ItemData类型的数据，在initData之后，将数据分别设置相应的控件进行展示
+ */
 ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     : DWidget(parent)
     , m_data(data)

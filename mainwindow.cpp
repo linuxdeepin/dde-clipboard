@@ -32,6 +32,7 @@
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
+#include <DRegionMonitor>
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
@@ -60,7 +61,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     installEventFilter(this);
 
-    m_tickTime.start();
+    DRegionMonitor *monitor = new DRegionMonitor(this);
+    monitor->registerRegion(QRegion(QRect()));
+    connect(monitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint & p, const int flag) {
+        Q_UNUSED(flag);
+        if (!m_rect.contains(p))
+            if (!isHidden()) {
+                hideAni();
+            }
+    });
 }
 
 MainWindow::~MainWindow()
@@ -121,11 +130,9 @@ void MainWindow::geometryChanged()
 
 void MainWindow::showAni()
 {
-    if (!m_hasComposite && m_tickTime.elapsed() < 100) {
+    if (!m_hasComposite) {
         return;
     }
-
-    m_tickTime.restart();
 
     if (!m_hasComposite) {
         move(m_rect.x() + WindowMargin, m_rect.y());
@@ -144,11 +151,9 @@ void MainWindow::showAni()
 
 void MainWindow::hideAni()
 {
-    if (!m_hasComposite && m_tickTime.elapsed() < 100) {
+    if (!m_hasComposite) {
         return;
     }
-
-    m_tickTime.restart();
 
     if (!m_hasComposite) {
         hide();
@@ -173,6 +178,7 @@ void MainWindow::CompositeChanged()
 void MainWindow::initUI()
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+    setAttribute(Qt::WA_TranslucentBackground);
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -249,26 +255,6 @@ void MainWindow::initConnect()
         int width = value.toInt();
         m_content->move(width - 300, m_content->pos().y());
     });
-}
-
-bool MainWindow::eventFilter(QObject *obj, QEvent *event)
-{
-    if (obj == this) {
-        if (event->type() == QEvent::WindowDeactivate) {
-
-            m_tickTime.restart();
-
-            if (!m_hasComposite) {
-                hide();
-                return false;
-            }
-            m_aniGroup->setDirection(QAbstractAnimation::Forward);
-            m_aniGroup->start();
-
-            QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
-        }
-    }
-    return false;
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)

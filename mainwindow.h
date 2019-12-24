@@ -65,7 +65,6 @@ private:
     void initConnect();
 
 protected:
-    virtual bool eventFilter(QObject *obj, QEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
@@ -87,8 +86,6 @@ private:
     DWindowManagerHelper *m_wmHelper;
 
     bool m_hasComposite = false;
-
-    QTime m_tickTime;
 };
 
 #endif // MAINWINDOW_H
