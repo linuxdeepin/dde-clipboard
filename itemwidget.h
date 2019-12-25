@@ -34,12 +34,19 @@ DWIDGET_USE_NAMESPACE
 class QTimer;
 class QVBoxLayout;
 class PixmapLabel;
+/*!
+ * \~chinese \class ItemWidget
+ * \~chinese \brief 剪切块窗口类,继承于DWidget
+ */
 class ItemWidget : public DWidget
 {
     Q_OBJECT
 public:
     ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
 
+    /*!
+     * \~chinese \brief 设置剪切块属性的接口
+     */
     void setText(const QString &text, const QString &length);
     void setPixmap(const QPixmap &pixmap);              //设置图像缩略图
     void setFilePixmap(const QPixmap &pixmap);          //单个文件
@@ -48,7 +55,9 @@ public:
     void setClipType(const QString &text);              //剪贴类型
     void setCreateTime(const QDateTime &time);
 
-    //--- set style
+    /*!
+     * \~chinese \brief 获取与设置剪切块样式的接口
+     */
     void setAlpha(int alpha);
 
     int hoverAlpha() const;
@@ -62,20 +71,55 @@ public:
 
 Q_SIGNALS:
     void close();
+    /*!
+     * \~chinese \name hoverStateChanged
+     * \~chinese \brief 当鼠标或焦点移入移出该控件时发出该信号
+     */
     void hoverStateChanged(bool);
+    /*!
+     * \~chinese \name closeHasFocus
+     * \~chinese \brief 通知别人，关闭按钮的‘焦点’状态改变了
+     */
     void closeHasFocus(bool has);
 
 public Q_SLOTS:
+    /*!
+     * \~chinese \name onHoverStateChanged
+     * \~chinese \brief 当鼠标或焦点悬停状态改变时执行该槽函数
+     */
     void onHoverStateChanged(bool hover);
 
 private Q_SLOTS:
+    /*!
+     * \~chinese \name onRefreshTime
+     * \~chinese \brief 刷新复制时间的定时器达到设定的超时时间后就会发出timeout信号，timeout信号关联到了这个槽函数，这里就会执行
+     */
     void onRefreshTime();
 
 private:
+    /*!
+     * \~chinese \name initUI
+     * \~chinese \brief 初始化剪切块界面布局
+     */
     void initUI();
+    /*!
+     * \~chinese \name initData
+     * \~chinese \brief 初始化剪切块窗口中的数据
+     * \~chinese \param 当前剪切块的数据
+     */
     void initData(QPointer<ItemData> data);
+    /*!
+     * \~chinese \name initConnect
+     * \~chinese \brief 初始化信号的连接
+     */
     void initConnect();
 
+    /*!
+     * \~chinese \name CreateTimeString
+     * \~chinese \brief 创建复制时间的字符串
+     * \~chinese \param 剪切块创建的时间
+     * \~chinese \return 返回创建时间的字符串
+     */
     QString CreateTimeString(const QDateTime &time);
 
 private:

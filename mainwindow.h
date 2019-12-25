@@ -40,6 +40,10 @@ DGUI_USE_NAMESPACE
 class QPushButton;
 class QPropertyAnimation;
 class QParallelAnimationGroup;
+/*!
+ * \~chinese \class MainWindow
+ * \~chinese \brief 主窗口类
+ */
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
@@ -50,21 +54,62 @@ public:
     ~MainWindow() override;
 
 public Q_SLOTS:
+    /*!
+     * \~chinese \name Toggle
+     * \~chinese \brief 切换主窗口显示或隐藏的状态
+     */
     void Toggle();
+    /*!
+     * \~chinese \name showAni
+     * \~chinese \brief 主窗口显示时的动画
+     */
     void showAni();
+    /*!
+     * \~chinese \name hideAni
+     * \~chinese \brief 主窗口隐藏时的动画
+     */
     void hideAni();
 
 private Q_SLOTS:
+    /*!
+     * \~chinese \name geometryChanged
+     * \~chinese \brief 根据dock和屏幕的大小改变窗口的大小,根据dock的位置调整主窗口的位置
+     */
     void geometryChanged();
+    /*!
+     * \~chinese \name setX
+     * \~chinese \brief 设置主窗口X轴的起始坐标
+     * \~chinese \param X轴坐标位置
+     */
     void setX(int x);
+    /*!
+     * \~chinese \name CompositeChanged
+     * \~chinese \brief 是否开启动画效果
+     */
     void CompositeChanged();
 
 private:
+    /*!
+     * \~chinese \name initUI
+     * \~chinese \brief 初始化界面布局
+     */
     void initUI();
+    /*!
+     * \~chinese \name initAni
+     * \~chinese \brief 初始化动画效果
+     */
     void initAni();
+    /*!
+     * \~chinese \name initConnect
+     * \~chinese \brief 初始化信号与槽的连接
+     */
     void initConnect();
 
 protected:
+    /*!
+     * \~chinese \name initConnect
+     * \~chinese \brief 重写mouseMoveEvent事件禁止窗口被移动
+     */
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
