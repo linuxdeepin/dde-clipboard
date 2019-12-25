@@ -4,6 +4,10 @@
 #include <QTimer>
 #include <QDateTime>
 
+/*!
+ * \~chinese \class RefreshTimer
+ * \~chinese \brief 每900ms刷新一次timeLabel上的时间信息
+ */
 class RefreshTimer : public QObject
 {
     Q_OBJECT

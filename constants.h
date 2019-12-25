@@ -59,7 +59,13 @@ typedef struct {
 } FileIconData;
 
 namespace  Globals {
-/*获取图片缩放比例*/
+/*!
+ * \~chinese \name GetScale
+ * \~chinese \brief 获取缩放的比例
+ * \~chinese \param size 当前所需要的大小
+ * \~chinese \param targetWidth  目标宽度
+ * \~chinese \param targetHeight 目标高度
+ */
 static qreal GetScale(QSize size, int targetWidth, int targetHeight)
 {
     qreal scale = 1.0;
@@ -73,6 +79,12 @@ static qreal GetScale(QSize size, int targetWidth, int targetHeight)
     return scale;
 }
 
+/*!
+ * \~chinese \name pixmapScaled
+ * \~chinese \brief 图片缩放
+ * \~chinese \param pixmap 源pixmap数据
+ * \~chinese \return 返回一个宽度为180,高度为100的图片,并且缩放比例不变
+ */
 inline QPixmap pixmapScaled(const QPixmap &pixmap)
 {
     qreal scale = Globals::GetScale(pixmap.size(), PixmapWidth, PixmapHeight);
@@ -80,6 +92,13 @@ inline QPixmap pixmapScaled(const QPixmap &pixmap)
     return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 
+/*!
+ * \~chinese \name GetRoundPixmap
+ * \~chinese \brief 获取一张带有圆角的图片，边框颜色为系统调色板中的Base颜色（加透明度）
+ * \~chinese \param pix 源pixmap数据
+ * \~chinese \param borderColor 边框颜色
+ * \~chinese \return 如果pix为空返回一个空的图片,如果不为空返回调整后的图片.
+ */
 inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
 {
     if (pix.isNull()) {
