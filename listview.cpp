@@ -11,9 +11,14 @@ ListView::ListView(QWidget *parent)
 {
     setAutoFillBackground(false);
     viewport()->setAutoFillBackground(false);
-    setSelectionMode(QListView::SingleSelection);
+
+    setSelectionMode(QListView::NoSelection);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFrameShape(QFrame::NoFrame);
+    setVerticalScrollMode(QListView::ScrollPerPixel);
+    setUpdatesEnabled(true);
+
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
 }

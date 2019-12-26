@@ -91,8 +91,6 @@ void IconButton::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
     Q_EMIT clicked();
-
-    return DWidget::mousePressEvent(event);
 }
 
 void IconButton::enterEvent(QEvent *event)

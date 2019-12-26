@@ -39,7 +39,7 @@ DGUI_USE_NAMESPACE
 
 class QPushButton;
 class QPropertyAnimation;
-class QParallelAnimationGroup;
+class QSequentialAnimationGroup;
 /*!
  * \~chinese \class MainWindow
  * \~chinese \brief 主窗口类
@@ -124,7 +124,7 @@ private:
 
     QPropertyAnimation *m_xAni;
     QPropertyAnimation *m_widthAni;
-    QParallelAnimationGroup *m_aniGroup;
+    QSequentialAnimationGroup *m_aniGroup;
 
     QRect m_rect;
 

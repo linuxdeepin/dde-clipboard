@@ -68,6 +68,7 @@ protected:
      * \~chinese \brief 鼠标点击事件
      * \~chinese \param event 事件
      */
+    // TODO 鼠标事件就不要传递给父对象了，包括mouseReleaseEvent
     virtual void mousePressEvent(QMouseEvent *event) override;
     /*!
      * \~chinese \name enterEvent

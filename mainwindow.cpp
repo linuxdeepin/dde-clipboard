@@ -28,7 +28,7 @@
 #include <QScrollBar>
 #include <QScreen>
 #include <QPropertyAnimation>
-#include <QParallelAnimationGroup>
+#include <QSequentialAnimationGroup>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_itemDelegate(new ItemDelegate)
     , m_xAni(new QPropertyAnimation(this))
     , m_widthAni(new QPropertyAnimation(this))
-    , m_aniGroup(new QParallelAnimationGroup(this))
+    , m_aniGroup(new QSequentialAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
 {
     initUI();
@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     monitor->registerRegion(QRegion(QRect()));
     connect(monitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint & p, const int flag) {
         Q_UNUSED(flag);
-        if (!m_rect.contains(p))
+        if (!geometry().contains(p))
             if (!isHidden()) {
                 hideAni();
             }
@@ -224,7 +224,7 @@ void MainWindow::initAni()
     m_xAni->setEasingCurve(QEasingCurve::Linear);
     m_xAni->setPropertyName("x");
     m_xAni->setTargetObject(this);
-    m_xAni->setDuration(AnimationTime);
+    m_xAni->setDuration(AnimationTime / 2);
 
     m_widthAni->setEasingCurve(QEasingCurve::Linear);
     m_widthAni->setPropertyName("width");
