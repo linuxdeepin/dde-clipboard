@@ -397,7 +397,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
 
         } else if (data->urls().size() > 1) {
             QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString text = metrix.elidedText(tr("%1(%2 files...)").arg(url.fileName()).arg(data->urls().size()),
+            QString text = metrix.elidedText(tr("%1 files (%2...)").arg(data->urls().size()).arg(url.fileName()),
                                              Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
@@ -463,7 +463,7 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     } else if (time.daysTo(t) >= 7) { //一周前以前的
         text = time.toString("yyyy/MM/dd");
     } else if (time.secsTo(t) < 60 && time.secsTo(t) >= 0) { //60秒以内
-        text = tr("Now");
+        text = tr("Just now");
     } else if (time.secsTo(t) >= 60 && time.secsTo(t) < 2 * 60) { //一分钟
         text = tr("1 minute ago");
     } else if (time.secsTo(t) >= 2 * 60 && time.secsTo(t) < 60 * 60) { //多少分钟前
