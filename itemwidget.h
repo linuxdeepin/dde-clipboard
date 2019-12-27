@@ -41,6 +41,7 @@ class PixmapLabel;
 class ItemWidget : public DWidget
 {
     Q_OBJECT
+    Q_PROPERTY(int hoverAlpha WRITE setHoverAlpha)
 public:
     ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
 
@@ -95,6 +96,7 @@ private Q_SLOTS:
      * \~chinese \brief 刷新复制时间的定时器达到设定的超时时间后就会发出timeout信号，timeout信号关联到了这个槽函数，这里就会执行
      */
     void onRefreshTime();
+    void onClose();
 
 private:
     /*!
@@ -135,7 +137,6 @@ private:
     DLabel *m_statusLabel = nullptr;
 
     QTimer *m_refreshTimer = nullptr;
-    QVBoxLayout *m_layout = nullptr;
 
     //--- data
     QPixmap m_pixmap;       //原始图片

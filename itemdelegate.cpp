@@ -76,7 +76,7 @@ bool ItemDelegate::eventFilter(QObject *obj, QEvent *event)
         switch (keyEvent->key()) {
         case Qt::Key_Tab:
         case Qt::Key_Backtab: {
-            //转变为特殊按键事件，表示切换内部‘焦点’
+            //转变为特殊按键事件，表示切换内部‘焦点’，tab事件会被listview的viewport捕获
             QKeyEvent kEvent(QEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "change focus");
             qApp->sendEvent(obj, &kEvent);
         }

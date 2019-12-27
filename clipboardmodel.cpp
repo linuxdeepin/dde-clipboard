@@ -25,7 +25,7 @@
 #include <QDebug>
 #include <QDir>
 
-ClipboardModel::ClipboardModel(QListView *list, QObject *parent) : QAbstractListModel(parent)
+ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListModel(parent)
     , m_board(QApplication::clipboard())
     , m_list(list)
 {
@@ -76,13 +76,20 @@ void ClipboardModel::destroy(ItemData *data)
 {
     int row = m_data.indexOf(data);
 
-    beginRemoveRows(QModelIndex(), row, row);
-    auto item = m_data.takeAt(m_data.indexOf(data));
-    endRemoveRows();
+    m_list->startAni(row);
 
-    item->deleteLater();
+    QTimer::singleShot(AnimationTime, this, [ = ] {
+        beginRemoveRows(QModelIndex(), row, row);
+        auto item = m_data.takeAt(m_data.indexOf(data));
+        endRemoveRows();
 
-    Q_EMIT dataChanged();
+        item->deleteLater();
+
+        beginResetModel();
+        endResetModel();
+
+        Q_EMIT dataChanged();
+    });
 }
 
 void ClipboardModel::reborn(ItemData *data)

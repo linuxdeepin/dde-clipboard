@@ -30,6 +30,9 @@ public:
      */
     virtual void showEvent(QShowEvent *event) override;
 
+    void startAni(int index);
+    void CreateAnimation(int idx);
+
 Q_SIGNALS:
     void extract(const QModelIndex &index);
 };

@@ -1,10 +1,13 @@
 #include "listview.h"
 #include "refreshtimer.h"
+#include "constants.h"
 
 #include <QEvent>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QTimer>
+#include <QPropertyAnimation>
+#include <QScroller>
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
@@ -12,12 +15,17 @@ ListView::ListView(QWidget *parent)
     setAutoFillBackground(false);
     viewport()->setAutoFillBackground(false);
 
-    setSelectionMode(QListView::NoSelection);
+    setSelectionMode(QListView::SingleSelection);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFrameShape(QFrame::NoFrame);
     setVerticalScrollMode(QListView::ScrollPerPixel);
-    setUpdatesEnabled(true);
+
+//    setMovement(Movement::Free);
+//    setAutoScroll(true);
+//    setDragEnabled(true);
+
+//    QScroller::grabGesture(this, QScroller::LeftMouseButtonGesture);
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
@@ -70,4 +78,44 @@ void ListView::showEvent(QShowEvent *event)
     });
 
     return QListView::showEvent(event);
+}
+
+void ListView::startAni(int index)
+{
+    grabMouse();
+    for (int i = index + 1; i < this->model()->rowCount(QModelIndex()); ++i) {
+        CreateAnimation(i);
+    }
+    // FIXME:比动画时间稍微长一点，否则可能会造成mouseMoveEvent中崩溃
+    QTimer::singleShot(AnimationTime + 10, this, [ = ] {
+        releaseMouse();
+        QModelIndex currentIndex = this->model()->index(index, 0);
+        if (!currentIndex.isValid())
+        {
+            currentIndex = this->model()->index(index - 1, 0);
+        }
+        setCurrentIndex(currentIndex);
+        scrollTo(currentIndex);
+    });
+
+    //TODO 显示的最下面一个widget应该是其下面的widget通过动画移动上来的，但其下面的widget此时有可能并没有被listview创建，这里需要一个假动画
+}
+
+void ListView::CreateAnimation(int idx)
+{
+    Q_ASSERT(idx > 0);
+    const QModelIndex index = this->model()->index(idx, 0);
+
+    Q_ASSERT(index.isValid());
+    QWidget *widget = this->indexWidget(index);
+    if (!widget) {
+        qDebug() << "index widget not created,shoule be returned;";
+        return;
+    }
+
+    QPropertyAnimation *ani = new QPropertyAnimation(widget, "pos", this);
+    ani->setStartValue(widget->pos());
+    ani->setEndValue(widget->pos() + QPoint(0, -210));
+    ani->setDuration(AnimationTime);
+    ani->start(QPropertyAnimation::DeleteWhenStopped);
 }

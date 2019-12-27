@@ -39,6 +39,8 @@
 #include <QIcon>
 #include <QScopedPointer>
 #include <QFile>
+#include <QPropertyAnimation>
+#include <QParallelAnimationGroup>
 #include <QMimeDatabase>
 
 #include <DFontSizeManager>
@@ -48,6 +50,9 @@
 #include "dgiofileinfo.h"
 
 #include <cmath>
+
+#define HoverAlpha 160
+#define UnHoverAlpha 80
 
 QList<QRectF> getCornerGeometryList(const QRectF &baseRect, const QSizeF &cornerSize)
 {
@@ -183,7 +188,6 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     , m_contentLabel(new PixmapLabel(this))
     , m_statusLabel(new DLabel(this))
     , m_refreshTimer(new QTimer(this))
-    , m_layout(new QVBoxLayout(this))
 {
     initUI();
     initData(m_data);
@@ -303,6 +307,28 @@ void ItemWidget::onRefreshTime()
     m_timeLabel->setText(CreateTimeString(m_createTime));
 }
 
+void ItemWidget::onClose()
+{
+    QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
+
+    QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);
+    geoAni->setStartValue(geometry());
+    geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
+    geoAni->setDuration(AnimationTime);
+
+    QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "unHoverAlpha", group);
+    opacityAni->setStartValue(UnHoverAlpha);
+    opacityAni->setEndValue(0);
+    opacityAni->setDuration(AnimationTime);
+
+    group->addAnimation(geoAni);
+    group->addAnimation(opacityAni);
+
+    m_data->remove();
+
+    group->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
 void ItemWidget::initUI()
 {
     //标题区域
@@ -329,22 +355,23 @@ void ItemWidget::initUI()
     m_refreshTimer->setInterval(60 * 1000);
 
     //布局
-    m_layout->setSpacing(0);
-    m_layout->setMargin(0);
-    m_layout->addWidget(titleWidget, 0, Qt::AlignTop);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setSpacing(0);
+    mainLayout->setMargin(0);
+    mainLayout->addWidget(titleWidget, 0, Qt::AlignTop);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->setContentsMargins(ContentMargin, 0, ContentMargin, 0);
     layout->addWidget(m_contentLabel, 0, Qt::AlignCenter);
-    m_layout->addLayout(layout, 0);
-    m_layout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
+    mainLayout->addLayout(layout, 0);
+    mainLayout->addWidget(m_statusLabel, 0, Qt::AlignBottom);
 
     m_contentLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setFixedHeight(ItemStatusBarHeight);
     m_statusLabel->setAlignment(Qt::AlignCenter);
 
-    setHoverAlpha(160);
-    setUnHoverAlpha(80);
+    setHoverAlpha(HoverAlpha);
+    setUnHoverAlpha(UnHoverAlpha);
     setRadius(8);
 
     setFocusPolicy(Qt::StrongFocus);
@@ -378,9 +405,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
         QUrl url = data->urls().first();
         if (data->urls().size() == 1) {
             if (data->IconDataList().size() == data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
-                QFileInfo info(url.path());
                 //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
-                if (QImageReader::supportedImageFormats().contains(info.suffix().toLatin1())) {
+                if (QImageReader::supportedImageFormats().contains(QImageReader::imageFormat(url.path()))) {
                     FileIconData iconData = data->IconDataList().first();
                     iconData.cornerIconList.clear();
                     setFilePixmap(iconData, true);
@@ -416,6 +442,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
                 foreach (auto iconData, data->IconDataList()) {
                     QPixmap pix = GetFileIcon(iconData);
                     pixmapList.push_back(pix);
+                    if (pixmapList.size() == 3)
+                        break;
                 }
                 qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
                     return pix1.size().width() < pix2.size().width();
@@ -447,9 +475,7 @@ void ItemWidget::initConnect()
     m_refreshTimer->start();
     connect(RefreshTimer::instance(), &RefreshTimer::forceRefresh, this, &ItemWidget::onRefreshTime);
     connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
-    connect(m_closeButton, &IconButton::clicked, [ = ] {
-        m_data->remove();
-    });
+    connect(m_closeButton, &IconButton::clicked, this, &ItemWidget::onClose);
     connect(this, &ItemWidget::closeHasFocus, this, [&](bool has) {
         m_closeButton->setFocusState(has);
     });
@@ -499,7 +525,7 @@ void ItemWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
     case Qt::Key_Return: {
         if (m_closeFocus) {
-            m_data->remove();
+            onClose();
         }
     }
     break;
@@ -575,31 +601,40 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ItemWidget::enterEvent(QEvent *event)
 {
-    Q_EMIT hoverStateChanged(true);
+    if (isEnabled()) {
+        Q_EMIT hoverStateChanged(true);
+    }
+
     return DWidget::enterEvent(event);
 }
 
 void ItemWidget::leaveEvent(QEvent *event)
 {
-    Q_EMIT closeHasFocus(false);
-    Q_EMIT hoverStateChanged(false);
+    if (isEnabled()) {
+        Q_EMIT closeHasFocus(false);
+        Q_EMIT hoverStateChanged(false);
+    }
 
     return DWidget::leaveEvent(event);
 }
 
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
-    Q_EMIT hoverStateChanged(true);
+    if (isEnabled()) {
+        Q_EMIT hoverStateChanged(true);
+    }
 
     return DWidget::focusInEvent(event);
 }
 
 void ItemWidget::focusOutEvent(QFocusEvent *event)
 {
-    m_closeFocus = false;
+    if (isEnabled()) {
+        m_closeFocus = false;
 
-    Q_EMIT hoverStateChanged(false);
-    Q_EMIT closeHasFocus(false);
+        Q_EMIT hoverStateChanged(false);
+        Q_EMIT closeHasFocus(false);
+    }
 
     return DWidget::focusOutEvent(event);
 }

@@ -23,8 +23,8 @@
 
 #include <QAbstractListModel>
 #include <QClipboard>
-#include <QListView>
 
+#include "listview.h"
 #include "itemdata.h"
 
 /*!
@@ -37,7 +37,7 @@ class ClipboardModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    explicit ClipboardModel(QListView *list, QObject *parent = nullptr);
+    explicit ClipboardModel(ListView *list, QObject *parent = nullptr);
 
     /*!
      * \~chinese \name data
@@ -98,7 +98,7 @@ protected slots:
 private:
     QList<ItemData *> m_data;
     QClipboard *m_board;
-    QListView *m_list;
+    ListView *m_list;
 };
 
 #endif // CLIPBOARDMODEL_H

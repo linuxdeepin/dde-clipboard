@@ -62,7 +62,7 @@ ItemData::ItemData(const QMimeData *mimeData)
             FileIconData data;
             stream >> data.cornerIconList >> data.fileIcon;
             //暂时不适用文件管理器提供的图标，其提供缩略图暂时有问题
-//            m_iconDataList.push_back(data);
+            m_iconDataList.push_back(data);
         }
     }
 
@@ -159,6 +159,9 @@ bool ItemData::isEqual(const ItemData *other)
         if (m_formatMap["TIMESTAMP"] == QByteArray::fromHex("00000000")) { //FIXME:qq截图的时间戳不变，这里特殊处理
             return false;
         } else if (m_formatMap["TIMESTAMP"] == other->m_formatMap["TIMESTAMP"]) {
+#ifdef QT_DEBUG
+            qDebug() << "equal the last";
+#endif
             return true;
         }
     }
@@ -170,6 +173,9 @@ bool ItemData::isValid()
 {
     //转移系统剪贴板所有权时造成的两次内容变化不需要显示，以下为与系统约定好的标识
     if (m_formatMap["FROM_DEEPIN_CLIPBOARD_MANAGER"] == "1") {
+#ifdef QT_DEBUG
+        qDebug() << "not valid";
+#endif
         return false;
     }
 

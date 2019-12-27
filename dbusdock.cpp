@@ -21,7 +21,7 @@ DBusDock::DBusDock(QObject *parent)
     qRegisterMetaType<DockRect>("DockRect");
     qDBusRegisterMetaType<DockRect>();
 
-    QDBusConnection::sessionBus().connect(this->service(), this->path(), "org.freedesktop.DBus.Properties",  "PropertiesChanged","sa{sv}as", this, SLOT(__propertyChanged__(QDBusMessage)));
+    QDBusConnection::sessionBus().connect(this->service(), this->path(), "org.freedesktop.DBus.Properties",  "PropertiesChanged", "sa{sv}as", this, SLOT(__propertyChanged__(QDBusMessage)));
 }
 
 DBusDock::~DBusDock()
