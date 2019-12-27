@@ -319,7 +319,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         }
 
         //drawText
-        QString t = elideText(m_text, size(), QTextOption::WrapAtWordBoundaryOrAnywhere, font(), Qt::ElideMiddle, 0);
+        QString t = elideText(m_text.simplified(), size(), QTextOption::WrapAnywhere, font(), Qt::ElideMiddle, 0);
         QStringList labelTexts = t.split("\n");
 
         static const int maxLineCount = 4;
