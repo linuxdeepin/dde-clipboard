@@ -131,10 +131,6 @@ void MainWindow::geometryChanged()
 void MainWindow::showAni()
 {
     if (!m_hasComposite) {
-        return;
-    }
-
-    if (!m_hasComposite) {
         move(m_rect.x() + WindowMargin, m_rect.y());
         setFixedWidth(m_rect.width());
         show();
@@ -151,10 +147,6 @@ void MainWindow::showAni()
 
 void MainWindow::hideAni()
 {
-    if (!m_hasComposite) {
-        return;
-    }
-
     if (!m_hasComposite) {
         hide();
         return;
