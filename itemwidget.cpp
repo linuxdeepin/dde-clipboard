@@ -39,6 +39,7 @@
 #include <QIcon>
 #include <QScopedPointer>
 #include <QFile>
+#include <QMimeDatabase>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -387,8 +388,16 @@ void ItemWidget::initData(QPointer<ItemData> data)
                     setFilePixmap(data->IconDataList().first());
                 }
             } else {
-                //文件管理器未提供，正常获取图标
-                setFilePixmap(GetFileIcon(url.path()));
+                QMimeDatabase db;
+                QMimeType mime = db.mimeTypeForFile(url.path());
+
+                if(mime.name().startsWith("image/")){//如果文件是图片,提供缩略图
+                    QPixmap pix(url.path());
+                    pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                    setFilePixmap(pix);
+                } else {
+                    setFilePixmap(GetFileIcon(url.path()));
+                }
             }
 
             QFontMetrics metrix = m_statusLabel->fontMetrics();
