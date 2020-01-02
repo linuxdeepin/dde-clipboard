@@ -42,6 +42,7 @@ class ItemWidget : public DWidget
 {
     Q_OBJECT
     Q_PROPERTY(int hoverAlpha WRITE setHoverAlpha)
+    Q_PROPERTY(double opacity WRITE setOpacity)
 public:
     ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
 
@@ -69,6 +70,8 @@ public:
 
     int radius() {return m_radius;}
     void setRadius(int radius);
+
+    void setOpacity(double opacity);
 
 Q_SIGNALS:
     void close();

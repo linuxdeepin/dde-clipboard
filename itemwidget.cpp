@@ -42,6 +42,7 @@
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
 #include <QMimeDatabase>
+#include <QGraphicsOpacityEffect>
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
@@ -268,6 +269,14 @@ void ItemWidget::setHoverAlpha(int alpha)
     update();
 }
 
+void ItemWidget::setOpacity(double opacity)
+{
+    QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect;
+    setGraphicsEffect(effect);
+    effect->setOpacity(opacity);
+    effect->destroyed();
+}
+
 int ItemWidget::unHoverAlpha() const
 {
     return m_unHoverAlpha;
@@ -316,9 +325,9 @@ void ItemWidget::onClose()
     geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
     geoAni->setDuration(AnimationTime);
 
-    QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "unHoverAlpha", group);
-    opacityAni->setStartValue(UnHoverAlpha);
-    opacityAni->setEndValue(0);
+    QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "opacity", group);
+    opacityAni->setStartValue(1.0);
+    opacityAni->setEndValue(0.0);
     opacityAni->setDuration(AnimationTime);
 
     group->addAnimation(geoAni);
