@@ -142,7 +142,7 @@ private:
     QTimer *m_refreshTimer = nullptr;
 
     //--- data
-    QPixmap m_pixmap;       //原始图片
+    QPixmap m_pixmap;       //显示的缩略图原图
     QDateTime m_createTime;
 
     //--- set style

@@ -61,7 +61,6 @@ ItemData::ItemData(const QMimeData *mimeData)
         for (int i = 0; i < mimeData->urls().size(); ++i) {
             FileIconData data;
             stream >> data.cornerIconList >> data.fileIcon;
-            //暂时不适用文件管理器提供的图标，其提供缩略图暂时有问题
             m_iconDataList.push_back(data);
         }
     }

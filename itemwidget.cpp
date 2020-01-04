@@ -207,11 +207,33 @@ void ItemWidget::setText(const QString &text, const QString &length)
 
 void ItemWidget::setPixmap(const QPixmap &pixmap)
 {
-    if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image
-                               || m_data->type() == ItemData::File)) {
+    // 重新设置缩略图，用于更新随主题变化的缩略图边框颜色
+    if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image)) {
         QPixmap pix = Globals::GetRoundPixmap(pixmap, palette().color(QPalette::Base));
         m_contentLabel->setPixmap(Globals::pixmapScaled(pix));
         m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
+    } else if (m_data->type() == ItemData::File) {
+        QUrl url = m_data->urls().first();
+        if (m_data->urls().size() == 1) {
+            if (m_data->IconDataList().size() == m_data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
+                //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
+                if (QImageReader::supportedImageFormats().contains(QFileInfo(url.path()).suffix().toLatin1())) {
+                    //只有图片需要圆角边框
+                    FileIconData iconData = m_data->IconDataList().first();
+                    iconData.cornerIconList.clear();
+                    setFilePixmap(iconData, true);
+                }
+            } else {
+                QMimeDatabase db;
+                QMimeType mime = db.mimeTypeForFile(url.path());
+
+                if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
+                    QPixmap pix(url.path());
+                    pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                    setFilePixmap(pix);
+                }
+            }
+        }
     }
 }
 
@@ -220,9 +242,7 @@ void ItemWidget::setFilePixmap(const QPixmap &pixmap)
     if (pixmap.size().isNull())
         return;
 
-    qreal scale = Globals::GetScale(pixmap.size(), FileIconWidth, FileIconHeight);
-
-    m_contentLabel->setPixmap(pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio));
+    m_contentLabel->setPixmap(Globals::pixmapScaled(pixmap));
 }
 
 void ItemWidget::setFilePixmap(const FileIconData &data, bool setRadius)
@@ -415,7 +435,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
         if (data->urls().size() == 1) {
             if (data->IconDataList().size() == data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
                 //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
-                if (QImageReader::supportedImageFormats().contains(QImageReader::imageFormat(url.path()))) {
+                if (QImageReader::supportedImageFormats().contains(QFileInfo(url.path()).suffix().toLatin1())) {
+                    //只有图片需要圆角边框
                     FileIconData iconData = data->IconDataList().first();
                     iconData.cornerIconList.clear();
                     setFilePixmap(iconData, true);
@@ -426,7 +447,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
                 QMimeDatabase db;
                 QMimeType mime = db.mimeTypeForFile(url.path());
 
-                if(mime.name().startsWith("image/")){//如果文件是图片,提供缩略图
+                if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
                     QPixmap pix(url.path());
                     pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
                     setFilePixmap(pix);
