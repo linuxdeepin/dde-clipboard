@@ -54,6 +54,7 @@ ItemData::ItemData(const QMimeData *mimeData)
     }
 
     m_createTime = QDateTime::currentDateTime();
+    m_enable = true;
 
     if (mimeData->formats().contains("x-dfm-copied/file-icons")) {
         QByteArray buf = mimeData->data("x-dfm-copied/file-icons");

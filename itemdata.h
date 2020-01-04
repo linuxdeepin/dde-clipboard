@@ -59,6 +59,8 @@ public:
     const QDateTime &time();                    // 复制时间
     const QString &html();                      // 富文本信息
     const QString &text();                      // 内容预览
+    void setDataEnabled(bool enable) {m_enable = enable;}
+    bool dataEnabled() {return m_enable;}
     QPixmap pixmap();                           // 缩略图
     const DataType &type() {return m_type;}
     const QVariant &imageData();
@@ -113,6 +115,7 @@ private:
     QVariant m_variantImage;
     QString m_html;
     QString m_text;
+    bool m_enable;
     QDateTime m_createTime;
     QList<FileIconData> m_iconDataList;
 };

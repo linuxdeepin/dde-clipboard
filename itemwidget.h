@@ -151,7 +151,6 @@ private:
     int m_unHoverAlpha = 0;
     bool m_havor = false;
     bool m_closeFocus = false;  //关闭按钮是否置于选中状态
-    bool m_enabled = true;
 
 protected:
     virtual void keyPressEvent(QKeyEvent *event) override;

@@ -56,7 +56,6 @@ public:
      * \~chinese \param list 存放图片的容器
      */
     void setPixmapList(const QList<QPixmap> &list);
-
     /*!
      * \~chinese \name minimumSizeHint
      * \~chinese \brief 推荐显示的最小大小(宽度为180,高度为100)
@@ -97,8 +96,6 @@ public:
                    const QBrush &background = QBrush(Qt::NoBrush),
                    qreal backgroundReaius = 4,
                    QList<QRectF> *boundingRegion = 0);
-
-
 private:
     QString m_text;
     QList<QPixmap> m_pixmapList;

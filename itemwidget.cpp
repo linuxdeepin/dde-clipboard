@@ -497,6 +497,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
     default:
         break;
     }
+
+    m_contentLabel->setEnabled(data->dataEnabled());
 }
 
 void ItemWidget::initConnect()
@@ -597,7 +599,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
 
 void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if (!m_enabled) {
+    if (!m_data->dataEnabled()) {
         return DWidget::mousePressEvent(event);
     }
 
@@ -611,7 +613,7 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
             }
         }
         if (!has) {
-            m_enabled = false;
+            m_data->setDataEnabled(false);
             //源文件被删除需要提示
             m_contentLabel->setEnabled(false);
             QFontMetrics metrix = m_statusLabel->fontMetrics();
