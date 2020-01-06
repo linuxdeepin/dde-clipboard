@@ -227,10 +227,26 @@ void ItemWidget::setPixmap(const QPixmap &pixmap)
                 QMimeDatabase db;
                 QMimeType mime = db.mimeTypeForFile(url.path());
 
-                if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
-                    QPixmap pix(url.path());
-                    pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                if(mime.name().startsWith("image/")){//如果文件是图片,提供缩略图
+                    QFile file(url.path());
+                    QPixmap pix;
+                    if(file.open(QFile::ReadOnly)){
+                        QByteArray array = file.readAll();
+                        pix.loadFromData(array);
+
+                        if(pix.isNull()){
+                            QIcon icon = QIcon::fromTheme(mime.genericIconName());
+                            pix = icon.pixmap(PixmapWidth, PixmapHeight);
+                        }
+                        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                    } else {
+                        QIcon icon = QIcon::fromTheme(mime.genericIconName());
+                        pix = icon.pixmap(PixmapWidth, PixmapHeight);
+                    }
                     setFilePixmap(pix);
+                    file.close();
+                } else {
+                    setFilePixmap(GetFileIcon(url.path()));
                 }
             }
         }
@@ -441,16 +457,30 @@ void ItemWidget::initData(QPointer<ItemData> data)
                     iconData.cornerIconList.clear();
                     setFilePixmap(iconData, true);
                 } else {
-                    setFilePixmap(data->IconDataList().first());
+                    setFilePixmap(data->IconDataList().first(), true);
                 }
             } else {
                 QMimeDatabase db;
                 QMimeType mime = db.mimeTypeForFile(url.path());
 
-                if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
-                    QPixmap pix(url.path());
-                    pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                if(mime.name().startsWith("image/")){//如果文件是图片,提供缩略图
+                    QFile file(url.path());
+                    QPixmap pix;
+                    if(file.open(QFile::ReadOnly)){
+                        QByteArray array = file.readAll();
+                        pix.loadFromData(array);
+
+                        if(pix.isNull()){
+                            QIcon icon = QIcon::fromTheme(mime.genericIconName());
+                            pix = icon.pixmap(PixmapWidth, PixmapHeight);
+                        }
+                        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                    } else {
+                        QIcon icon = QIcon::fromTheme(mime.genericIconName());
+                        pix = icon.pixmap(PixmapWidth, PixmapHeight);
+                    }
                     setFilePixmap(pix);
+                    file.close();
                 } else {
                     setFilePixmap(GetFileIcon(url.path()));
                 }
