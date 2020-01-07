@@ -21,12 +21,6 @@ ListView::ListView(QWidget *parent)
     setFrameShape(QFrame::NoFrame);
     setVerticalScrollMode(QListView::ScrollPerPixel);
 
-//    setMovement(Movement::Free);
-//    setAutoScroll(true);
-//    setDragEnabled(true);
-
-//    QScroller::grabGesture(this, QScroller::LeftMouseButtonGesture);
-
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
 }
