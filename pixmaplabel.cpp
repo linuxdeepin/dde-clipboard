@@ -296,9 +296,16 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             QPixmap pix = m_pixmapList[i];
             if (pix.size() == QSize(0, 0))
                 continue;
+            int x = 0;
+            int y = 0;
             qreal scale = Globals::GetScale(pix.size(), FileIconWidth, FileIconHeight);
-            int x = int(width() - pix.size().width() / scale) / 2 + (i - 1) * PixmapxStep;
-            int y = int(height() - pix.size().height() / scale) / 2 + (i - 1) * PixmapyStep;
+            if (!(m_pixmapList.size() % 2)) {//奇数个和偶数个计算方法不一样
+                x = int(width() - (pix.size().width() / scale + PixmapxStep)) / 2 + i * PixmapxStep;
+                y = int(height() - (pix.size().height() / scale + PixmapyStep)) / 2 + i * PixmapyStep;
+            } else {
+                x = int(width() - pix.size().width() / scale) / 2 + (i - 1) * PixmapxStep;
+                y = int(height() - pix.size().height() / scale) / 2 + (i - 1) * PixmapyStep;
+            }
 
             if (!isEnabled())
                 pix = style->generatedIconPixmap(QIcon::Disabled, pix, &opt);
