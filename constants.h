@@ -105,15 +105,15 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
         return QPixmap();
     }
 
-    int radius;
-    int borderWidth;
-    if (pix.width() > pix.height()) {
-        radius = int(8 * 1.0 / PixmapWidth * pix.width());
-        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
-    } else {
-        radius = int(8 * 1.0 / PixmapHeight * pix.height());
-        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
-    }
+    int radius = 10;
+    int borderWidth = 10;
+//    if (pix.width() > pix.height()) {
+//        radius = int(8 * 1.0 / PixmapWidth * pix.width());
+//        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
+//    } else {
+//        radius = int(8 * 1.0 / PixmapHeight * pix.height());
+//        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
+//    }
 
     QPixmap pixmap = pix;
     //绘制边框
