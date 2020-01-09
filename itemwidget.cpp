@@ -107,7 +107,9 @@ static QPixmap GetFileIcon(QString path)
     QIcon icon;
 
     if (!QFileInfo::exists(path)) {
-        return QPixmap();
+        QMimeDatabase db;
+        QMimeType mime = db.mimeTypeForFile(path);
+        return QIcon::fromTheme(mime.genericIconName()).pixmap(FileIconWidth, FileIconWidth);
     }
     QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
     QExplicitlySharedDataPointer<DGioFileInfo> fileinfo = file->createFileInfo();
@@ -205,81 +207,44 @@ void ItemWidget::setText(const QString &text, const QString &length)
     m_statusLabel->setText(length);
 }
 
-void ItemWidget::setPixmap(const QPixmap &pixmap)
+void ItemWidget::setThumnail(const QPixmap &pixmap)
 {
-    // 重新设置缩略图，用于更新随主题变化的缩略图边框颜色
-    if (!m_pixmap.isNull() && (m_data->type() == ItemData::Image)) {
-        QPixmap pix = Globals::pixmapScaled(pixmap);//先缩放,再设置圆角
+    m_pixmap = pixmap;
+    m_data->setPixmap(pixmap);
+    if (!m_pixmap.isNull()) {
+        QPixmap pix = Globals::pixmapScaled(pixmap);//先缩放,再设置圆角,保证缩略图边框宽度在显示后不会变化
         m_contentLabel->setPixmap(Globals::GetRoundPixmap(pix, palette().color(QPalette::Base)));
-        m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
-    } else if (m_data->type() == ItemData::File) {
-        QUrl url = m_data->urls().first();
-        if (m_data->urls().size() == 1) {
-            if (m_data->IconDataList().size() == m_data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
-                //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
-                if (QImageReader::supportedImageFormats().contains(QFileInfo(url.path()).suffix().toLatin1())) {
-                    //只有图片需要圆角边框
-                    FileIconData iconData = m_data->IconDataList().first();
-                    iconData.cornerIconList.clear();
-                    setFilePixmap(iconData, true);
-                }
-            } else {
-                QMimeDatabase db;
-                QMimeType mime = db.mimeTypeForFile(url.path());
-
-                if (mime.name().startsWith("image/")) {//如果文件是图片,提供缩略图
-                    QFile file(url.path());
-                    QPixmap pix;
-                    if (file.open(QFile::ReadOnly)) {
-                        QByteArray array = file.readAll();
-                        pix.loadFromData(array);
-
-                        if (pix.isNull()) {
-                            QIcon icon = QIcon::fromTheme(mime.genericIconName());
-                            pix = icon.pixmap(PixmapWidth, PixmapHeight);
-                            setFilePixmap(pix);
-                        } else {
-                            setFilePixmap(pix, true);
-                        }
-//                        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
-                    } else {
-                        QIcon icon = QIcon::fromTheme(mime.genericIconName());
-                        pix = icon.pixmap(PixmapWidth, PixmapHeight);
-                        setFilePixmap(pix);
-                    }
-                    file.close();
-                } else {
-                    setFilePixmap(GetFileIcon(url.path()));
-                }
-            }
+        if (m_data->type() == ItemData::Image) {
+            m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
         }
     }
 }
 
-void ItemWidget::setFilePixmap(const QPixmap &pixmap, bool setRadius)
+void ItemWidget::setThumnail(const FileIconData &data)
+{
+    QPixmap pix = data.fileIcon.pixmap(QSize(FileIconWidth, FileIconWidth));
+    setThumnail(pix);
+}
+
+void ItemWidget::setFileIcon(const QPixmap &pixmap)
 {
     if (pixmap.size().isNull())
         return;
-    QPixmap pix = pixmap;
-    pix = Globals::pixmapScaled(pix);//如果需要加边框,先缩放再加边框
-    if (setRadius) {
-        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
-    }
+    QPixmap pix = Globals::pixmapScaled(pixmap);//如果需要加边框,先缩放再加边框
+    m_data->saveFileIcons(QList<QPixmap>() << pix);
     m_contentLabel->setPixmap(pix);
 }
 
-void ItemWidget::setFilePixmap(const FileIconData &data, bool setRadius)
+void ItemWidget::setFileIcon(const FileIconData &data/*, bool setRadius*/)
 {
     QPixmap pix = GetFileIcon(data);
-//    if (setRadius){
-//        pix = Globals::pixmapScaled(pix);
-//        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
-//    }
-    setFilePixmap(pix, setRadius);
+    setFileIcon(pix);
 }
 
-void ItemWidget::setFilePixmaps(const QList<QPixmap> &list)
+void ItemWidget::setFileIcons(const QList<QPixmap> &list)
 {
+    m_data->saveFileIcons(list);
+
     m_contentLabel->setPixmapList(list);
 }
 
@@ -448,53 +413,59 @@ void ItemWidget::initData(QPointer<ItemData> data)
     break;
     case ItemData::Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
-        m_pixmap = data->pixmap();
-        setPixmap(data->pixmap());
+        setThumnail(data->pixmap());
     }
     break;
     case ItemData::File: {
-        if (data->urls().size() == 0)
+        if (data->urls().size() == 0) {
+            qDebug() << "error";
             return;
+        }
 
         QUrl url = data->urls().first();
         if (data->urls().size() == 1) {
-            if (data->IconDataList().size() == data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
-                //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
-                if (QImageReader::supportedImageFormats().contains(QFileInfo(url.path()).suffix().toLatin1())) {
-                    //只有图片需要圆角边框
-                    FileIconData iconData = data->IconDataList().first();
-                    iconData.cornerIconList.clear();
-                    setFilePixmap(iconData, true);
-                } else {
-                    setFilePixmap(data->IconDataList().first());
-                }
+            if (!m_data->pixmap().isNull()) {//避免重复获取
+                setThumnail(m_data->pixmap());
+            } else if (m_data->FileIcons().size() == 1) { //避免重复获取
+                setFileIcon(m_data->FileIcons().first());
             } else {
-                QMimeDatabase db;
-                QMimeType mime = db.mimeTypeForFile(url.path());
+                if (data->IconDataList().size() == data->urls().size()) {//先查看文件管理器在复制时有没有提供缩略图
+                    FileIconData iconData = data->IconDataList().first();
+                    //图片不需要加角标,但需要对图片进行圆角处理(此时文件可能已经被删除，缩略图由文件管理器提供)
+                    if (QImageReader::supportedImageFormats().contains(QFileInfo(url.path()).suffix().toLatin1())) {
+                        //只有图片需要圆角边框
+                        iconData.cornerIconList.clear();
+                        setThumnail(iconData);
+                    } else {
+                        setFileIcon(iconData);
+                    }
+                } else {
+                    QMimeDatabase db;
+                    QMimeType mime = db.mimeTypeForFile(url.path());
+                    if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
+                        QFile file(url.path());
+                        QPixmap pix;
+                        if (file.open(QFile::ReadOnly)) {
+                            QByteArray array = file.readAll();
+                            pix.loadFromData(array);
 
-                if (mime.name().startsWith("image/")) { //如果文件是图片,提供缩略图
-                    QFile file(url.path());
-                    QPixmap pix;
-                    if (file.open(QFile::ReadOnly)) {
-                        QByteArray array = file.readAll();
-                        pix.loadFromData(array);
-
-                        if (pix.isNull()) {
+                            if (pix.isNull()) {
+                                QIcon icon = QIcon::fromTheme(mime.genericIconName());
+                                pix = icon.pixmap(PixmapWidth, PixmapHeight);
+                                setFileIcon(pix);
+                            } else {
+                                setThumnail(pix);
+                            }
+                        } else {
                             QIcon icon = QIcon::fromTheme(mime.genericIconName());
                             pix = icon.pixmap(PixmapWidth, PixmapHeight);
-                            setFilePixmap(pix);
-                        } else {
-                            setFilePixmap(pix, true);
+                            setFileIcon(pix);
                         }
-//                        pix = Globals::GetRoundPixmap(pix, palette().color(QPalette::Base));
+                        file.close();
                     } else {
-                        QIcon icon = QIcon::fromTheme(mime.genericIconName());
-                        pix = icon.pixmap(PixmapWidth, PixmapHeight);
-                        setFilePixmap(pix);
+                        QPixmap pix = GetFileIcon(url.path());
+                        setFileIcon(pix);
                     }
-                    file.close();
-                } else {
-                    setFilePixmap(GetFileIcon(url.path()));
                 }
             }
 
@@ -520,8 +491,13 @@ void ItemWidget::initData(QPointer<ItemData> data)
                 qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
                     return pix1.size().width() < pix2.size().width();
                 });
-                setFilePixmaps(pixmapList);
+                setFileIcons(pixmapList);
             } else {
+                if (!m_data->FileIcons().isEmpty()) {//避免重复获取
+                    setFileIcons(m_data->FileIcons());
+                    break;
+                }
+
                 int iconNum = MIN(3, data->urls().size());
                 QList<QPixmap> pixmapList;
                 for (int i = 0; i < iconNum; ++i) {
@@ -529,9 +505,10 @@ void ItemWidget::initData(QPointer<ItemData> data)
                     if (filePath.startsWith("file://")) {
                         filePath = filePath.mid(QString("file://").length());
                     }
-                    pixmapList.push_back(GetFileIcon(filePath));
+                    QPixmap pix = GetFileIcon(filePath);
+                    pixmapList.push_back(pix);
                 }
-                setFilePixmaps(pixmapList);
+                setFileIcons(pixmapList);
             }
         }
     }
@@ -562,7 +539,7 @@ void ItemWidget::initConnect()
     });
 
     connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
-        setPixmap(m_pixmap);
+        setThumnail(m_pixmap);
     });
 }
 

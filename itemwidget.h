@@ -41,7 +41,6 @@ class PixmapLabel;
 class ItemWidget : public DWidget
 {
     Q_OBJECT
-    Q_PROPERTY(int hoverAlpha WRITE setHoverAlpha)
     Q_PROPERTY(double opacity WRITE setOpacity)
 public:
     ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
@@ -50,11 +49,16 @@ public:
      * \~chinese \brief 设置剪切块属性的接口
      */
     void setText(const QString &text, const QString &length);
-    void setPixmap(const QPixmap &pixmap);              //设置图像缩略图
-    void setFilePixmap(const QPixmap &pixmap, bool setRadius = false);          //单个文件
-    void setFilePixmap(const FileIconData &data, bool setRadius = false);
-    void setFilePixmaps(const QList<QPixmap> &list);    //多个文件
-    void setClipType(const QString &text);              //剪贴类型
+
+    void setThumnail(const QPixmap &pixmap/*未经处理的原图*/);
+    void setThumnail(const FileIconData &data);
+
+    void setFileIcon(const QPixmap &pixmap/*未经处理的原图*/);                     //单个文件
+    void setFileIcon(const FileIconData &data);
+
+    void setFileIcons(const QList<QPixmap> &list);                              //多个文件
+
+    void setClipType(const QString &text);                                      //剪贴类型
     void setCreateTime(const QDateTime &time);
 
     /*!

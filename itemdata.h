@@ -61,11 +61,14 @@ public:
     const QString &text();                      // 内容预览
     void setDataEnabled(bool enable) {m_enable = enable;}
     bool dataEnabled() {return m_enable;}
+    void setPixmap(const QPixmap &pixmap);
     QPixmap pixmap();                           // 缩略图
     const DataType &type() {return m_type;}
     const QVariant &imageData();
     const QMap<QString, QByteArray> &formatMap();
-    const QList<FileIconData> &IconDataList();
+    void saveFileIcons(const QList<QPixmap> &list);
+    const QList<QPixmap> &FileIcons();          //IconDataList没有数据时再使用FileIcons
+    const QList<FileIconData> &IconDataList();  //优先使用IconDataList
 
     /*!
      * \~chinese \name remove
@@ -118,6 +121,8 @@ private:
     bool m_enable;
     QDateTime m_createTime;
     QList<FileIconData> m_iconDataList;
+    QPixmap m_thumnail;
+    QList<QPixmap> m_fileIcons;
 };
 
 #endif // ITEMDATA_H

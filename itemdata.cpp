@@ -122,8 +122,16 @@ const QString &ItemData::text()
     return m_text;
 }
 
+void ItemData::setPixmap(const QPixmap &pixmap)
+{
+    m_thumnail = pixmap;
+}
+
 QPixmap ItemData::pixmap()
 {
+    if (!m_thumnail.isNull())
+        return m_thumnail;
+
     QPixmap pix = qvariant_cast<QPixmap>(m_variantImage);
     return pix;
 }
@@ -136,6 +144,16 @@ const QVariant &ItemData::imageData()
 const QMap<QString, QByteArray> &ItemData::formatMap()
 {
     return m_formatMap;
+}
+
+void ItemData::saveFileIcons(const QList<QPixmap> &list)
+{
+    m_fileIcons = list;
+}
+
+const QList<QPixmap> &ItemData::FileIcons()
+{
+    return m_fileIcons;
 }
 
 const QList<FileIconData> &ItemData::IconDataList()

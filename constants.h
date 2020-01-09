@@ -87,8 +87,9 @@ static qreal GetScale(QSize size, int targetWidth, int targetHeight)
  */
 inline QPixmap pixmapScaled(const QPixmap &pixmap)
 {
+    if (pixmap.isNull())
+        return pixmap;
     qreal scale = Globals::GetScale(pixmap.size(), PixmapWidth, PixmapHeight);
-
     return pixmap.scaled(pixmap.size() / scale, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 }
 

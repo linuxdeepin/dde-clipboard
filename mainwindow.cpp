@@ -61,15 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     installEventFilter(this);
 
-    DRegionMonitor *monitor = new DRegionMonitor(this);
-    monitor->registerRegion(QRegion(QRect()));
-    connect(monitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint & p, const int flag) {
-        Q_UNUSED(flag);
-        if (!geometry().contains(p))
-            if (!isHidden()) {
-                hideAni();
-            }
-    });
+    checkXEventMonitorDbusState();
 }
 
 MainWindow::~MainWindow()
@@ -165,6 +157,32 @@ void MainWindow::setX(int x)
 void MainWindow::CompositeChanged()
 {
     m_hasComposite = m_wmHelper->hasComposite();
+}
+
+void MainWindow::checkXEventMonitorDbusState()
+{
+    QTimer *timer = new QTimer(this);
+    timer->setInterval(100);
+    connect(timer, &QTimer::timeout, this, [ = ] {
+        // DRegionMonitor依赖以下服务，确保其启动再绑定其信号
+        QDBusInterface interface("com.deepin.api.XEventMonitor", "/com/deepin/api/XEventMonitor",
+                                     "com.deepin.api.XEventMonitor",
+                                     QDBusConnection::sessionBus());
+        if (interface.isValid())
+        {
+            DRegionMonitor *monitor = new DRegionMonitor(this);
+            monitor->registerRegion(QRegion(QRect()));
+            connect(monitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint & p, const int flag) {
+                Q_UNUSED(flag);
+                if (!geometry().contains(p))
+                    if (!isHidden()) {
+                        hideAni();
+                    }
+            });
+            timer->stop();
+        }
+    });
+    timer->start();
 }
 
 void MainWindow::initUI()

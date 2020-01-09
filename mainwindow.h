@@ -87,6 +87,7 @@ private Q_SLOTS:
      * \~chinese \brief 是否开启动画效果
      */
     void CompositeChanged();
+    void checkXEventMonitorDbusState();
 
 private:
     /*!
