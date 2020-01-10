@@ -70,6 +70,8 @@ public Q_SLOTS:
      */
     void hideAni();
 
+    void startLoader();
+
 private Q_SLOTS:
     /*!
      * \~chinese \name geometryChanged

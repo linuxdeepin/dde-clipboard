@@ -339,6 +339,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             QRect textRect(0, rectIndex * lineHeight + TextContentTopMargin, width(), lineHeight);
             QTextOption option;
             option.setAlignment(Qt::AlignBottom);
+            option.setWrapMode(QTextOption::NoWrap);//设置文本不能换行
             painter.setPen(palette().color(QPalette::Text));
 
             QPair<QString, int> pair = getNextValidString(labelTexts, lineFrom);

@@ -23,27 +23,98 @@
 #include <QDebug>
 #include <QApplication>
 #include <QWidget>
+#include <QDataStream>
 
-ItemData::ItemData(const QMimeData *mimeData)
+#include <QLabel>
+
+static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
+static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
+static inline QString applicationXQtImageLiteral() { return QStringLiteral("application/x-qt-image"); }
+
+QByteArray Info2Buf(const ItemInfo &info)
 {
-    if (mimeData->hasImage()) {
-        m_variantImage = mimeData->imageData();
+    QByteArray buf;
+
+    QByteArray iconBuf;
+    if (info.m_formatMap.keys().contains("x-dfm-copied/file-icons")) {
+        iconBuf = info.m_formatMap["x-dfm-copied/file-icons"];
+    }
+
+    QDataStream stream(&buf, QIODevice::WriteOnly);
+    stream << info.m_formatMap
+           << info.m_type
+           << info.m_urls
+           << info.m_hasImage;
+    if (info.m_hasImage) {
+        stream << info.m_variantImage;
+    }
+    stream  << info.m_enable
+            << info.m_text
+            << info.m_createTime
+            << iconBuf;
+
+    return buf;
+
+}
+ItemInfo Buf2Info(const QByteArray &buf)
+{
+    QByteArray tempBuf = buf;
+
+    ItemInfo info;
+
+    QDataStream stream(&tempBuf, QIODevice::ReadOnly);
+    int type;
+    QByteArray iconBuf;
+    stream >> info.m_formatMap
+           >> type
+           >> info.m_urls
+           >> info.m_hasImage;
+    if (info.m_hasImage) {
+        stream >> info.m_variantImage;
+    }
+
+    stream >> info.m_enable
+           >> info.m_text
+           >> info.m_createTime
+           >> iconBuf;
+
+    QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
+    for (int i = 0 ; i < info.m_urls.size(); ++i) {
+        FileIconData data;
+        stream2 >> data.cornerIconList >> data.fileIcon;
+        info.m_iconDataList.push_back(data);
+    }
+
+    info.m_type = static_cast<DataType>(type);
+
+    return info;
+}
+
+ItemData::ItemData(const QByteArray &buf)
+{
+    // get
+    ItemInfo info;
+    info = Buf2Info(buf);
+
+    // convert
+    QStringList formats = info.m_formatMap.keys();
+
+    if (formats.contains(applicationXQtImageLiteral())) {
+        m_variantImage = info.m_variantImage;
         if (m_variantImage.isNull())
             return;
 
         m_type = Image;
-    } else if (mimeData->hasUrls()) {
-        m_urls = mimeData->urls();
+    } else if (formats.contains(textUriListLiteral())) {
+        m_urls = info.m_urls;
         if (!m_urls.count())
             return;
 
         m_type = File;
     } else {
-        if (mimeData->hasText()) {
-            m_text = mimeData->text();
-        } else if (mimeData->hasHtml()) {
-            m_text = mimeData->html();
-        } else {
+        if (formats.contains(textPlainLiteral())) {
+            m_text = info.m_text;
+        }  else {
             return;
         }
 
@@ -55,23 +126,8 @@ ItemData::ItemData(const QMimeData *mimeData)
 
     m_createTime = QDateTime::currentDateTime();
     m_enable = true;
-
-    if (mimeData->formats().contains("x-dfm-copied/file-icons")) {
-        QByteArray buf = mimeData->data("x-dfm-copied/file-icons");
-        QDataStream stream(&buf, QIODevice::ReadOnly);
-        for (int i = 0; i < mimeData->urls().size(); ++i) {
-            FileIconData data;
-            stream >> data.cornerIconList >> data.fileIcon;
-            m_iconDataList.push_back(data);
-        }
-    }
-
-    for (int i = 0; i < mimeData->formats().size(); ++i) {
-        m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
-#if 0
-        qDebug() << mimeData->formats()[i] << mimeData->data(mimeData->formats()[i]);
-#endif
-    }
+    m_iconDataList = info.m_iconDataList;
+    m_formatMap = info.m_formatMap;
 }
 
 QString ItemData::title()
@@ -110,11 +166,6 @@ const QList<QUrl> &ItemData::urls()
 const QDateTime &ItemData::time()
 {
     return m_createTime;
-}
-
-const QString &ItemData::html()
-{
-    return m_html;
 }
 
 const QString &ItemData::text()
@@ -169,33 +220,4 @@ void ItemData::remove()
 void ItemData::popTop()
 {
     emit reborn(this);
-}
-
-bool ItemData::isEqual(const ItemData *other)
-{
-    if (!m_formatMap["TIMESTAMP"].isEmpty()) {
-        if (m_formatMap["TIMESTAMP"] == QByteArray::fromHex("00000000")) { //FIXME:qq截图的时间戳不变，这里特殊处理
-            return false;
-        } else if (m_formatMap["TIMESTAMP"] == other->m_formatMap["TIMESTAMP"]) {
-#ifdef QT_DEBUG
-            qDebug() << "equal the last";
-#endif
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool ItemData::isValid()
-{
-    //转移系统剪贴板所有权时造成的两次内容变化不需要显示，以下为与系统约定好的标识
-    if (m_formatMap["FROM_DEEPIN_CLIPBOARD_MANAGER"] == "1") {
-#ifdef QT_DEBUG
-        qDebug() << "not valid";
-#endif
-        return false;
-    }
-
-    return true;
 }

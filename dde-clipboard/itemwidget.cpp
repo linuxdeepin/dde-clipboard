@@ -214,7 +214,7 @@ void ItemWidget::setThumnail(const QPixmap &pixmap)
     if (!m_pixmap.isNull()) {
         QPixmap pix = Globals::pixmapScaled(pixmap);//先缩放,再设置圆角,保证缩略图边框宽度在显示后不会变化
         m_contentLabel->setPixmap(Globals::GetRoundPixmap(pix, palette().color(QPalette::Base)));
-        if (m_data->type() == ItemData::Image) {
+        if (m_data->type() == Image) {
             m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
         }
     }
@@ -407,16 +407,16 @@ void ItemWidget::initData(QPointer<ItemData> data)
     setClipType(data->title());
     setCreateTime(data->time());
     switch (data->type()) {
-    case ItemData::Text: {
+    case Text: {
         setText(data->text(), data->subTitle());
     }
     break;
-    case ItemData::Image: {
+    case Image: {
         m_contentLabel->setAlignment(Qt::AlignCenter);
         setThumnail(data->pixmap());
     }
     break;
-    case ItemData::File: {
+    case File: {
         if (data->urls().size() == 0) {
             qDebug() << "error";
             return;
@@ -629,7 +629,7 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
         return DWidget::mousePressEvent(event);
     }
 
-    if (m_data->type() == ItemData::File) {
+    if (m_data->type() == File) {
         QList<QUrl> urls = m_data->urls();
         bool has = false;
         foreach (auto url, urls) {

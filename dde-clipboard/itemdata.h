@@ -27,8 +27,27 @@
 #include <QObject>
 #include <QPixmap>
 #include <QUrl>
+#include <QDBusArgument>
 
 #include "constants.h"
+enum DataType {
+    Unknown,
+    Text,
+    Image,
+    File
+};
+
+struct ItemInfo {
+    QMap<QString, QByteArray> m_formatMap;
+    DataType m_type = Unknown;
+    QList<QUrl> m_urls;
+    bool m_hasImage = false;
+    QVariant m_variantImage;
+    bool m_enable;
+    QString m_text;
+    QDateTime m_createTime;
+    QList<FileIconData> m_iconDataList;
+};
 
 /*!
  * ~chinese \class ItemData
@@ -38,17 +57,7 @@ class ItemData : public QObject
 {
     Q_OBJECT
 public:
-    explicit ItemData(const QMimeData *mimeData);
-
-    /*!
-     * \~chinese \brief 数据类型
-     */
-    enum DataType {
-        Unknown,
-        Text,
-        Image,
-        File
-    };
+    explicit ItemData(const QByteArray &buf);
 
     /*!
      * \~chinese \brief 提供剪切块属性的接口
@@ -57,7 +66,6 @@ public:
     QString subTitle();                         // 字符数，像素信息，文件名称（多个文件显示XXX等X个文件）
     const QList<QUrl> &urls();                  // 文件链接
     const QDateTime &time();                    // 复制时间
-    const QString &html();                      // 富文本信息
     const QString &text();                      // 内容预览
     void setDataEnabled(bool enable) {m_enable = enable;}
     bool dataEnabled() {return m_enable;}
@@ -81,20 +89,6 @@ public:
      */
     void popTop();
 
-    /*!
-     * \~chinese \name isEqual
-     * \~chinese \brief 判断当前事件产生的数据是否和其他数据相同,用于数据的去重
-     * \~chinese \param other 其他数据
-     * \~chinese \return 相同返回true,不相同返回false
-     */
-    bool isEqual(const ItemData *other);
-    /*!
-     * \~chinese \name isValid
-     * \~chinese \brief 转移系统剪贴板所有权时造成的两次内容变化是否要显示
-     * \~chinese \return 相同需要显示true,不需要显示返回false
-     */
-    bool isValid();
-
 Q_SIGNALS:
     /*!
      * \~chinese \name destroy
@@ -116,7 +110,6 @@ private:
     DataType m_type = Unknown;
     QList<QUrl> m_urls;
     QVariant m_variantImage;
-    QString m_html;
     QString m_text;
     bool m_enable;
     QDateTime m_createTime;
@@ -124,5 +117,4 @@ private:
     QPixmap m_thumnail;
     QList<QPixmap> m_fileIcons;
 };
-
 #endif // ITEMDATA_H

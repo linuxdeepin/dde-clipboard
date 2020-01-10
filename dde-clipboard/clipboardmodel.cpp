@@ -24,12 +24,17 @@
 #include <QPointer>
 #include <QDebug>
 #include <QDir>
+#include <QDBusInterface>
+#include <QDBusReply>
+#include <QDBusConnection>
 
 ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListModel(parent)
-    , m_board(QApplication::clipboard())
     , m_list(list)
+    , m_loaderInter(new ClipboardLoader("com.deepin.dde.ClipboardLoader",
+                                        "/com/deepin/dde/ClipboardLoader",
+                                        QDBusConnection::sessionBus(), this))
 {
-    connect(m_board, &QClipboard::dataChanged, this, &ClipboardModel::clipDataChanged);
+    checkDbusConnect();
 }
 
 void ClipboardModel::clear()
@@ -100,62 +105,58 @@ void ClipboardModel::reborn(ItemData *data)
         return;
     }
 
+    QByteArray buf;
+    QDataStream stream(&buf, QIODevice::WriteOnly);
+    QByteArray iconBuf;
+    stream << data->formatMap()
+           << data->type()
+           << data->urls()
+           << data->imageData().isValid();
+    if (data->imageData().isValid()) {
+        stream << data->imageData();
+    }
+    stream  << data->dataEnabled()
+            << data->text()
+            << data->time()
+            << iconBuf;
+
+    m_loaderInter->dataReborned(buf);
+
     beginRemoveRows(QModelIndex(), idx, idx);
     m_data.removeOne(data);
     endRemoveRows();
-
-    QMimeData *mimeData = new QMimeData;
-
-    QMapIterator<QString, QByteArray> it(data->formatMap());
-    while (it.hasNext()) {
-        it.next();
-        mimeData->setData(it.key(), it.value());
-    }
-
-    switch (data->type()) {
-    case ItemData::Text:
-        mimeData->setText(data->text());
-        mimeData->setHtml(data->html().isEmpty() ? data->text() : data->html());
-        break;
-    case ItemData::Image:
-        mimeData->setImageData(data->imageData());
-        break;
-    case ItemData::File:
-        mimeData->setUrls(data->urls());
-        break;
-    default:
-        break;
-    }
-
-    m_board->setMimeData(mimeData);
-
     data->deleteLater();
 
     Q_EMIT dataReborn();
 }
 
-void ClipboardModel::clipDataChanged()
+void ClipboardModel::checkDbusConnect()
 {
-    const QMimeData *mimeData = m_board->mimeData();
-    ItemData *item = new ItemData(mimeData);
-    if (item->type() == ItemData::Unknown) {
+    QTimer *timer = new QTimer(this);
+    timer->setInterval(1000);
+
+    connect(timer, &QTimer::timeout, this, [ = ] {
+        if (m_loaderInter->isValid())
+        {
+            connect(m_loaderInter, &ClipboardLoader::dataComing, this, &ClipboardModel::dataComing);
+            timer->stop();
+        }
+    });
+    timer->start();
+}
+
+void ClipboardModel::dataComing(const QByteArray &buf)
+{
+    ItemData *item = new ItemData(buf);
+    if (item->type() == Unknown) {
         item->deleteLater();
         return;
     }
 
-    if (m_data.size()) {
-        if (item->isEqual(m_data.first()) || !item->isValid()) {
-            item->deleteLater();
-            return;
-        }
-    }
-
     beginInsertRows(QModelIndex(), 0, 0);
-
     connect(item, &ItemData::destroy, this, &ClipboardModel::destroy);
     connect(item, &ItemData::reborn, this, &ClipboardModel::reborn);
     m_data.push_front(item);
-
     endInsertRows();
 
     Q_EMIT dataChanged();

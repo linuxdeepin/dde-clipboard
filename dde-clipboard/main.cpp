@@ -56,6 +56,15 @@ int main(int argc, char *argv[])
     QDBusConnection connection = QDBusConnection::sessionBus();
 
     MainWindow w;
+
+    QDBusInterface interface("com.deepin.dde.ClipboardLoader", "/com/deepin/dde/ClipboardLoader",
+                                 "com.deepin.dde.ClipboardLoader",
+                                 QDBusConnection::sessionBus());
+    if (!interface.isValid()) {
+        qDebug() << "start loader...";
+        w.startLoader();
+    }
+
     ClipboardAdaptor adapt(&w);
     if (!connection.registerService(DBusClipBoardService)) {
         qDebug() << "error:" << connection.lastError().message();

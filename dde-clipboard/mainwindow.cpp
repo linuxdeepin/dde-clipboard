@@ -149,6 +149,16 @@ void MainWindow::hideAni()
     QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
 }
 
+void MainWindow::startLoader()
+{
+    QProcess *process = new QProcess(this);
+    process->startDetached("dde-clipboardloader");
+    process->waitForStarted();
+    process->waitForFinished();
+    process->deleteLater();
+    process = Q_NULLPTR;
+}
+
 void MainWindow::setX(int x)
 {
     move(m_rect.x() + x, m_rect.y());

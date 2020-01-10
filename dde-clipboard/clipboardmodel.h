@@ -22,11 +22,12 @@
 #define CLIPBOARDMODEL_H
 
 #include <QAbstractListModel>
-#include <QClipboard>
 
 #include "listview.h"
 #include "itemdata.h"
+#include "ClipboardLoaderInterface.h"
 
+using ClipboardLoader = com::deepin::dde::ClipboardLoader;
 /*!
  * \~chinese \class ClipboardModel
  * \~chinese \brief 继承于QAbstractListModel,这个类定义了用于views和delegates访问数据的接口。
@@ -83,6 +84,9 @@ Q_SIGNALS:
      */
     void dataReborn();
 
+private:
+    void checkDbusConnect();
+
 protected:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
@@ -90,15 +94,15 @@ protected:
 
 protected slots:
     /*!
-     * \~chinese \name clipDataChanged
+     * \~chinese \name dataComing
      * \~chinese \brief 当系统剪切块中的数据发生改变时,该槽函数被执行
      */
-    void clipDataChanged();
+    void dataComing(const QByteArray &buf);
 
 private:
     QList<ItemData *> m_data;
-    QClipboard *m_board;
     ListView *m_list;
+    ClipboardLoader *m_loaderInter;
 };
 
 #endif // CLIPBOARDMODEL_H
