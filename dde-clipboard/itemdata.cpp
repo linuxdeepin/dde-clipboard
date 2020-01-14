@@ -41,6 +41,7 @@ QByteArray Info2Buf(const ItemInfo &info)
     }
 
     QDataStream stream(&buf, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_11);
     stream << info.m_formatMap
            << info.m_type
            << info.m_urls
@@ -63,6 +64,7 @@ ItemInfo Buf2Info(const QByteArray &buf)
     ItemInfo info;
 
     QDataStream stream(&tempBuf, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_11);
     int type;
     QByteArray iconBuf;
     stream >> info.m_formatMap
@@ -79,6 +81,7 @@ ItemInfo Buf2Info(const QByteArray &buf)
            >> iconBuf;
 
     QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
+    stream2.setVersion(QDataStream::Qt_5_11);
     for (int i = 0 ; i < info.m_urls.size(); ++i) {
         FileIconData data;
         stream2 >> data.cornerIconList >> data.fileIcon;

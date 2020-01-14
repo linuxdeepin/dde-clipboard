@@ -30,10 +30,10 @@ QString findImageFormat(const QList<QString> &formats)
 {
     // Check formats in this order.
     static const QStringList imageFormats = QStringList()
-                                            << QString("image/png")
-                                            << QString("image/bmp")
-                                            << QString("image/jpeg")
-                                            << QString("image/gif");
+            << QString("image/png")
+            << QString("image/bmp")
+            << QString("image/jpeg")
+            << QString("image/gif");
 
     for (const auto &format : imageFormats) {
         if (formats.contains(format))
@@ -54,6 +54,7 @@ QByteArray Info2Buf(const ItemInfo &info)
     }
 
     QDataStream stream(&buf, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_5_11);
     stream << info.m_formatMap
            << info.m_type
            << info.m_urls
@@ -76,22 +77,24 @@ ItemInfo Buf2Info(const QByteArray &buf)
     ItemInfo info;
 
     QDataStream stream(&tempBuf, QIODevice::ReadOnly);
+    stream.setVersion(QDataStream::Qt_5_11);
     int type;
     QByteArray iconBuf;
     stream >> info.m_formatMap
-           >> type
-           >> info.m_urls
-           >> info.m_hasImage;
+            >> type
+            >> info.m_urls
+            >> info.m_hasImage;
     if (info.m_hasImage) {
         stream >> info.m_variantImage;
     }
 
     stream >> info.m_enable
-           >> info.m_text
-           >> info.m_createTime
-           >> iconBuf;
+            >> info.m_text
+            >> info.m_createTime
+            >> iconBuf;
 
     QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
+    stream2.setVersion(QDataStream::Qt_5_11);
     for (int i = 0 ; i < info.m_urls.size(); ++i) {
         FileIconData data;
         stream2 >> data.cornerIconList >> data.fileIcon;
@@ -125,17 +128,9 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
         mimeData->setData(it.key(), it.value());
     }
 
-    // FIXME:这一部分理论上不用设置，但是实际上不设置发现图像无法reborn
     switch (info.m_type) {
-    case DataType::Text:
-        mimeData->setText(info.m_text);
-        mimeData->setHtml(info.m_text);
-        break;
     case DataType::Image:
         mimeData->setImageData(info.m_variantImage);
-        break;
-    case DataType::File:
-        mimeData->setUrls(info.m_urls);
         break;
     default:
         break;
@@ -157,14 +152,17 @@ void ClipboardLoader::doWork()
     }
 
     // 过滤重复数据
-    if (mimeData->data("TIMESTAMP") == m_lastTimeStamp
-            && m_lastTimeStamp != QByteArray::fromHex("00000000")) {//FIXME:qq截图的时间戳不变，这里特殊处理
-        qDebug() << mimeData->data("TIMESTAMP");
+    QByteArray currTimeStamp = mimeData->data("TIMESTAMP");
+    if (currTimeStamp == m_lastTimeStamp
+            && m_lastTimeStamp != QByteArray::fromHex("00000000")// FIXME:TIM截图的时间戳不变，这里特殊处理
+            && !currTimeStamp.isEmpty()) {// FIXME:连续双击两次图像，会异常到这里
+        qDebug() << "TIMESTAMP:" << currTimeStamp <<m_lastTimeStamp;
         return;
     }
-    m_lastTimeStamp = mimeData->data("TIMESTAMP");
+    m_lastTimeStamp = currTimeStamp;
 
     if (mimeData->hasImage()) {
+        QVariant data = mimeData->imageData();
         info.m_variantImage = mimeData->imageData();
         if (info.m_variantImage.isNull())
             return;
@@ -173,6 +171,7 @@ void ClipboardLoader::doWork()
         info.m_type = Image;
     } else if (mimeData->hasUrls()) {
         info.m_urls = mimeData->urls();
+
         if (!info.m_urls.count())
             return;
 
@@ -206,7 +205,6 @@ void ClipboardLoader::doWork()
                 && mimeData->formats()[i].startsWith("image/")) {
             continue;
         }
-
         info.m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
     }
 

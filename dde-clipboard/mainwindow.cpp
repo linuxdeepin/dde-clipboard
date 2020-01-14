@@ -201,7 +201,7 @@ void MainWindow::initUI()
     setAttribute(Qt::WA_TranslucentBackground);
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
-    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setContentsMargins(0, 0, 0, 10);
     mainLayout->setSpacing(0);
 
     QWidget *titleWidget = new QWidget;

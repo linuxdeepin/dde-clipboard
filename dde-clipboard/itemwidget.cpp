@@ -52,7 +52,7 @@
 
 #include <cmath>
 
-#define HoverAlpha 160
+#define HoverAlpha 200
 #define UnHoverAlpha 80
 
 QList<QRectF> getCornerGeometryList(const QRectF &baseRect, const QSizeF &cornerSize)
@@ -501,11 +501,8 @@ void ItemWidget::initData(QPointer<ItemData> data)
                 int iconNum = MIN(3, data->urls().size());
                 QList<QPixmap> pixmapList;
                 for (int i = 0; i < iconNum; ++i) {
-                    QString filePath = data->urls()[i].toString();
-                    if (filePath.startsWith("file://")) {
-                        filePath = filePath.mid(QString("file://").length());
-                    }
-                    QPixmap pix = GetFileIcon(filePath);
+                    QUrl fileUrl = data->urls()[i];
+                    QPixmap pix = GetFileIcon(fileUrl.toLocalFile());
                     pixmapList.push_back(pix);
                 }
                 setFileIcons(pixmapList);
@@ -633,8 +630,7 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
         QList<QUrl> urls = m_data->urls();
         bool has = false;
         foreach (auto url, urls) {
-            //mid(6)是为了去掉url里面的"file://"部分
-            if (QDir().exists(url.toString().mid(6))) {
+            if (QDir().exists(url.toLocalFile())) {
                 has = true;
             }
         }
