@@ -105,8 +105,12 @@ void MainWindow::geometryChanged()
         break;
     default:;
     }
-
-    rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, WindowMargin));
+    //displayMode() == 0时dock为时尚模式  displayMode() == 1时dock为高效模式
+    if(m_dockInter->displayMode() == 0 && ((m_dockInter->position() == DOCK_TOP) || (m_dockInter->position() == DOCK_BOTTOM))) {
+        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, 2*WindowMargin));
+    } else {
+        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, WindowMargin));
+    }
     setGeometry(rect);
     m_rect = rect;
     setFixedSize(rect.size());
