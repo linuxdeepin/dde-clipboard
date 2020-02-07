@@ -30,9 +30,8 @@ public:
      */
     virtual void showEvent(QShowEvent *event) override;
 
-    void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
-
     void startAni(int index);
+    void CreateAnimation(int idx);
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);
