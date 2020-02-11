@@ -29,9 +29,10 @@ public:
      * \~chinese 可以使用方向键。
      */
     virtual void showEvent(QShowEvent *event) override;
+    virtual void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible) override;
 
     void startAni(int index);
-    void CreateAnimation(int idx);
+    bool CreateAnimation(int idx);
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);

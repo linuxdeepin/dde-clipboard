@@ -328,24 +328,29 @@ void ItemWidget::onRefreshTime()
 
 void ItemWidget::onClose()
 {
-    QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
+    if(m_destroy == false) {
+        QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
-    QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);
-    geoAni->setStartValue(geometry());
-    geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
-    geoAni->setDuration(AnimationTime);
+        QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);
+        geoAni->setStartValue(geometry());
+        geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
+        geoAni->setDuration(AnimationTime);
 
-    QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "opacity", group);
-    opacityAni->setStartValue(1.0);
-    opacityAni->setEndValue(0.0);
-    opacityAni->setDuration(AnimationTime);
+        QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "opacity", group);
+        opacityAni->setStartValue(1.0);
+        opacityAni->setEndValue(0.0);
+        opacityAni->setDuration(AnimationTime);
 
-    group->addAnimation(geoAni);
-    group->addAnimation(opacityAni);
+        group->addAnimation(geoAni);
+        group->addAnimation(opacityAni);
 
-    m_data->remove();
+        m_data->remove();
 
-    group->start(QAbstractAnimation::DeleteWhenStopped);
+        group->start(QAbstractAnimation::DeleteWhenStopped);
+        m_destroy = true;
+    } else {
+        return;
+    }
 }
 
 void ItemWidget::initUI()

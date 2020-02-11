@@ -1,6 +1,8 @@
 #include "listview.h"
 #include "refreshtimer.h"
 #include "constants.h"
+#include "itemdata.h"
+#include "itemwidget.h"
 
 #include <QEvent>
 #include <QKeyEvent>
@@ -35,6 +37,7 @@ void ListView::keyPressEvent(QKeyEvent *event)
             targetIndex = model()->index(model()->rowCount() - 1, 0);
         }
         setCurrentIndex(targetIndex);
+        QListView::scrollTo(targetIndex);
     }
     break;
     case Qt::Key_Down: {
@@ -44,6 +47,7 @@ void ListView::keyPressEvent(QKeyEvent *event)
             targetIndex = model()->index(0, 0);
         }
         setCurrentIndex(targetIndex);
+        QListView::scrollTo(targetIndex);
     }
     break;
     default:
@@ -74,11 +78,36 @@ void ListView::showEvent(QShowEvent *event)
     return QListView::showEvent(event);
 }
 
+void ListView::scrollTo(const QModelIndex &index, QAbstractItemView::ScrollHint hint)
+{
+    Q_UNUSED(index)
+    Q_UNUSED(hint)
+}
+
 void ListView::startAni(int index)
 {
     grabMouse();
     for (int i = index + 1; i < this->model()->rowCount(QModelIndex()); ++i) {
-        CreateAnimation(i);
+        if(!CreateAnimation(i)) {
+            const QModelIndex idx = this->model()->index(i, 0);
+            QPointer<ItemData> data = idx.data().value<QPointer<ItemData>>();
+            ItemWidget *item = new ItemWidget(data, this);
+            item->resize(ItemWidth,ItemHeight);
+            item->show();
+
+            const QModelIndex prevIndex = this->model()->index(i - 1, 0);
+            QWidget *prevWidget = this->indexWidget(prevIndex);
+            QPoint endPos = prevWidget->pos();
+            QPoint startPos = endPos + QPoint(0, ItemHeight + ItemMargin);
+
+            QPropertyAnimation *ani = new QPropertyAnimation(item, "pos", this);
+            ani->setStartValue(startPos);
+            ani->setEndValue(endPos);
+            ani->setDuration(AnimationTime);
+            ani->start(QPropertyAnimation::DeleteWhenStopped);
+            connect(ani, &QPropertyAnimation::finished, item, &ItemWidget::deleteLater);
+            break;
+        }
     }
     // FIXME:比动画时间稍微长一点，否则可能会造成mouseMoveEvent中崩溃
     QTimer::singleShot(AnimationTime + 10, this, [ = ] {
@@ -89,13 +118,12 @@ void ListView::startAni(int index)
             currentIndex = this->model()->index(index - 1, 0);
         }
         setCurrentIndex(currentIndex);
-        scrollTo(currentIndex);
     });
 
     //TODO 显示的最下面一个widget应该是其下面的widget通过动画移动上来的，但其下面的widget此时有可能并没有被listview创建，这里需要一个假动画
 }
 
-void ListView::CreateAnimation(int idx)
+bool ListView::CreateAnimation(int idx)
 {
     Q_ASSERT(idx > 0);
     const QModelIndex index = this->model()->index(idx, 0);
@@ -104,7 +132,7 @@ void ListView::CreateAnimation(int idx)
     QWidget *widget = this->indexWidget(index);
     if (!widget) {
         qDebug() << "index widget not created,shoule be returned;";
-        return;
+        return false;
     }
 
     QPropertyAnimation *ani = new QPropertyAnimation(widget, "pos", this);
@@ -112,4 +140,5 @@ void ListView::CreateAnimation(int idx)
     ani->setEndValue(widget->pos() + QPoint(0, -210));
     ani->setDuration(AnimationTime);
     ani->start(QPropertyAnimation::DeleteWhenStopped);
+    return true;
 }
