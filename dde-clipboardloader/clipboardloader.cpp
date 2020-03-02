@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QClipboard>
 #include <QMimeData>
+#include <qbuffer.h>
 
 QString findImageFormat(const QList<QString> &formats)
 {
@@ -160,10 +161,10 @@ void ClipboardLoader::doWork()
         return;
     }
     m_lastTimeStamp = currTimeStamp;
-
     if (mimeData->hasImage()) {
-        QVariant data = mimeData->imageData();
-        info.m_variantImage = mimeData->imageData();
+        //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
+        info.m_variantImage = m_board->pixmap();
+        info.m_formatMap.insert("application/x-qt-image", info.m_variantImage.toByteArray());
         if (info.m_variantImage.isNull())
             return;
 
@@ -174,7 +175,10 @@ void ClipboardLoader::doWork()
 
         if (!info.m_urls.count())
             return;
-
+        //文件类型吧整个formats信息都拿出来，里面包含了文件的图标，以及文件的url数据等。
+        for (int i = 0; i < mimeData->formats().size(); ++i) {
+            info.m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
+        }
         info.m_type = File;
     } else {
         if (mimeData->hasText()) {
@@ -184,7 +188,7 @@ void ClipboardLoader::doWork()
         } else {
             return;
         }
-
+        info.m_formatMap.insert("text/plain", m_board->text().toUtf8());
         if (info.m_text.isEmpty())
             return;
 
@@ -192,21 +196,6 @@ void ClipboardLoader::doWork()
     }
     info.m_createTime = QDateTime::currentDateTime();
     info.m_enable = true;
-
-    bool bPixSaved = false;
-    QString imageFormat = findImageFormat(mimeData->formats());
-    if (!imageFormat.isEmpty()) {
-        info.m_formatMap.insert(imageFormat, mimeData->data(imageFormat));
-        bPixSaved = true;
-    }
-    for (int i = 0; i < mimeData->formats().size(); ++i) {
-        if (bPixSaved
-                && mimeData->formats()[i] != imageFormat
-                && mimeData->formats()[i].startsWith("image/")) {
-            continue;
-        }
-        info.m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
-    }
 
     QByteArray buf;
     buf = Info2Buf(info);
