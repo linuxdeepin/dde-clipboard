@@ -344,7 +344,11 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
             QPair<QString, int> pair = getNextValidString(labelTexts, lineFrom);
             lineFrom = pair.second;
-            painter.drawText(textRect, pair.first.trimmed(), option);
+            QString str = pair.first.trimmed();
+            if (lineFrom == maxLineCount) {
+                str.replace(str.size() - 3, 3, "...");
+            }
+            painter.drawText(textRect, str, option);
         }
     }
     return DLabel::paintEvent(event);
