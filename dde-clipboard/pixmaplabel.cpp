@@ -27,6 +27,7 @@
 #include <QTextOption>
 #include <QTextLine>
 #include <QVBoxLayout>
+#include<QFontMetrics>
 
 #include <QtGui/private/qtextengine_p.h>
 
@@ -348,7 +349,16 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             if (lineFrom == maxLineCount) {
                 str.replace(str.size() - 3, 3, "...");
             }
-            painter.drawText(textRect, str, option);
+            if(rectIndex==(maxLineCount-1)){
+                QString str = pair.first.trimmed();
+                pair = getNextValidString(labelTexts, lineFrom);
+                lineFrom = pair.second;
+                str += pair.first.trimmed();
+                painter.drawText(textRect,fontMetrics().elidedText(str,Qt::ElideRight,width()-2),option);
+            }
+            else {
+                painter.drawText(textRect, pair.first.trimmed(), option);
+            }
         }
     }
     return DLabel::paintEvent(event);
