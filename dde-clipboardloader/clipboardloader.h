@@ -50,6 +50,7 @@ struct ItemInfo {
     QList<QUrl> m_urls;
     bool m_hasImage = false;
     QVariant m_variantImage;
+    QSize m_pixSize;
     bool m_enable;
     QString m_text;
     QDateTime m_createTime;
@@ -63,6 +64,10 @@ class ClipboardLoader : public QObject
 public:
     ClipboardLoader();
 
+    bool cachePixmap(const QPixmap &srcPix, ItemInfo &info);
+    void setImageData(const ItemInfo &info, QMimeData *&mimeData);
+
+    static bool initPixPath();
 public Q_SLOTS:
     void dataReborned(const QByteArray &buf);
 
@@ -72,6 +77,8 @@ private Q_SLOTS:
 private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
+
+    static QString m_pixPath;
 
 Q_SIGNALS:
     void dataComing(const QByteArray &buf);

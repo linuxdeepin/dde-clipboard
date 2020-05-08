@@ -43,6 +43,7 @@ struct ItemInfo {
     QList<QUrl> m_urls;
     bool m_hasImage = false;
     QVariant m_variantImage;
+    QSize m_pixSize;
     bool m_enable;
     QString m_text;
     QDateTime m_createTime;
@@ -77,7 +78,7 @@ public:
     void saveFileIcons(const QList<QPixmap> &list);
     const QList<QPixmap> &FileIcons();          //IconDataList没有数据时再使用FileIcons
     const QList<FileIconData> &IconDataList();  //优先使用IconDataList
-
+    const QSize &pixSize() const;               //返回m_variantImage中pixmap原始size
     /*!
      * \~chinese \name remove
      * \~chinese \brief 将当前剪切块数据移除,调用此函数会发出ItemData::destroy的信号
@@ -110,6 +111,7 @@ private:
     DataType m_type = Unknown;
     QList<QUrl> m_urls;
     QVariant m_variantImage;
+    QSize m_pixSize;
     QString m_text;
     bool m_enable;
     QDateTime m_createTime;

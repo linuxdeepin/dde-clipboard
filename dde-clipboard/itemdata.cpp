@@ -48,6 +48,7 @@ QByteArray Info2Buf(const ItemInfo &info)
            << info.m_hasImage;
     if (info.m_hasImage) {
         stream << info.m_variantImage;
+        stream << info.m_pixSize;
     }
     stream  << info.m_enable
             << info.m_text
@@ -73,6 +74,7 @@ ItemInfo Buf2Info(const QByteArray &buf)
            >> info.m_hasImage;
     if (info.m_hasImage) {
         stream >> info.m_variantImage;
+        stream >> info.m_pixSize;
     }
 
     stream >> info.m_enable
@@ -107,6 +109,8 @@ ItemData::ItemData(const QByteArray &buf)
         if (m_variantImage.isNull())
             return;
 
+        m_urls = info.m_urls;
+        m_pixSize = info.m_pixSize;
         m_type = Image;
     } else if (formats.contains(textUriListLiteral())) {
         m_urls = info.m_urls;
@@ -223,4 +227,9 @@ void ItemData::remove()
 void ItemData::popTop()
 {
     emit reborn(this);
+}
+
+const QSize &ItemData::pixSize() const
+{
+    return m_pixSize;
 }
