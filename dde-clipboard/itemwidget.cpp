@@ -215,7 +215,7 @@ void ItemWidget::setThumnail(const QPixmap &pixmap)
         QPixmap pix = Globals::pixmapScaled(pixmap);//先缩放,再设置圆角,保证缩略图边框宽度在显示后不会变化
         m_contentLabel->setPixmap(Globals::GetRoundPixmap(pix, palette().color(QPalette::Base)));
         if (m_data->type() == Image) {
-            m_statusLabel->setText(QString("%1X%2px").arg(pixmap.width()).arg(pixmap.height()));
+            m_statusLabel->setText(QString("%1X%2px").arg(m_data->pixSize().width()).arg(m_data->pixSize().height()));
         }
     }
 }
@@ -328,7 +328,7 @@ void ItemWidget::onRefreshTime()
 
 void ItemWidget::onClose()
 {
-    if(m_destroy == false) {
+    if (m_destroy == false) {
         QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
 
         QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);

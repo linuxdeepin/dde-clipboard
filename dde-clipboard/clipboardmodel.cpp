@@ -39,6 +39,9 @@ ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListM
 
 void ClipboardModel::clear()
 {
+    foreach (ItemData *item, m_data) {
+        item->deleteLater();
+    }
     beginResetModel();
     m_data.clear();
     endResetModel();
@@ -80,12 +83,12 @@ Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
 void ClipboardModel::destroy(ItemData *data)
 {
     int row = m_data.indexOf(data);
-    if(row == -1) return;
+    if (row == -1) return;
 
     m_list->startAni(row);
 
     QTimer::singleShot(AnimationTime, this, [ = ] {
-        if(m_data.indexOf(data) == -1) return;
+        if (m_data.indexOf(data) == -1) return;
         beginRemoveRows(QModelIndex(), row, row);
         auto item = m_data.takeAt(m_data.indexOf(data));
         endRemoveRows();
