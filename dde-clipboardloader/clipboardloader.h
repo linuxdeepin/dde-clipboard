@@ -77,6 +77,7 @@ private Q_SLOTS:
 private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
+    QPixmap m_lastPix;
 
     static QString m_pixPath;
 

@@ -156,18 +156,25 @@ void ClipboardLoader::doWork()
         qDebug() << "TIMESTAMP:" << currTimeStamp << m_lastTimeStamp;
         return;
     }
-    m_lastTimeStamp = currTimeStamp;
+
+    //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
+    const QPixmap &srcPix = m_board->pixmap();
     if (mimeData->hasImage()) {
-        //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
-        const QPixmap &srcPix = m_board->pixmap();
         info.m_pixSize = srcPix.size();
         if (!cachePixmap(srcPix, info)) {
             info.m_variantImage = srcPix;
         }
 
         info.m_formatMap.insert("application/x-qt-image", info.m_variantImage.toByteArray());
+        info.m_formatMap.insert("TIMESTAMP", currTimeStamp);
         if (info.m_variantImage.isNull())
             return;
+
+        // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
+        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()) {
+            qDebug() << "system repeat image";
+            return;
+        }
 
         info.m_hasImage = true;
         info.m_type = Image;
@@ -197,6 +204,9 @@ void ClipboardLoader::doWork()
     }
     info.m_createTime = QDateTime::currentDateTime();
     info.m_enable = true;
+
+    m_lastTimeStamp = currTimeStamp;
+    m_lastPix = srcPix;
 
     QByteArray buf;
     buf = Info2Buf(info);
