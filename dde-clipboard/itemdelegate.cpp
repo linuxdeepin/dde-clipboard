@@ -71,11 +71,10 @@ void ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewI
 
 bool ItemDelegate::eventFilter(QObject *obj, QEvent *event)
 {
-    Q_UNUSED(obj);
-    if (QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event)) {
+    if (QKeyEvent *keyEvent = dynamic_cast<QKeyEvent *>(event)) {
         switch (keyEvent->key()) {
         case Qt::Key_Tab:
-        case Qt::Key_Backtab: {
+        case Qt::Key_Backtab: if (keyEvent->type() == QKeyEvent::KeyPress) {
             //转变为特殊按键事件，表示切换内部‘焦点’，tab事件会被listview的viewport捕获
             QKeyEvent kEvent(QEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "change focus");
             qApp->sendEvent(obj, &kEvent);
