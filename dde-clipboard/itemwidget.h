@@ -41,7 +41,7 @@ class PixmapLabel;
 class ItemWidget : public DWidget
 {
     Q_OBJECT
-    Q_PROPERTY(double opacity WRITE setOpacity)
+    Q_PROPERTY(double opacity READ getOpacity WRITE setOpacity)
 public:
     ItemWidget(QPointer<ItemData> data, QWidget *parent = nullptr);
 
@@ -131,6 +131,7 @@ private:
      */
     QString CreateTimeString(const QDateTime &time);
 
+    double getOpacity() const { return 0.0; }
 private:
     QPointer<ItemData> m_data;
 
