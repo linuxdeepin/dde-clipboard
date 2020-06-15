@@ -4,3 +4,4 @@ Exec=/usr/bin/dde-clipboard
 NoDisplay=true
 Terminal=flase
 Type=Application
+OnlyShowIn=Deepin
