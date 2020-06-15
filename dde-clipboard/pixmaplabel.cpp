@@ -22,6 +22,7 @@
 #include "constants.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QDebug>
 #include <QTextLayout>
 #include <QTextOption>
