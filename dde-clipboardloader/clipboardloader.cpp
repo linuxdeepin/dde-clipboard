@@ -26,24 +26,11 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <qbuffer.h>
+#include <QDir>
 
-QString findImageFormat(const QList<QString> &formats)
-{
-    // Check formats in this order.
-    static const QStringList imageFormats = QStringList()
-            << QString("image/png")
-            << QString("image/bmp")
-            << QString("image/jpeg")
-            << QString("image/gif");
-
-    for (const auto &format : imageFormats) {
-        if (formats.contains(format))
-            return format;
-    }
-
-    return QString();
-}
-
+const static int PixmapWidth = 180;             //图像最大显示宽度
+const static int PixmapHeight = 100;            //图像最大显示高度
+const QString PixCacheDir = "/.clipboard-pix";  //图片缓存目录名
 
 QByteArray Info2Buf(const ItemInfo &info)
 {
@@ -62,6 +49,7 @@ QByteArray Info2Buf(const ItemInfo &info)
            << info.m_hasImage;
     if (info.m_hasImage) {
         stream << info.m_variantImage;
+        stream << info.m_pixSize;
     }
     stream  << info.m_enable
             << info.m_text
@@ -82,17 +70,18 @@ ItemInfo Buf2Info(const QByteArray &buf)
     int type;
     QByteArray iconBuf;
     stream >> info.m_formatMap
-            >> type
-            >> info.m_urls
-            >> info.m_hasImage;
+           >> type
+           >> info.m_urls
+           >> info.m_hasImage;
     if (info.m_hasImage) {
         stream >> info.m_variantImage;
+        stream >> info.m_pixSize;
     }
 
     stream >> info.m_enable
-            >> info.m_text
-            >> info.m_createTime
-            >> iconBuf;
+           >> info.m_text
+           >> info.m_createTime
+           >> iconBuf;
 
     QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
     stream2.setVersion(QDataStream::Qt_5_11);
@@ -107,10 +96,17 @@ ItemInfo Buf2Info(const QByteArray &buf)
     return info;
 }
 
+QString ClipboardLoader::m_pixPath;
+
 ClipboardLoader::ClipboardLoader()
     : m_board(qApp->clipboard())
 {
     connect(m_board, &QClipboard::dataChanged, this, &ClipboardLoader::doWork);
+
+    QDir dir(QDir::homePath() + PixCacheDir);
+    if (dir.exists() && dir.removeRecursively()) {
+        qDebug() << "ClipboardLoder startup, remove old cache, path:" << dir.path();
+    }
 }
 
 void ClipboardLoader::dataReborned(const QByteArray &buf)
@@ -131,7 +127,7 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
 
     switch (info.m_type) {
     case DataType::Image:
-        mimeData->setImageData(info.m_variantImage);
+        setImageData(info, mimeData);
         break;
     default:
         break;
@@ -157,16 +153,28 @@ void ClipboardLoader::doWork()
     if (currTimeStamp == m_lastTimeStamp
             && m_lastTimeStamp != QByteArray::fromHex("00000000")// FIXME:TIM截图的时间戳不变，这里特殊处理
             && !currTimeStamp.isEmpty()) {// FIXME:连续双击两次图像，会异常到这里
-        qDebug() << "TIMESTAMP:" << currTimeStamp <<m_lastTimeStamp;
+        qDebug() << "TIMESTAMP:" << currTimeStamp << m_lastTimeStamp;
         return;
     }
-    m_lastTimeStamp = currTimeStamp;
+
+    //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
+    const QPixmap &srcPix = m_board->pixmap();
     if (mimeData->hasImage()) {
-        //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
-        info.m_variantImage = m_board->pixmap();
+        info.m_pixSize = srcPix.size();
+        if (!cachePixmap(srcPix, info)) {
+            info.m_variantImage = srcPix;
+        }
+
         info.m_formatMap.insert("application/x-qt-image", info.m_variantImage.toByteArray());
+        info.m_formatMap.insert("TIMESTAMP", currTimeStamp);
         if (info.m_variantImage.isNull())
             return;
+
+        // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
+        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()) {
+            qDebug() << "system repeat image";
+            return;
+        }
 
         info.m_hasImage = true;
         info.m_type = Image;
@@ -197,9 +205,89 @@ void ClipboardLoader::doWork()
     info.m_createTime = QDateTime::currentDateTime();
     info.m_enable = true;
 
+    m_lastTimeStamp = currTimeStamp;
+    m_lastPix = srcPix;
+
     QByteArray buf;
     buf = Info2Buf(info);
 
     Q_EMIT dataComing(buf);
 }
 
+bool ClipboardLoader::cachePixmap(const QPixmap &srcPix, ItemInfo &info)
+{
+    if (initPixPath()) {
+        QString pixFileName = m_pixPath + QString("/%1").arg(QDateTime::currentMSecsSinceEpoch());
+        QFile cacheFile(pixFileName);
+        if (!cacheFile.open(QIODevice::WriteOnly)) {
+            qDebug() << "open file failed, file name:" << pixFileName;
+            return false;
+        }
+        QDataStream stream(&cacheFile);
+        stream.setVersion(QDataStream::Qt_5_11);
+        stream << srcPix;
+        cacheFile.close();
+
+        info.m_variantImage = srcPix.width() * PixmapHeight > srcPix.height() * PixmapWidth ?
+                              srcPix.scaledToWidth(PixmapWidth, Qt::SmoothTransformation) :
+                              srcPix.scaledToHeight(PixmapHeight, Qt::SmoothTransformation);
+
+        info.m_urls.push_back(QUrl(pixFileName));
+        return true;
+    }
+    return false;
+}
+
+bool ClipboardLoader::initPixPath()
+{
+    if (!m_pixPath.isEmpty()) {
+        return true;
+    }
+
+    QDir dir;
+    m_pixPath = QDir::homePath() + PixCacheDir;
+    if (dir.exists(m_pixPath)) {
+        qDebug() << "dir exists:" << m_pixPath;
+        return true;
+    }
+
+    if (dir.mkdir(m_pixPath)) {
+        qDebug() << "mkdir:" << m_pixPath;
+        return true;
+    }
+
+    qDebug() << "mkdir failed:" << m_pixPath;
+    m_pixPath.clear();
+    return false;
+}
+
+void ClipboardLoader::setImageData(const ItemInfo &info, QMimeData *&mimeData)
+{
+    //正常处理的图片会有一个缓存url
+    if (info.m_urls.size() != 1) {
+        qDebug() << "url size error, size:" << info.m_urls.size();
+        mimeData->setImageData(info.m_variantImage);
+        return;
+    }
+
+    const QString &fileName = info.m_urls.front().path();
+    QFile cacheFile(fileName);
+    if (!cacheFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "open pixmap cache file failed, file name:" << fileName;
+        mimeData->setImageData(info.m_variantImage);
+        return;
+    }
+
+    QPixmap pix;
+    QDataStream stream(&cacheFile);
+    stream.setVersion(QDataStream::Qt_5_11);
+    stream >> pix;
+    cacheFile.close();
+    if (pix.isNull()) {
+        qDebug() << "read pixmap cache file failed, file name:" << fileName;
+        mimeData->setImageData(info.m_variantImage);
+        return;
+    }
+
+    mimeData->setImageData(pix);
+}
