@@ -442,7 +442,13 @@ void ItemWidget::initData(QPointer<ItemData> data)
                         iconData.cornerIconList.clear();
                         setThumnail(iconData);
                     } else {
-                        setFileIcon(iconData);
+                        // 图标为空时，通过url获取图标
+                        if (iconData.fileIcon.isNull()) {
+                            QPixmap pix = GetFileIcon(url.path());
+                            setFileIcon(pix);
+                        } else {
+                            setFileIcon(iconData);
+                        }
                     }
                 } else {
                     QMimeDatabase db;
@@ -484,20 +490,29 @@ void ItemWidget::initData(QPointer<ItemData> data)
                                              Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
-            //判断文件管理器是否提供
+            bool getByUrl = true;
+            //判断文件管理器是否提供,提供不全或图标为空时，通过url获取图标
             if (data->IconDataList().size() == data->urls().size()) {
                 QList<QPixmap> pixmapList;
                 foreach (auto iconData, data->IconDataList()) {
+                    if (iconData.fileIcon.isNull()) {
+                        break;
+                    }
                     QPixmap pix = GetFileIcon(iconData);
                     pixmapList.push_back(pix);
-                    if (pixmapList.size() == 3)
+                    if (pixmapList.size() == 3) {
+                        getByUrl = false;
                         break;
+                    }
                 }
-                qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
-                    return pix1.size().width() < pix2.size().width();
-                });
-                setFileIcons(pixmapList);
-            } else {
+                if (!getByUrl) {
+                    qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
+                        return pix1.size().width() < pix2.size().width();
+                    });
+                    setFileIcons(pixmapList);
+                }
+            }
+            if (getByUrl) {
                 if (!m_data->FileIcons().isEmpty()) {//避免重复获取
                     setFileIcons(m_data->FileIcons());
                     break;
