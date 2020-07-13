@@ -87,6 +87,9 @@ ItemInfo Buf2Info(const QByteArray &buf)
     for (int i = 0 ; i < info.m_urls.size(); ++i) {
         FileIconData data;
         stream2 >> data.cornerIconList >> data.fileIcon;
+        if (data.fileIcon.isNull()) {
+            continue;
+        }
         info.m_iconDataList.push_back(data);
     }
 
