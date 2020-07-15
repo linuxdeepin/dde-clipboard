@@ -47,8 +47,8 @@ class QSequentialAnimationGroup;
 class MainWindow : public DBlurEffectWidget
 {
     Q_OBJECT
-    Q_PROPERTY(int width WRITE setFixedWidth)
-    Q_PROPERTY(int x WRITE setX)
+    Q_PROPERTY(int width READ getWidth WRITE setFixedWidth)
+    Q_PROPERTY(int x READ getX WRITE setX)
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
@@ -108,6 +108,8 @@ private:
      */
     void initConnect();
 
+    int getWidth() const { return this->width(); }
+    int getX() const { return this->pos().x(); }
 protected:
     /*!
      * \~chinese \name initConnect

@@ -27,7 +27,7 @@
 #include <QTextOption>
 #include <QTextLine>
 #include <QVBoxLayout>
-#include<QFontMetrics>
+#include <QFontMetrics>
 
 #include <QtGui/private/qtextengine_p.h>
 
