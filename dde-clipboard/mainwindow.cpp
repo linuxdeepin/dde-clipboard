@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
+    , m_gestureInter(new GestureInter("com.deepin.daemon.Gesture", "/com/deepin/daemon/Gesture", QDBusConnection::systemBus(), this))
 {
     initUI();
     initAni();
@@ -241,6 +242,9 @@ void MainWindow::initUI()
     layout->addWidget(m_content);
 
     setFocusPolicy(Qt::NoFocus);
+
+    // 任务栏在左侧时，触屏划入距离需要超过100
+    m_slideWidth = (m_dockInter->position() == DOCK_LEFT) ? 100 : 0;
 }
 
 void MainWindow::initAni()
@@ -279,6 +283,12 @@ void MainWindow::initConnect()
         int width = value.toInt();
         m_content->move(width - 300, m_content->pos().y());
     });
+
+    // 响应任务栏方向改变信号，更新触屏边缘划入距离
+    connect(m_dockInter, &DBusDock::PositionChanged, this, [ this ]{
+        m_slideWidth = (m_dockInter->position() == DOCK_LEFT) ? 100 : 0;
+    });
+    connect(m_gestureInter, &GestureInter::TouchEdgeEvent, this, &MainWindow::onTouchEdgeIn);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
@@ -286,4 +296,21 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     //禁止窗口被拖动
     Q_UNUSED(event);
     return;
+}
+
+void MainWindow::onTouchEdgeIn(const QString &direction, double releaseX, double releaseY)
+{
+    const QRect &rect = qApp->primaryScreen()->geometry();
+    int posX = static_cast<int>(releaseX * rect.width());
+    qDebug()<<"MainWindow::onTouchEdgeIn dir:"<< direction << ", x:" << posX << ", y:" << releaseY * rect.height();
+
+    // 剪切板已显示时返回
+    if (isVisible()) {
+        return;
+    }
+
+    // 触屏划入方向为左，距离大于额外宽度，唤起任务栏
+    if (direction == "left" && (posX > m_slideWidth)) {
+        Toggle();
+    }
 }

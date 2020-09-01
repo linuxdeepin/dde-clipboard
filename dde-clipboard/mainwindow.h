@@ -34,6 +34,8 @@
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
 
+#include <com_deepin_daemon_gesture.h>
+
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 
@@ -91,6 +93,8 @@ private Q_SLOTS:
     void CompositeChanged();
     void checkXEventMonitorDbusState();
 
+    void onTouchEdgeIn(const QString &direction, double releaseX, double releaseY);
+
 private:
     /*!
      * \~chinese \name initUI
@@ -118,6 +122,9 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
+    using GestureInter = com::deepin::daemon::Gesture;
+
+private:
     DBusDisplay *m_displayInter;
     DBusDock *m_dockInter;
 
@@ -136,6 +143,10 @@ private:
     DWindowManagerHelper *m_wmHelper;
 
     bool m_hasComposite = false;
+
+    // 触屏划入宽度，任务栏在左侧时，需大于任务栏最大宽度100，其它情况没有设限大于0即可
+    int m_slideWidth;
+    GestureInter *m_gestureInter;
 };
 
 #endif // MAINWINDOW_H

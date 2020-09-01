@@ -28,7 +28,8 @@ Build-Depends: debhelper (>= 9),
  libfreetype6-dev,
  libegl1-mesa-dev,
  libxcb-ewmh-dev,
- libgio-qt-dev
+ libgio-qt-dev,
+ libdframeworkdbus-dev
 Standards-Version: 3.9.5
 Homepage: https://github.com/linuxdeepin/dde-clipboard
 
