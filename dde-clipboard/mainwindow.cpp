@@ -83,38 +83,7 @@ void MainWindow::Toggle()
 
 void MainWindow::geometryChanged()
 {
-    // 屏幕尺寸
-    QRect rect = m_displayInter->primaryRawRect();
-    qreal scale = qApp->primaryScreen()->devicePixelRatio();
-    rect.setWidth(WindowWidth + WindowMargin * 2);
-    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
-
-    QRect dockRect = m_dockInter->frontendRect();
-    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
-    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
-
-    switch (m_dockInter->position()) {
-    case DOCK_TOP:
-        rect.moveTop(dockRect.height());
-        [[clang::fallthrough]];
-    case DOCK_BOTTOM:
-        rect.setHeight(rect.height() - dockRect.height());
-        break;
-    case DOCK_LEFT:
-        rect.moveLeft(dockRect.width());
-        break;
-    default:;
-    }
-    //displayMode() == 0时dock为时尚模式  displayMode() == 1时dock为高效模式
-    if(m_dockInter->displayMode() == 0 && ((m_dockInter->position() == DOCK_TOP) || (m_dockInter->position() == DOCK_BOTTOM))) {
-        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, 2*WindowMargin));
-    } else {
-        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, WindowMargin));
-    }
-    setGeometry(rect);
-    m_rect = rect;
-    setFixedSize(rect.size());
-    m_content->setFixedSize(rect.size());
+    adjustPosition();
 
     //init animation by 'm_rect'
     m_xAni->setStartValue(WindowMargin);
@@ -279,6 +248,58 @@ void MainWindow::initConnect()
         int width = value.toInt();
         m_content->move(width - 300, m_content->pos().y());
     });
+}
+
+void MainWindow::adjustPosition()
+{
+    // 屏幕尺寸
+    QRect rect = m_displayInter->primaryRawRect();
+    qreal scale = qApp->primaryScreen()->devicePixelRatio();
+    rect.setWidth(WindowWidth + WindowMargin * 2);
+    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
+
+    QRect dockRect = m_dockInter->frontendRect();
+    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
+    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
+
+    // 初始化剪切板位置
+    switch (m_dockInter->position()) {
+    case DOCK_TOP:
+        rect.moveTop(dockRect.height());
+        rect.setHeight(rect.height() - dockRect.height());
+        break;
+    case DOCK_BOTTOM:
+        rect.setHeight(rect.height() - dockRect.height());
+        break;
+    case DOCK_LEFT:
+        rect.moveLeft(dockRect.width());
+        break;
+    default:;
+    }
+
+    //上下部分预留的间隙
+    rect -= QMargins(0, WindowMargin, 0, WindowMargin);
+
+    //针对时尚模式的特殊处理
+    if(m_dockInter->displayMode() == 0) {
+        switch (m_dockInter->position()) {
+        case DOCK_TOP:
+            rect -= QMargins(0, WindowMargin, 0, 0);
+            break;
+        case DOCK_BOTTOM:
+            rect -= QMargins(0, 0, 0, WindowMargin);
+            break;
+        case DOCK_LEFT:
+            rect -= QMargins(WindowMargin, 0, 0, 0);
+            break;
+        default:;
+        }
+    }
+
+    setGeometry(rect);
+    m_rect = rect;
+    setFixedSize(rect.size());
+    m_content->setFixedSize(rect.size());
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)

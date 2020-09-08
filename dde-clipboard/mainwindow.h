@@ -107,6 +107,11 @@ private:
      * \~chinese \brief 初始化信号与槽的连接
      */
     void initConnect();
+    /*!
+     * \~chinese \name adjustPosition
+     * \~chinese \brief 调整剪切板位置
+     */
+    void adjustPosition();
 
     int getWidth() const { return this->width(); }
     int getX() const { return this->pos().x(); }
