@@ -24,6 +24,7 @@
 #include "refreshtimer.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QTextOption>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
