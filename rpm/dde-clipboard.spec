@@ -22,6 +22,7 @@ BuildRequires:  dtkwidget-devel
 BuildRequires:  dtkwidget
 BuildRequires:  libgio-qt
 BuildRequires:  libgio-qt-devel
+BuildRequires:  pkgconfig(dframeworkdbus) >= 2.0
 
 %description
 Qt platform theme integration plugins for DDE
