@@ -93,8 +93,6 @@ private Q_SLOTS:
     void CompositeChanged();
     void checkXEventMonitorDbusState();
 
-    void onTouchEdgeIn(const QString &direction, double releaseX, double releaseY);
-
 private:
     /*!
      * \~chinese \name initUI

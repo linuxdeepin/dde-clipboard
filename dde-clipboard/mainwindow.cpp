@@ -288,7 +288,6 @@ void MainWindow::initConnect()
     connect(m_dockInter, &DBusDock::PositionChanged, this, [ this ]{
         m_slideWidth = (m_dockInter->position() == DOCK_LEFT) ? 100 : 0;
     });
-    connect(m_gestureInter, &GestureInter::TouchEdgeEvent, this, &MainWindow::onTouchEdgeIn);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
@@ -298,19 +297,3 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     return;
 }
 
-void MainWindow::onTouchEdgeIn(const QString &direction, double releaseX, double releaseY)
-{
-    const QRect &rect = qApp->primaryScreen()->geometry();
-    int posX = static_cast<int>(releaseX * rect.width());
-    qDebug()<<"MainWindow::onTouchEdgeIn dir:"<< direction << ", x:" << posX << ", y:" << releaseY * rect.height();
-
-    // 剪切板已显示时返回
-    if (isVisible()) {
-        return;
-    }
-
-    // 触屏划入方向为左，距离大于额外宽度，唤起任务栏
-    if (direction == "left" && (posX > m_slideWidth)) {
-        Toggle();
-    }
-}
