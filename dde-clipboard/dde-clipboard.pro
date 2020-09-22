@@ -19,11 +19,10 @@ SOURCES += \
         mainwindow.cpp \
         itemdata.cpp \
         clipboardmodel.cpp \
-        dbusdisplay.cpp \
         itemwidget.cpp \
         pixmaplabel.cpp \
-        dbusdock.cpp \
         dockrect.cpp \
+        dbusdockinterface.cpp \
     listview.cpp \
     itemdelegate.cpp \
     iconbutton.cpp \
@@ -32,12 +31,11 @@ HEADERS += \
         mainwindow.h \
         clipboardmodel.h \
         itemdata.h\
-        dbusdisplay.h \
         constants.h \
         itemwidget.h \
         pixmaplabel.h \
-        dbusdock.h \
         dockrect.h \
+        dbusdockinterface.h \
     listview.h \
     itemdelegate.h \
     iconbutton.h \

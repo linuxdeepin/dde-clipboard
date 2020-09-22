@@ -24,17 +24,18 @@
 #include <QListView>
 
 #include "clipboardmodel.h"
-#include "dbusdisplay.h"
 #include "itemdelegate.h"
 #include "constants.h"
-#include "dbusdock.h"
+#include "dbusdockinterface.h"
 #include "listview.h"
 #include "iconbutton.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
 
-#include <com_deepin_daemon_gesture.h>
+#include <com_deepin_daemon_display_monitor.h>
+#include <com_deepin_dde_daemon_dock.h>
+#include <com_deepin_daemon_display.h>
 
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
@@ -42,6 +43,11 @@ DGUI_USE_NAMESPACE
 class QPushButton;
 class QPropertyAnimation;
 class QSequentialAnimationGroup;
+
+using DBusDisplay = com::deepin::daemon::Display;
+using DisplayMonitor = com::deepin::daemon::display::Monitor;
+using DBusDaemonDock = com::deepin::dde::daemon::Dock;
+
 /*!
  * \~chinese \class MainWindow
  * \~chinese \brief 主窗口类
@@ -109,6 +115,17 @@ private:
      * \~chinese \brief 初始化信号与槽的连接
      */
     void initConnect();
+    /*!
+     * \~chinese \name adjustPosition
+     * \~chinese \brief 调整剪切板位置
+     */
+    void adjustPosition();
+    /*!
+     * \~chinese \name getDisplayScreen
+     * \~chinese \brief 获取显示屏幕的坐标
+     */
+    QRect getDisplayScreen();
+
 
     int getWidth() const { return this->width(); }
     int getX() const { return this->pos().x(); }
@@ -120,11 +137,9 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event) override;
 
 private:
-    using GestureInter = com::deepin::daemon::Gesture;
-
-private:
     DBusDisplay *m_displayInter;
-    DBusDock *m_dockInter;
+    DBusDaemonDock *m_daemonDockInter;
+    DBusDockInterface *m_dockInter;
 
     DWidget *m_content;
     IconButton *m_clearButton;
@@ -141,10 +156,6 @@ private:
     DWindowManagerHelper *m_wmHelper;
 
     bool m_hasComposite = false;
-
-    // 触屏划入宽度，任务栏在左侧时，需大于任务栏最大宽度100，其它情况没有设限大于0即可
-    int m_slideWidth;
-    GestureInter *m_gestureInter;
 };
 
 #endif // MAINWINDOW_H

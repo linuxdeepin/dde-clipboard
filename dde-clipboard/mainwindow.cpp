@@ -41,8 +41,9 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
-    , m_displayInter(new DBusDisplay(this))
-    , m_dockInter(new DBusDock)
+    , m_displayInter(new DBusDisplay("com.deepin.daemon.Display", "/com/deepin/daemon/Display", QDBusConnection::sessionBus(), this))
+    , m_daemonDockInter(new DBusDaemonDock("com.deepin.dde.daemon.Dock", "/com/deepin/dde/daemon/Dock", QDBusConnection::sessionBus(), this))
+    , m_dockInter(new DBusDockInterface)
     , m_content(new DWidget(parent))
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
@@ -51,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
-    , m_gestureInter(new GestureInter("com.deepin.daemon.Gesture", "/com/deepin/daemon/Gesture", QDBusConnection::systemBus(), this))
 {
     initUI();
     initAni();
@@ -84,38 +84,9 @@ void MainWindow::Toggle()
 
 void MainWindow::geometryChanged()
 {
-    // 屏幕尺寸
-    QRect rect = m_displayInter->primaryRawRect();
-    qreal scale = qApp->primaryScreen()->devicePixelRatio();
-    rect.setWidth(WindowWidth + WindowMargin * 2);
-    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
+    adjustPosition();
 
-    QRect dockRect = m_dockInter->frontendRect();
-    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
-    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
-
-    switch (m_dockInter->position()) {
-    case DOCK_TOP:
-        rect.moveTop(dockRect.height());
-        [[clang::fallthrough]];
-    case DOCK_BOTTOM:
-        rect.setHeight(rect.height() - dockRect.height());
-        break;
-    case DOCK_LEFT:
-        rect.moveLeft(dockRect.width());
-        break;
-    default:;
-    }
-    //displayMode() == 0时dock为时尚模式  displayMode() == 1时dock为高效模式
-    if(m_dockInter->displayMode() == 0 && ((m_dockInter->position() == DOCK_TOP) || (m_dockInter->position() == DOCK_BOTTOM))) {
-        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, 2*WindowMargin));
-    } else {
-        rect = rect.marginsRemoved(QMargins(0, WindowMargin, 2 * WindowMargin, WindowMargin));
-    }
-    setGeometry(rect);
-    m_rect = rect;
-    setFixedSize(rect.size());
-    m_content->setFixedSize(rect.size());
+    setX(WindowMargin);
 
     //init animation by 'm_rect'
     m_xAni->setStartValue(WindowMargin);
@@ -242,9 +213,6 @@ void MainWindow::initUI()
     layout->addWidget(m_content);
 
     setFocusPolicy(Qt::NoFocus);
-
-    // 任务栏在左侧时，触屏划入距离需要超过100
-    m_slideWidth = (m_dockInter->position() == DOCK_LEFT) ? 100 : 0;
 }
 
 void MainWindow::initAni()
@@ -275,7 +243,7 @@ void MainWindow::initConnect()
         hideAni();
     });
 
-    connect(m_dockInter, &DBusDock::FrontendRectChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+    connect(m_dockInter, &DBusDockInterface::geometryChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
 
@@ -283,11 +251,71 @@ void MainWindow::initConnect()
         int width = value.toInt();
         m_content->move(width - 300, m_content->pos().y());
     });
+}
 
-    // 响应任务栏方向改变信号，更新触屏边缘划入距离
-    connect(m_dockInter, &DBusDock::PositionChanged, this, [ this ]{
-        m_slideWidth = (m_dockInter->position() == DOCK_LEFT) ? 100 : 0;
-    });
+void MainWindow::adjustPosition()
+{
+    // 屏幕尺寸
+    QRect rect = getDisplayScreen();
+    qreal scale = qApp->primaryScreen()->devicePixelRatio();
+    rect.setWidth(WindowWidth);
+    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
+
+    QRect dockRect = m_dockInter->geometry();
+    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
+    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
+
+    // 初始化剪切板位置
+    switch (m_daemonDockInter->position()) {
+    case DOCK_TOP:
+        rect.moveTop(dockRect.height());
+        rect.setHeight(rect.height() - dockRect.height());
+        break;
+    case DOCK_BOTTOM:
+        rect.setHeight(rect.height() - dockRect.height());
+        break;
+    case DOCK_LEFT:
+        rect.moveLeft(dockRect.width());
+        break;
+    default:;
+    }
+
+    // 左上下部分预留的间隙
+    rect -= QMargins(0, WindowMargin, 0, WindowMargin);
+
+    // 针对时尚模式的特殊处理
+    // 只有任务栏显示的时候, 才额外偏移
+    if(m_daemonDockInter->displayMode() == 0 && dockRect.width() * dockRect.height() > 0) {
+        switch (m_daemonDockInter->position()) {
+        case DOCK_TOP:
+            rect -= QMargins(0, WindowMargin, 0, 0);
+            break;
+        case DOCK_BOTTOM:
+            rect -= QMargins(0, 0, 0, WindowMargin);
+            break;
+        case DOCK_LEFT:
+            rect -= QMargins(WindowMargin, 0, 0, 0);
+            break;
+        default:;
+        }
+    }
+
+    setGeometry(rect);
+    m_rect = rect;
+    setFixedSize(rect.size());
+    m_content->setFixedSize(rect.size());
+}
+
+QRect MainWindow::getDisplayScreen()
+{
+    QRect dockRect = m_dockInter->geometry();
+    for (const auto& monitorPath : m_displayInter->monitors()) {
+        DisplayMonitor monitor("com.deepin.daemon.Display", monitorPath.path(), QDBusConnection::sessionBus());
+        QRect screenRect(monitor.x(), monitor.y(), monitor.width(), monitor.height());
+        if (screenRect.contains(dockRect))
+            return screenRect;
+    }
+    return m_displayInter->primaryRect();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
