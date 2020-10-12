@@ -162,8 +162,6 @@ protected:
     virtual void keyPressEvent(QKeyEvent *event) override;
     virtual void paintEvent(QPaintEvent *event) override;
     virtual void mouseDoubleClickEvent(QMouseEvent *event) override;
-    virtual void enterEvent(QEvent *event) override;
-    virtual void leaveEvent(QEvent *event) override;
     virtual void focusInEvent(QFocusEvent *event) override;
     virtual void focusOutEvent(QFocusEvent *event) override;
 };

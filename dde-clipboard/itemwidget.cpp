@@ -673,25 +673,6 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
     return DWidget::mousePressEvent(event);
 }
 
-void ItemWidget::enterEvent(QEvent *event)
-{
-    if (isEnabled()) {
-        Q_EMIT hoverStateChanged(true);
-    }
-
-    return DWidget::enterEvent(event);
-}
-
-void ItemWidget::leaveEvent(QEvent *event)
-{
-    if (isEnabled()) {
-        Q_EMIT closeHasFocus(false);
-        Q_EMIT hoverStateChanged(false);
-    }
-
-    return DWidget::leaveEvent(event);
-}
-
 void ItemWidget::focusInEvent(QFocusEvent *event)
 {
     if (isEnabled()) {
