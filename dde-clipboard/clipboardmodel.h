@@ -25,7 +25,7 @@
 
 #include "listview.h"
 #include "itemdata.h"
-#include "ClipboardLoaderInterface.h"
+#include "dbus/clipboardloaderinterface.h"
 
 using ClipboardLoader = com::deepin::dde::ClipboardLoader;
 /*!

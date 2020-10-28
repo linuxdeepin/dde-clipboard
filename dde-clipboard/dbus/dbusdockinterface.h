@@ -19,9 +19,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
-
-#include "dockrect.h"
-
 /*
  * Proxy class for interface local.MainWindow
  */

@@ -25,11 +25,8 @@
 #include <QDebug>
 #include <QClipboard>
 #include <QMimeData>
-#include <qbuffer.h>
 #include <QDir>
 
-const static int PixmapWidth = 180;             //图像最大显示宽度
-const static int PixmapHeight = 100;            //图像最大显示高度
 const QString PixCacheDir = "/.clipboard-pix";  //图片缓存目录名
 
 QByteArray Info2Buf(const ItemInfo &info)
@@ -137,15 +134,22 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
 
 void ClipboardLoader::doWork()
 {
-    ItemInfo info;
-    info.m_variantImage = 0;
-
     const QMimeData *mimeData = m_board->mimeData();
 
+    QByteArray buf = parseClipboardData(mimeData);
+
+    if (!buf.isEmpty())
+        Q_EMIT dataComing(buf);
+}
+
+QByteArray ClipboardLoader::parseClipboardData(const QMimeData *mimeData)
+{
+    ItemInfo info;
+    info.m_variantImage = 0;
     // 转移系统剪贴板所有权时造成的两次内容变化不需要显示，以下为与系统约定好的标识
     if (mimeData->data("FROM_DEEPIN_CLIPBOARD_MANAGER") == "1") {
         qDebug() << "FROM_DEEPIN_CLIPBOARD_MANAGER";
-        return;
+        return QByteArray();
     }
 
     // 过滤重复数据
@@ -154,7 +158,7 @@ void ClipboardLoader::doWork()
             && m_lastTimeStamp != QByteArray::fromHex("00000000")// FIXME:TIM截图的时间戳不变，这里特殊处理
             && !currTimeStamp.isEmpty()) {// FIXME:连续双击两次图像，会异常到这里
         qDebug() << "TIMESTAMP:" << currTimeStamp << m_lastTimeStamp;
-        return;
+        return QByteArray();
     }
 
     //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
@@ -168,12 +172,12 @@ void ClipboardLoader::doWork()
         info.m_formatMap.insert("application/x-qt-image", info.m_variantImage.toByteArray());
         info.m_formatMap.insert("TIMESTAMP", currTimeStamp);
         if (info.m_variantImage.isNull())
-            return;
+            return QByteArray();
 
         // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
-        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()) {
+        if (currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()) {
             qDebug() << "system repeat image";
-            return;
+            return QByteArray();
         }
 
         info.m_hasImage = true;
@@ -182,7 +186,7 @@ void ClipboardLoader::doWork()
         info.m_urls = mimeData->urls();
 
         if (!info.m_urls.count())
-            return;
+            return QByteArray();
         //文件类型吧整个formats信息都拿出来，里面包含了文件的图标，以及文件的url数据等。
         for (int i = 0; i < mimeData->formats().size(); ++i) {
             info.m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
@@ -194,11 +198,11 @@ void ClipboardLoader::doWork()
         } else if (mimeData->hasHtml()) {
             info.m_text = mimeData->html();
         } else {
-            return;
+            return QByteArray();
         }
         info.m_formatMap.insert("text/plain", m_board->text().toUtf8());
         if (info.m_text.isEmpty())
-            return;
+            return QByteArray();
 
         info.m_type = Text;
     }
@@ -211,7 +215,7 @@ void ClipboardLoader::doWork()
     QByteArray buf;
     buf = Info2Buf(info);
 
-    Q_EMIT dataComing(buf);
+    return buf;
 }
 
 bool ClipboardLoader::cachePixmap(const QPixmap &srcPix, ItemInfo &info)

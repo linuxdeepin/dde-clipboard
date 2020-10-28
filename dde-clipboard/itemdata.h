@@ -30,25 +30,7 @@
 #include <QDBusArgument>
 
 #include "constants.h"
-enum DataType {
-    Unknown,
-    Text,
-    Image,
-    File
-};
-
-struct ItemInfo {
-    QMap<QString, QByteArray> m_formatMap;
-    DataType m_type = Unknown;
-    QList<QUrl> m_urls;
-    bool m_hasImage = false;
-    QVariant m_variantImage;
-    QSize m_pixSize;
-    bool m_enable;
-    QString m_text;
-    QDateTime m_createTime;
-    QList<FileIconData> m_iconDataList;
-};
+#include "dbus/iteminfo.h"
 
 /*!
  * ~chinese \class ItemData
