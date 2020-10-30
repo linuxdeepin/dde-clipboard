@@ -14,33 +14,10 @@ PKGCONFIG += dtkwidget dtkgui gio-qt dframeworkdbus
 
 DBUS_ADAPTORS += ./com.deepin.dde.Clipboard.xml
 
+include(src.pri)
+
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-        itemdata.cpp \
-        clipboardmodel.cpp \
-        itemwidget.cpp \
-        pixmaplabel.cpp \
-        dockrect.cpp \
-        dbusdockinterface.cpp \
-    listview.cpp \
-    itemdelegate.cpp \
-    iconbutton.cpp \
-    ClipboardLoaderInterface.cpp
-HEADERS += \
-        mainwindow.h \
-        clipboardmodel.h \
-        itemdata.h\
-        constants.h \
-        itemwidget.h \
-        pixmaplabel.h \
-        dockrect.h \
-        dbusdockinterface.h \
-    listview.h \
-    itemdelegate.h \
-    iconbutton.h \
-    refreshtimer.h \
-    ClipboardLoaderInterface.h
+        $$PWD/main.cpp
 
 DISTFILES += translate_generation.sh
 

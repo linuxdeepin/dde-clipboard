@@ -9,7 +9,7 @@
  * before re-generating it.
  */
 
-#include "ClipboardLoaderInterface.h"
+#include "clipboardloaderinterface.h"
 
 /*
  * Implementation of interface class ComDeepinDdeClipboardLoaderInterface

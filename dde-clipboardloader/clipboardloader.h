@@ -26,11 +26,12 @@
 #include <QIcon>
 #include <QDateTime>
 #include <QList>
-
 #include <QDebug>
 #include <QDBusArgument>
 #include <QDateTime>
 #include <QUrl>
+
+#include "constants.h"
 
 typedef struct {
     QStringList cornerIconList;
@@ -73,6 +74,9 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void doWork();
+
+private Q_SLOTS:
+    QByteArray parseClipboardData(const QMimeData *mimeData);
 
 private:
     QClipboard *m_board;
