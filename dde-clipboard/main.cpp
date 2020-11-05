@@ -36,13 +36,13 @@ int main(int argc, char *argv[])
     DGuiApplicationHelper::setUseInactiveColorGroup(false);
     DGuiApplicationHelper::setColorCompositingEnabled(true);
 
-    DApplication app(argc, argv);
+    DApplication *app = DApplication::globalApplication(argc, argv);
 
-    app.setOrganizationName("deepin");
-    app.setApplicationName("dde-clipboard");
-    app.setApplicationDisplayName("DDE Clipboard");
-    app.setApplicationVersion("1.0");
-    app.loadTranslator();
+    app->setOrganizationName("deepin");
+    app->setApplicationName("dde-clipboard");
+    app->setApplicationDisplayName("DDE Clipboard");
+    app->setApplicationVersion("1.0");
+    app->loadTranslator();
 
     if (!DGuiApplicationHelper::setSingleInstance(QString("dde-clipboard_%1").arg(getuid()))) {
         qDebug() << "set single instance failed!";
@@ -76,5 +76,5 @@ int main(int argc, char *argv[])
     w.showAni();
 #endif
 
-    return app.exec();
+    return app->exec();
 }

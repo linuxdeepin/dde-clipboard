@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Deepin Clipboard
+Comment=Deepin Clipboard
+Exec=/usr/bin/dde-clipboard
+OnlyShowIn=''
+Type=Application
+X-Deepin-Vendor=user-custom
+X-Deepin-TurboType=dtkwidget

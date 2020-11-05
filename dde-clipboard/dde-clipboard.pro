@@ -39,6 +39,18 @@ services.path = /usr/share/dbus-1/services
 services.files = com.deepin.dde.Clipboard.service
 INSTALLS += services
 
+## desktop file
+desktop.path = /usr/share/applications
+desktop.files = dde-clipboard.desktop
+INSTALLS += desktop
+
+## wrapper file
+wrapper.path = /usr/bin
+wrapper.files = dde-clipboard-wrapper
+INSTALLS += wrapper
+
+install(FILES files/dde-lock.desktop DESTINATION share/applications/)
+
 CONFIG(release, debug|release) {
     !system(./translate_generation.sh): error("Failed to generate translation")
 }
