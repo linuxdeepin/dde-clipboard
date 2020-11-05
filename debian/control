@@ -2,12 +2,10 @@ Source: dde-clipboard
 Section: admin
 Priority: optional
 Maintainer: Deepin Sysdev <sysdev@deepin.com>
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 8.0.0),
  pkg-config,
- dpkg-dev,
  libx11-dev,
  cmake,
- qt5-default,
  qtdeclarative5-dev,
  libqt5svg5-dev,
  libdtkcore-dev,
@@ -42,4 +40,5 @@ Depends: ${shlibs:Depends},
  dde-api (>=2.92.1)
 Recommends: netselect, deepin-ab-recovery
 Suggests: redshift
-Description: dde-clipboard
+Description: deepin desktop-environment - clipboard module
+ Clipboard module of deepin desktop-environment
