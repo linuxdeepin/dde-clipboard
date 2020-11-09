@@ -46,10 +46,10 @@ INSTALLS += desktop
 
 ## wrapper file
 wrapper.path = /usr/bin
-wrapper.files = dde-clipboard-wrapper
+wrapper.files = dde-clipboard-wapper
 INSTALLS += wrapper
 
-install(FILES files/dde-lock.desktop DESTINATION share/applications/)
+install(FILES files/dde-clipboard.desktop DESTINATION share/applications/)
 
 CONFIG(release, debug|release) {
     !system(./translate_generation.sh): error("Failed to generate translation")
