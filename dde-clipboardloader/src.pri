@@ -1,4 +1,4 @@
-INCLUDEPATH += ../dde-clipboard
+INCLUDEPATH += ../../dde-clipboard
 
 SOURCES += \
     $$PWD/clipboardloader.cpp

@@ -14,11 +14,13 @@ rm ./dde-clipboardloader/dde-clipboardloader
 rm ./test/dde-clipboard/*.o
 rm ./test/dde-clipboard/moc_*
 rm ./test/dde-clipboard/*.gcno
+rm ./test/dde-clipboard/*.gcda
 rm ./test/dde-clipboard/Makefile*
 rm ./test/dde-clipboard/tst_dde-clipboard
 
 rm ./test/dde-clipboardloader/*.o
 rm ./test/dde-clipboardloader/moc_*
 rm ./test/dde-clipboardloader/*.gcno
+rm ./test/dde-clipboardloader/*.gcda
 rm ./test/dde-clipboardloader/Makefile*
 rm ./test/dde-clipboardloader/tst_dde-clipboardloader

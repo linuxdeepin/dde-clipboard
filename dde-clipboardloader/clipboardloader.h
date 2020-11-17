@@ -75,9 +75,6 @@ public Q_SLOTS:
 private Q_SLOTS:
     void doWork();
 
-private Q_SLOTS:
-    QByteArray parseClipboardData(const QMimeData *mimeData);
-
 private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;

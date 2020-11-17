@@ -1,3 +1,5 @@
+INCLUDEPATH += dbus
+
 SOURCES += \
     $$PWD/dbus/clipboardloaderinterface.cpp \
     $$PWD/clipboardmodel.cpp \
@@ -24,5 +26,3 @@ HEADERS += \
     $$PWD/mainwindow.h \
     $$PWD/pixmaplabel.h \
     $$PWD/refreshtimer.h
-
-INCLUDEPATH += dbus
