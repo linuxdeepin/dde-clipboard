@@ -19,38 +19,30 @@ include(src.pri)
 SOURCES += \
         $$PWD/main.cpp
 
-DISTFILES += translate_generation.sh
+DISTFILES += ../translate_generation.sh
 
-TRANSLATIONS+= translations/$${TARGET}.ts\
-                translations/$${TARGET}_zh_CN.ts
+TRANSLATIONS+= ../translations/$${TARGET}.ts\
+                ../translations/$${TARGET}_zh_CN.ts
 
 target.path = /usr/bin/
 INSTALLS += target
-
-translations.path = /usr/share/$${TARGET}/translations
-translations.files = translations/*.qm
-INSTALLS += translations
-
-autostart.path = /etc/xdg/autostart
-autostart.files = dde-clipboard.desktop
-INSTALLS += autostart
-
-services.path = /usr/share/dbus-1/services
-services.files = com.deepin.dde.Clipboard.service
-INSTALLS += services
 
 ## desktop file
 desktop.path = /usr/share/applications
 desktop.files = dde-clipboard.desktop
 INSTALLS += desktop
 
-## wrapper file
-wrapper.path = /usr/bin
-wrapper.files = dde-clipboard-wapper
-INSTALLS += wrapper
+## translation
+translations.path = /usr/share/$${TARGET}/translations
+translations.files = ../translations/*.qm
+INSTALLS += translations
 
-install(FILES files/dde-clipboard.desktop DESTINATION share/applications/)
+## autostart
+autostart.path = /etc/xdg/autostart
+autostart.files = dde-clipboard.desktop
+INSTALLS += autostart
 
-CONFIG(release, debug|release) {
-    !system(./translate_generation.sh): error("Failed to generate translation")
-}
+## dbus service
+services.path = /usr/share/dbus-1/services
+services.files = com.deepin.dde.Clipboard.service
+INSTALLS += services

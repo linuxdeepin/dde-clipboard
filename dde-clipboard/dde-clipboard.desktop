@@ -1,7 +1,9 @@
 [Desktop Entry]
-Name=dde-clipboard
+Name=Deepin Clipboard
+Comment=Deepin Clipboard
 Exec=/usr/bin/dde-clipboard
-NoDisplay=true
-Terminal=flase
-Type=Application
 OnlyShowIn=Deepin
+Type=Application
+X-Deepin-Vendor=user-custom
+X-Deepin-TurboType=dtkwidget
+
