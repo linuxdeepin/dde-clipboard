@@ -14,8 +14,8 @@ public:
 
     void TearDown() override
     {
-//        delete info;
-//        info = nullptr;
+       delete info;
+       info = nullptr;
     }
 
 public:
@@ -24,5 +24,5 @@ public:
 
 TEST_F(TstItemInfo, coverageTest)
 {
-    qDebug() << info;
+    
 }

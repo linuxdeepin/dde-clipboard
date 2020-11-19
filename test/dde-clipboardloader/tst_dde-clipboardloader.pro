@@ -3,12 +3,11 @@ QT       += widgets core gui dbus gui-private
 TARGET = tst_dde-clipboardloader
 TEMPLATE = app
 
-## 服务器编译时没有显示器，会卡住，等解决方案
-#CONFIG += testcase no_testcase_installs
-
 PKGCONFIG += dtkwidget dtkgui gio-qt dframeworkdbus
 CONFIG += c++11 link_pkgconfig
 CONFIG -= app_bundle
+
+CONFIG += testcase no_testcase_installs
 
 LIBS += -lgtest
 

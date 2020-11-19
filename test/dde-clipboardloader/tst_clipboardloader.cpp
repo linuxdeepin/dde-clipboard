@@ -27,7 +27,7 @@ TEST_F(TstClipboardLoader, coverageTest)
     QPixmap srcPix;
     ItemInfo info;
 
-    ASSERT_TRUE(loader->cachePixmap(srcPix, info));
+    loader->cachePixmap(srcPix, info);
 }
 
 TEST_F(TstClipboardLoader, setImageData)

@@ -9,21 +9,21 @@ class TstItemData : public testing::Test
 public:
     void SetUp() override
     {
-//        ItemInfo info;
-//        data = new ItemData(info);
+        QByteArray buf;
+        data = new ItemData(buf);
     }
 
     void TearDown() override
     {
-//        delete data;
-//        data = nullptr;
+        delete data;
+        data = nullptr;
     }
 
 public:
-//    ItemData *data = nullptr;
+    ItemData *data = nullptr;
 };
 
 TEST_F(TstItemData, coverageTest)
 {
-//    data->setDataEnabled(false);
+    data->setDataEnabled(false);
 }

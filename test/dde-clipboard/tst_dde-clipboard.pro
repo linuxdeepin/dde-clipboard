@@ -7,8 +7,7 @@ PKGCONFIG += dtkwidget dtkgui dtkcore gio-qt dframeworkdbus
 CONFIG += c++11 link_pkgconfig
 CONFIG -= app_bundle
 
-## 服务器编译时没有显示器，会卡住，等解决方案
-#CONFIG += testcase no_testcase_installs
+CONFIG += testcase no_testcase_installs
 
 LIBS += -lgtest
 
