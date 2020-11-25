@@ -33,11 +33,6 @@
 
 #include "constants.h"
 
-typedef struct {
-    QStringList cornerIconList;
-    QIcon fileIcon;
-} FileIconData;
-
 enum DataType {
     Unknown,
     Text,
@@ -69,6 +64,7 @@ public:
     void setImageData(const ItemInfo &info, QMimeData *&mimeData);
 
     static bool initPixPath();
+
 public Q_SLOTS:
     void dataReborned(const QByteArray &buf);
 

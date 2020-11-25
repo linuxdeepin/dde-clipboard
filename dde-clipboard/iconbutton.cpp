@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QStyle>
 #include <QDebug>
+#include <QMouseEvent>
 
 IconButton::IconButton(QWidget *parent)
     : DWidget(parent)
@@ -90,7 +91,8 @@ void IconButton::setRadius(int radius)
 void IconButton::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    Q_EMIT clicked();
+    if (event->button() == Qt::LeftButton)
+        Q_EMIT clicked();
 }
 
 void IconButton::enterEvent(QEvent *event)

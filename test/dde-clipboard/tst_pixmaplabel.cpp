@@ -8,7 +8,7 @@ class TstPixmapLabel : public testing::Test
 public:
     void SetUp() override
     {
-        QPixmap pix(":/img/testPix.png");
+        QPixmap pix(":/qrc/testPix.png");
         QList<QPixmap> list;
         list << pix;
         list << pix;

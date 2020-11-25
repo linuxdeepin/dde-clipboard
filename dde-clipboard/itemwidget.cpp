@@ -56,128 +56,6 @@
 #define HoverAlpha 200
 #define UnHoverAlpha 80
 
-QList<QRectF> getCornerGeometryList(const QRectF &baseRect, const QSizeF &cornerSize)
-{
-    QList<QRectF> list;
-    int offset = int(baseRect.width() / 8);
-    const QSizeF &offset_size = cornerSize / 2;
-
-    list << QRectF(QPointF(std::floor(baseRect.right() - offset - offset_size.width()),
-                           std::floor(baseRect.bottom() - offset - offset_size.height())), cornerSize);
-    list << QRectF(QPointF(std::floor(baseRect.left() + offset - offset_size.width()), std::floor(list.first().top())), cornerSize);
-    list << QRectF(QPointF(std::floor(list.at(1).left()), std::floor(baseRect.top() + offset - offset_size.height())), cornerSize);
-    list << QRectF(QPointF(std::floor(list.first().left()), std::floor(list.at(2).top())), cornerSize);
-
-    return list;
-}
-
-QPixmap getIconPixmap(const QIcon &icon, const QSize &size, qreal pixelRatio, QIcon::Mode mode, QIcon::State state)
-{
-    // ###(zccrs): 开启Qt::AA_UseHighDpiPixmaps后，QIcon::pixmap会自动执行 pixmapSize *= qApp->devicePixelRatio()
-    //             而且，在有些QIconEngine的实现中，会去调用另一个QIcon::pixmap，导致 pixmapSize 在这种嵌套调用中越来越大
-    //             最终会获取到一个是期望大小几倍的图片，由于图片太大，会很快将 QPixmapCache 塞满，导致后面再调用QIcon::pixmap
-    //             读取新的图片时无法缓存，非常影响图片绘制性能。此处在获取图片前禁用 Qt::AA_UseHighDpiPixmaps，自行处理图片大小问题
-    bool useHighDpiPixmaps = qApp->testAttribute(Qt::AA_UseHighDpiPixmaps);
-    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
-
-    QSize icon_size = icon.actualSize(size, mode, state);
-
-    if (icon_size.width() > size.width() || icon_size.height() > size.height())
-        icon_size.scale(size, Qt::KeepAspectRatio);
-
-    QSize pixmapSize = icon_size * pixelRatio;
-    QPixmap px = icon.pixmap(pixmapSize, mode, state);
-
-    // restore the value
-    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, useHighDpiPixmaps);
-
-    if (px.width() > icon_size.width() * pixelRatio) {
-        px.setDevicePixelRatio(px.width() * 1.0 / qreal(icon_size.width()));
-    } else if (px.height() > icon_size.height() * pixelRatio) {
-        px.setDevicePixelRatio(px.height() * 1.0 / qreal(icon_size.height()));
-    } else {
-        px.setDevicePixelRatio(pixelRatio);
-    }
-
-    return px;
-}
-
-static QPixmap GetFileIcon(QString path)
-{
-    QFileInfo info(path);
-    QIcon icon;
-
-    if (!QFileInfo::exists(path)) {
-        QMimeDatabase db;
-        QMimeType mime = db.mimeTypeForFile(path);
-        return QIcon::fromTheme(mime.genericIconName()).pixmap(FileIconWidth, FileIconWidth);
-    }
-    QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
-    QExplicitlySharedDataPointer<DGioFileInfo> fileinfo = file->createFileInfo();
-    if (!fileinfo) {
-        return QPixmap();
-    }
-
-    QStringList icons = fileinfo->themedIconNames();
-    if (!icons.isEmpty()) {
-        icon =  QIcon::fromTheme(icons.first()).pixmap(FileIconWidth, FileIconWidth);
-    } else {
-        QString iconStr(fileinfo->iconString());
-        if (iconStr.startsWith('/')) {
-            icon = QIcon(iconStr);
-        } else {
-            icon = QIcon::fromTheme(iconStr);
-        }
-    }
-
-    //get additional icons
-    QPixmap pix = icon.pixmap(FileIconWidth, FileIconWidth);
-    QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
-    QList<QIcon> iconList;
-    if (info.isSymLink()) {
-        iconList << QIcon::fromTheme("emblem-symbolic-link");
-    }
-
-    if (!info.isWritable()) {
-        iconList << QIcon::fromTheme("emblem-readonly");
-    }
-
-    if (!info.isReadable()) {
-        iconList << QIcon::fromTheme("emblem-unreadable");
-    }
-
-    //if info is shared()  add icon "emblem-shared"(code from 'dde-file-manager')
-
-    QPainter painter(&pix);
-    painter.setRenderHints(painter.renderHints() | QPainter::SmoothPixmapTransform);
-    for (int i = 0; i < iconList.size(); ++i) {
-        painter.drawPixmap(cornerGeometryList.at(i).toRect(),
-                           getIconPixmap(iconList.at(i), QSize(24, 24), painter.device()->devicePixelRatioF(), QIcon::Normal, QIcon::On));
-    }
-
-    return pix;
-}
-
-static QPixmap GetFileIcon(const FileIconData &data)
-{
-    QIcon icon;
-    QStringList icons = data.cornerIconList;
-    QPixmap pix = data.fileIcon.pixmap(QSize(FileIconWidth, FileIconWidth));
-    if (icons.isEmpty()) {
-        return pix;
-    }
-
-    QPainter painter(&pix);
-    painter.setRenderHints(painter.renderHints() | QPainter::SmoothPixmapTransform);
-    QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
-    for (int i = 0; i < icons.size(); ++i) {
-        painter.drawPixmap(cornerGeometryList.at(i).toRect(),
-                           getIconPixmap(QIcon::fromTheme(icons.at(i)), QSize(24, 24), painter.device()->devicePixelRatioF(), QIcon::Normal, QIcon::On));
-    }
-
-    return pix;
-}
-
 /*!
  * \~chinese \class ItemWidget
  * \~chinese \brief 负责剪贴块数据的展示。
@@ -196,6 +74,11 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     initUI();
     initData(m_data);
     initConnect();
+}
+
+const QString &ItemWidget::text()
+{
+    return m_data->text();
 }
 
 void ItemWidget::setText(const QString &text, const QString &length)
@@ -286,6 +169,11 @@ void ItemWidget::setOpacity(double opacity)
     setGraphicsEffect(effect);
     effect->setOpacity(opacity);
     effect->destroyed();
+}
+
+const QPointer<ItemData> ItemWidget::itemData()
+{
+    return m_data;
 }
 
 int ItemWidget::unHoverAlpha() const
@@ -586,6 +474,128 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     }
 
     return text;
+}
+
+QList<QRectF> ItemWidget::getCornerGeometryList(const QRectF &baseRect, const QSizeF &cornerSize)
+{
+    QList<QRectF> list;
+    int offset = int(baseRect.width() / 8);
+    const QSizeF &offset_size = cornerSize / 2;
+
+    list << QRectF(QPointF(std::floor(baseRect.right() - offset - offset_size.width()),
+                           std::floor(baseRect.bottom() - offset - offset_size.height())), cornerSize);
+    list << QRectF(QPointF(std::floor(baseRect.left() + offset - offset_size.width()), std::floor(list.first().top())), cornerSize);
+    list << QRectF(QPointF(std::floor(list.at(1).left()), std::floor(baseRect.top() + offset - offset_size.height())), cornerSize);
+    list << QRectF(QPointF(std::floor(list.first().left()), std::floor(list.at(2).top())), cornerSize);
+
+    return list;
+}
+
+QPixmap ItemWidget::getIconPixmap(const QIcon &icon, const QSize &size, qreal pixelRatio, QIcon::Mode mode, QIcon::State state)
+{
+    // ###(zccrs): 开启Qt::AA_UseHighDpiPixmaps后，QIcon::pixmap会自动执行 pixmapSize *= qApp->devicePixelRatio()
+    //             而且，在有些QIconEngine的实现中，会去调用另一个QIcon::pixmap，导致 pixmapSize 在这种嵌套调用中越来越大
+    //             最终会获取到一个是期望大小几倍的图片，由于图片太大，会很快将 QPixmapCache 塞满，导致后面再调用QIcon::pixmap
+    //             读取新的图片时无法缓存，非常影响图片绘制性能。此处在获取图片前禁用 Qt::AA_UseHighDpiPixmaps，自行处理图片大小问题
+    bool useHighDpiPixmaps = qApp->testAttribute(Qt::AA_UseHighDpiPixmaps);
+    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
+
+    QSize icon_size = icon.actualSize(size, mode, state);
+
+    if (icon_size.width() > size.width() || icon_size.height() > size.height())
+        icon_size.scale(size, Qt::KeepAspectRatio);
+
+    QSize pixmapSize = icon_size * pixelRatio;
+    QPixmap px = icon.pixmap(pixmapSize, mode, state);
+
+    // restore the value
+    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, useHighDpiPixmaps);
+
+    if (px.width() > icon_size.width() * pixelRatio) {
+        px.setDevicePixelRatio(px.width() * 1.0 / qreal(icon_size.width()));
+    } else if (px.height() > icon_size.height() * pixelRatio) {
+        px.setDevicePixelRatio(px.height() * 1.0 / qreal(icon_size.height()));
+    } else {
+        px.setDevicePixelRatio(pixelRatio);
+    }
+
+    return px;
+}
+
+QPixmap ItemWidget::GetFileIcon(QString path)
+{
+    QFileInfo info(path);
+    QIcon icon;
+
+    if (!QFileInfo::exists(path)) {
+        QMimeDatabase db;
+        QMimeType mime = db.mimeTypeForFile(path);
+        return QIcon::fromTheme(mime.genericIconName()).pixmap(FileIconWidth, FileIconWidth);
+    }
+    QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
+    QExplicitlySharedDataPointer<DGioFileInfo> fileinfo = file->createFileInfo();
+    if (!fileinfo) {
+        return QPixmap();
+    }
+
+    QStringList icons = fileinfo->themedIconNames();
+    if (!icons.isEmpty()) {
+        icon =  QIcon::fromTheme(icons.first()).pixmap(FileIconWidth, FileIconWidth);
+    } else {
+        QString iconStr(fileinfo->iconString());
+        if (iconStr.startsWith('/')) {
+            icon = QIcon(iconStr);
+        } else {
+            icon = QIcon::fromTheme(iconStr);
+        }
+    }
+
+    //get additional icons
+    QPixmap pix = icon.pixmap(FileIconWidth, FileIconWidth);
+    QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
+    QList<QIcon> iconList;
+    if (info.isSymLink()) {
+        iconList << QIcon::fromTheme("emblem-symbolic-link");
+    }
+
+    if (!info.isWritable()) {
+        iconList << QIcon::fromTheme("emblem-readonly");
+    }
+
+    if (!info.isReadable()) {
+        iconList << QIcon::fromTheme("emblem-unreadable");
+    }
+
+    //if info is shared()  add icon "emblem-shared"(code from 'dde-file-manager')
+
+    QPainter painter(&pix);
+    painter.setRenderHints(painter.renderHints() | QPainter::SmoothPixmapTransform);
+    for (int i = 0; i < iconList.size(); ++i) {
+        painter.drawPixmap(cornerGeometryList.at(i).toRect(),
+                           getIconPixmap(iconList.at(i), QSize(24, 24), painter.device()->devicePixelRatioF(), QIcon::Normal, QIcon::On));
+    }
+
+    return pix;
+}
+
+QPixmap ItemWidget::GetFileIcon(const FileIconData &data)
+{
+    QIcon icon;
+    QStringList icons = data.cornerIconList;
+    QPixmap pix = data.fileIcon.pixmap(QSize(FileIconWidth, FileIconWidth));
+    if (icons.isEmpty()) {
+        return pix;
+    }
+
+    QPainter painter(&pix);
+    painter.setRenderHints(painter.renderHints() | QPainter::SmoothPixmapTransform);
+    QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
+    for (int i = 0; i < icons.size(); ++i) {
+        painter.drawPixmap(cornerGeometryList.at(i).toRect(),
+                           getIconPixmap(QIcon::fromTheme(icons.at(i)), QSize(24, 24), painter.device()->devicePixelRatioF(), QIcon::Normal, QIcon::On));
+    }
+
+    return pix;
 }
 
 void ItemWidget::keyPressEvent(QKeyEvent *event)

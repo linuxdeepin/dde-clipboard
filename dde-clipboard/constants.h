@@ -53,6 +53,11 @@ const static int AnimationTime = 300;           //ms
 static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
 static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";
 
+typedef struct {
+    QStringList cornerIconList;
+    QIcon fileIcon;
+} FileIconData;
+
 namespace  Globals {
 /*!
  * \~chinese \name GetScale

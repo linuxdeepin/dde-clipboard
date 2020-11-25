@@ -48,6 +48,7 @@ public:
     /*!
      * \~chinese \brief 设置剪切块属性的接口
      */
+    const QString& text();
     void setText(const QString &text, const QString &length);
 
     void setThumnail(const QPixmap &pixmap/*未经处理的原图*/);
@@ -76,6 +77,13 @@ public:
     void setRadius(int radius);
 
     void setOpacity(double opacity);
+
+    const QPointer<ItemData> itemData();
+
+    static QList<QRectF> getCornerGeometryList(const QRectF &baseRect, const QSizeF &cornerSize);
+    static QPixmap getIconPixmap(const QIcon &icon, const QSize &size, qreal pixelRatio, QIcon::Mode mode, QIcon::State state);
+    static QPixmap GetFileIcon(QString path);
+    static QPixmap GetFileIcon(const FileIconData &data);
 
 Q_SIGNALS:
     void close();
@@ -132,6 +140,7 @@ private:
     QString CreateTimeString(const QDateTime &time);
 
     double getOpacity() const { return 0.0; }
+
 private:
     QPointer<ItemData> m_data;
 

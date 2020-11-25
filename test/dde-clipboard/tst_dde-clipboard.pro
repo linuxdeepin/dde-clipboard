@@ -19,7 +19,6 @@ SOURCES += \
     $$PWD/main.cpp \
     $$PWD/tst_mainwindow.cpp \
     $$PWD/tst_pixmaplabel.cpp \
-    $$PWD/tst_clipboardmodel.cpp \
     $$PWD/tst_listview.cpp \
     $$PWD/tst_refreshtimer.cpp \
     $$PWD/tst_itemwidget.cpp \
@@ -35,4 +34,5 @@ INCLUDEPATH += ../../dde-clipboard/dbus
 QMAKE_CXXFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -O0
 QMAKE_LFLAGS += -g -Wall -fprofile-arcs -ftest-coverage  -O0
 
-RESOURCES += img.qrc
+RESOURCES += \
+    qrc.qrc

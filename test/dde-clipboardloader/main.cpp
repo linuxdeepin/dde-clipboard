@@ -3,8 +3,6 @@
 #include <QApplication>
 #include <QDebug>
 
-#define private public
-
 int main(int argc, char *argv[])
 {
     // gerrit编译时没有显示器，需要指定环境变量

@@ -36,6 +36,7 @@ using ClipboardLoader = com::deepin::dde::ClipboardLoader;
  */
 class ClipboardModel : public QAbstractListModel
 {
+    friend class TstListView_uiTest_Test;
     Q_OBJECT
 public:
     explicit ClipboardModel(ListView *list, QObject *parent = nullptr);

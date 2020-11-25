@@ -6,11 +6,6 @@
 
 #include "constants.h"
 
-typedef struct {
-    QStringList cornerIconList;
-    QIcon fileIcon;
-} FileIconData;
-
 enum DataType {
     Unknown,
     Text,

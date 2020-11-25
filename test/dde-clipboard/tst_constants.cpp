@@ -21,7 +21,7 @@ TEST_F(TstConstants, coverageTest)
     Globals::GetScale(QSize(200,300), 1000, 1000);
 
     QPixmap pix;
-    QPixmap testPix(":/img/testPix.png");
+    QPixmap testPix(":/qrc/testPix.png");
     Globals::pixmapScaled(pix);
     Globals::GetRoundPixmap(pix, QColor(Qt::red));
 
