@@ -38,7 +38,8 @@ Depends: ${shlibs:Depends},
  ${misc:Depends},
  ${dist:Depends},
  dde-daemon,
- dde-api (>=2.92.1)
+ dde-api (>=2.92.1),
+ libdframeworkdbus2 (>=5.3.0.24)
 Recommends: netselect, deepin-ab-recovery
 Suggests: redshift
 Description: deepin desktop-environment - clipboard module
