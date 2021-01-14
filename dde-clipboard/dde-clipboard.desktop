@@ -2,7 +2,7 @@
 Name=Deepin Clipboard
 Comment=Deepin Clipboard
 Exec=/usr/bin/dde-clipboard
-Hidden=true
+NoDisplay=true
 OnlyShowIn=Deepin
 Type=Application
 X-Deepin-Vendor=user-custom
