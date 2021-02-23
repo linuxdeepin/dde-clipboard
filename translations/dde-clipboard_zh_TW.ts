@@ -9,7 +9,7 @@
     <message>
         <location filename="../itemdata.cpp" line="149"/>
         <source>Text</source>
-        <translation>文字工具</translation>
+        <translation>文字</translation>
     </message>
     <message>
         <location filename="../itemdata.cpp" line="151"/>

@@ -33,7 +33,7 @@
         <location filename="../itemwidget.cpp" line="540"/>
         <location filename="../itemwidget.cpp" line="662"/>
         <source>(File deleted)</source>
-        <translation>(Fail dipadamkan)</translation>
+        <translation>(Fail dipadam)</translation>
     </message>
     <message>
         <location filename="../itemwidget.cpp" line="570"/>

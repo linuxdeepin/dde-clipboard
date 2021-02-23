@@ -4,7 +4,7 @@
     <message>
         <location filename="../itemdata.cpp" line="147"/>
         <source>Picture</source>
-        <translation>Fotos</translation>
+        <translation>Foto</translation>
     </message>
     <message>
         <location filename="../itemdata.cpp" line="149"/>
@@ -48,22 +48,22 @@
     <message>
         <location filename="../itemwidget.cpp" line="578"/>
         <source>1 minute ago</source>
-        <translation>1 minuto atrás</translation>
+        <translation>hai 1 minuto</translation>
     </message>
     <message>
         <location filename="../itemwidget.cpp" line="580"/>
         <source>%1 minutes ago</source>
-        <translation>%1 minutos atrás</translation>
+        <translation>hai %1 minutos</translation>
     </message>
     <message>
         <location filename="../itemwidget.cpp" line="582"/>
         <source>1 hour ago</source>
-        <translation>1 hora atrás</translation>
+        <translation>hai 1 hora</translation>
     </message>
     <message>
         <location filename="../itemwidget.cpp" line="584"/>
         <source>%1 hours ago</source>
-        <translation>%1 horas atrás</translation>
+        <translation>hai %1 horas</translation>
     </message>
 </context>
 <context>
@@ -71,7 +71,7 @@
     <message>
         <location filename="../mainwindow.cpp" line="187"/>
         <source>Clipboard</source>
-        <translation>Portapapeis</translation>
+        <translation>Portaretallos</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="190"/>
