@@ -16,16 +16,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include(../../dde-clipboard/src.pri)
 
 SOURCES += \
-    $$PWD/main.cpp \
-    $$PWD/tst_mainwindow.cpp \
-    $$PWD/tst_pixmaplabel.cpp \
-    $$PWD/tst_listview.cpp \
-    $$PWD/tst_refreshtimer.cpp \
-    $$PWD/tst_itemwidget.cpp \
-    $$PWD/tst_iteminfo.cpp \
-    $$PWD/tst_constants.cpp \
-    $$PWD/tst_iconbutton.cpp \
-    $$PWD/tst_itemdata.cpp
+    $$PWD/ut_main.cpp \
+    $$PWD/ut_mainwindow.cpp \
+    $$PWD/ut_pixmaplabel.cpp \
+    $$PWD/ut_listview.cpp \
+    $$PWD/ut_refreshtimer.cpp \
+    $$PWD/ut_itemwidget.cpp \
+    $$PWD/ut_iteminfo.cpp \
+    $$PWD/ut_constants.cpp \
+    $$PWD/ut_iconbutton.cpp \
+    $$PWD/ut_itemdata.cpp
 
 INCLUDEPATH += ../../dde-clipboard
 INCLUDEPATH += ../../dde-clipboard/dbus

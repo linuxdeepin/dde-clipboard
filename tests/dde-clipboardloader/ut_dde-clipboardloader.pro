@@ -16,8 +16,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include(../../dde-clipboardloader/src.pri)
 
 SOURCES += \
-    $$PWD/main.cpp \
-    $$PWD/tst_clipboardloader.cpp
+    $$PWD/ut_main.cpp \
+    $$PWD/ut_clipboardloader.cpp
 
 INCLUDEPATH += ../../dde-clipboardloader
 
