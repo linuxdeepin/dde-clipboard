@@ -1,28 +1,31 @@
 #!/bin/bash
 
-mkdir build/report -p
-mkdir build/tmp -p
+BUILD_DIR=build
+REPORT_DIR=report
+#EXTRACT_ARGS="src"
 
-# dde-clipboardloader
-lcov -c -i -d ../../build-dde-clipboard-unknown-Debug/tests/dde-clipboardloader -o build/tmp/init.info
-./tests
-lcov -c -d ../../build-dde-clipboard-unknown-Debug/tests/dde-clipboardloader -o build/tmp/cover.info
-lcov -a build/tmp/init.info -a build/tmp/cover.info -o build/tmp/total.info
-lcov --remove build/tmp/total.info '*/usr/include/*' '*/usr/lib/*' '*/usr/lib64/*' '*/usr/local/include/*' '*/usr/local/lib/*' '*/usr/local/lib64/*' '*/tests/*' -o final.info
-# 生成报告
-genhtml -o cover_report --legend --title "lcov"  --prefix=./ final.info
-#打开报告
-nohup x-www-browser ./cover_report/index.html &
+cd ../
+rm -rf $BUILD_DIR
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+qmake ../dde-clipboard/
+make
+qmake ../dde-clipboardloader/
+make
 
-# dde-clipboard
-lcov -c -i -d ../../build-dde-clipboard-unknown-Debug/tests/dde-clipboard -o build/tmp/init.info
-./tests
-lcov -c -d ../../build-dde-clipboard-unknown-Debug/tests/dde-clipboard -o build/tmp/cover.info
-lcov -a build/tmp/init.info -a build/tmp/cover.info -o build/tmp/total.info
-lcov --remove build/tmp/total.info '*/usr/include/*' '*/usr/lib/*' '*/usr/lib64/*' '*/usr/local/include/*' '*/usr/local/lib/*' '*/usr/local/lib64/*' '*/tests/*' -o final.info
-# 生成报告
-genhtml -o cover_report --legend --title "lcov"  --prefix=./ final.info
-#打开报告
-nohup x-www-browser ./cover_report/index.html &
+cd ../tests/
+rm -rf $BUILD_DIR
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+qmake ../dde-clipboard/
+make check
+qmake ../dde-clipboardloader/
+make check
 
-exit 0
+lcov -d ./ -c -o coverage_all.info
+#lcov --extract coverage_all.info $EXTRACT_ARGS --output-file coverage.info
+lcov --remove coverage_all.info "*/tests/*" "*/usr/include*" "*build/src*" --output-file coverage.info
+cd ..
+genhtml -o $REPORT_DIR $BUILD_DIR/coverage.info
+#rm -rf $BUILD_DIR
+#rm -rf ../$BUILD_DIR
