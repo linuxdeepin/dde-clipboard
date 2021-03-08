@@ -32,18 +32,20 @@
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
-#include <DRegionMonitor>
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
 #define DOCK_BOTTOM     2
 #define DOCK_LEFT       3
 
+#define MONITOR_SERVICE "com.deepin.api.XEventMonitor"
+
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay("com.deepin.daemon.Display", "/com/deepin/daemon/Display", QDBusConnection::sessionBus(), this))
     , m_daemonDockInter(new DBusDaemonDock("com.deepin.dde.daemon.Dock", "/com/deepin/dde/daemon/Dock", QDBusConnection::sessionBus(), this))
     , m_dockInter(new DBusDockInterface)
+    , m_regionMonitor(nullptr)
     , m_content(new DWidget(parent))
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
@@ -59,10 +61,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     geometryChanged();
     CompositeChanged();
+    registerMonitor();
 
     installEventFilter(this);
-
-    checkXEventMonitorDbusState();
 }
 
 MainWindow::~MainWindow()
@@ -145,30 +146,21 @@ void MainWindow::CompositeChanged()
     m_hasComposite = m_wmHelper->hasComposite();
 }
 
-void MainWindow::checkXEventMonitorDbusState()
+void MainWindow::registerMonitor()
 {
-    QTimer *timer = new QTimer(this);
-    timer->setInterval(100);
-    connect(timer, &QTimer::timeout, this, [ = ] {
-        // DRegionMonitor依赖以下服务，确保其启动再绑定其信号
-        QDBusInterface interface("com.deepin.api.XEventMonitor", "/com/deepin/api/XEventMonitor",
-                                     "com.deepin.api.XEventMonitor",
-                                     QDBusConnection::sessionBus());
-        if (interface.isValid())
-        {
-            DRegionMonitor *monitor = new DRegionMonitor(this);
-            monitor->registerRegion(QRegion(QRect()));
-            connect(monitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint & p, const int flag) {
-                Q_UNUSED(flag);
-                if (!geometry().contains(p))
-                    if (!isHidden()) {
-                        hideAni();
-                    }
-            });
-            timer->stop();
-        }
+    if (m_regionMonitor) {
+        delete m_regionMonitor;
+        m_regionMonitor = nullptr;
+    }
+    m_regionMonitor = new DRegionMonitor(this);
+    m_regionMonitor->registerRegion(QRegion(QRect()));
+    connect(m_regionMonitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint &p, const int flag) {
+        Q_UNUSED(flag);
+        if (!geometry().contains(p))
+            if (!isHidden()) {
+                hideAni();
+            }
     });
-    timer->start();
 }
 
 void MainWindow::initUI()
@@ -250,6 +242,19 @@ void MainWindow::initConnect()
     connect(m_widthAni, &QVariantAnimation::valueChanged, this, [ = ](QVariant value) {
         int width = value.toInt();
         m_content->move(width - 300, m_content->pos().y());
+    });
+
+    QDBusServiceWatcher *m_watcher = new QDBusServiceWatcher(MONITOR_SERVICE, QDBusConnection::sessionBus());
+    connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, this, [ = ](const QString &service){
+        if (MONITOR_SERVICE != service)
+            return;
+        registerMonitor();
+    });
+
+    connect(m_watcher, &QDBusServiceWatcher::serviceUnregistered, this, [ = ](const QString &service){
+        if (MONITOR_SERVICE != service)
+            return;
+        disconnect(m_regionMonitor);
     });
 }
 

@@ -32,6 +32,7 @@
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
+#include <DRegionMonitor>
 
 #include <com_deepin_daemon_display_monitor.h>
 #include <com_deepin_dde_daemon_dock.h>
@@ -97,7 +98,8 @@ private Q_SLOTS:
      * \~chinese \brief 是否开启动画效果
      */
     void CompositeChanged();
-    void checkXEventMonitorDbusState();
+
+    void registerMonitor();
 
 private:
     /*!
@@ -140,6 +142,7 @@ private:
     DBusDisplay *m_displayInter;
     DBusDaemonDock *m_daemonDockInter;
     DBusDockInterface *m_dockInter;
+    DRegionMonitor *m_regionMonitor;
 
     DWidget *m_content;
     IconButton *m_clearButton;
