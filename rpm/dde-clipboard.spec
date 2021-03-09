@@ -9,7 +9,7 @@
 %endif
 
 Name:           dde-clipboard
-Version:        5.0.0.3
+Version:        5.3.0.3
 Release:        1
 Summary:        Qt platform theme integration plugins for DDE
 License:        GPLv3+
@@ -51,6 +51,6 @@ popd
 %{_datadir}/%{name}/translations/
 
 %changelog
-* Wed Jun 10 2020 uoser <uoser@uniontech.com> - 5.0.0.3
-- Update to 5.0.0.3
+* Wed Jun 10 2020 uoser <uoser@uniontech.com> - 5.3.0.3
+- Update to 5.3.0.3
 
