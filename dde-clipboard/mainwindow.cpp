@@ -136,6 +136,26 @@ void MainWindow::startLoader()
     process = Q_NULLPTR;
 }
 
+void MainWindow::Show()
+{
+    if (m_aniGroup->state() == QAbstractAnimation::Running)
+        return;
+
+    if (!isVisible()) {
+        showAni();
+    }
+}
+
+void MainWindow::Hide()
+{
+    if (m_aniGroup->state() == QAbstractAnimation::Running)
+        return;
+
+    if (isVisible()) {
+        hideAni();
+    }
+}
+
 void MainWindow::setX(int x)
 {
     move(m_rect.x() + x, m_rect.y());

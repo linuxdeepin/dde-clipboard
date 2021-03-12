@@ -81,6 +81,9 @@ public Q_SLOTS:
 
     void startLoader();
 
+    void Show();
+    void Hide();
+
 private Q_SLOTS:
     /*!
      * \~chinese \name geometryChanged

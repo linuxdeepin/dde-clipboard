@@ -3,5 +3,9 @@
   <interface name="com.deepin.dde.Clipboard">
     <method name="Toggle">
     </method>
+    <method name="Show">
+    </method>
+    <method name="Hide">
+    </method>
   </interface>
 </node>
