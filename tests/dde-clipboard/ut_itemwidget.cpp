@@ -12,90 +12,83 @@ public:
     {
         QByteArray buf;
 
-        // 复制图片（非图片，图片文件属于文件类型）时产生的数据，用于测试
-        QFile file(":/qrc/image.buf");
-        if (!file.open(QIODevice::ReadOnly)) {
+        // 复制文件时产生的数据，用于测试
+        QFile file1(":/qrc/file.buf");
+        if (!file1.open(QIODevice::ReadOnly)) {
             qWarning() << "file open failed";
-            file.close();
+            file1.close();
         } else {
-            buf = file.readAll();
+            buf = file1.readAll();
         }
+        m_fileData = new ItemData(buf);
 
-        widget = new ItemWidget(new ItemData(buf));
+        // 复制文本时产生的数据，用于测试
+        QFile file2(":/qrc/text.buf");
+        if (!file2.open(QIODevice::ReadOnly)) {
+            qWarning() << "file open failed";
+            file2.close();
+        } else {
+            buf = file2.readAll();
+        }
+        m_textData = new ItemData(buf);
+
+        // 复制图片（非图片，图片文件属于文件类型）时产生的数据，用于测试
+        QFile file3(":/qrc/image.buf");
+        if (!file3.open(QIODevice::ReadOnly)) {
+            qWarning() << "file open failed";
+            file3.close();
+        } else {
+            buf = file3.readAll();
+        }
+        m_imageData = new ItemData(buf);
     }
 
     void TearDown() override
     {
-        delete widget;
-        widget = nullptr;
+        delete m_fileData;
+        delete m_textData;
+        delete m_imageData;
     }
 
-public:
-    ItemWidget *widget = nullptr;
+    QPointer<ItemData> m_fileData;
+    QPointer<ItemData> m_textData;
+    QPointer<ItemData> m_imageData;
 };
 
 TEST_F(TstItemWidget, coverageTest)
 {
+    ItemWidget w(m_fileData);
+
     QPixmap testPix(":/qrc/testPix.png");
 
     FileIconData data;
-    widget->setThumnail(testPix);
-    widget->setThumnail(data);
-    widget->setFileIcon(testPix);
-    widget->setFileIcon(data);
+    w.setThumnail(testPix);
+    w.setThumnail(data);
+    w.setFileIcon(testPix);
+    w.setFileIcon(data);
 
     QList<QPixmap> list;
     list << testPix;
     list << testPix;
-    widget->setFileIcons(list);
+    w.setFileIcons(list);
+
+    ASSERT_EQ(w.itemData()->urls().first().toLocalFile(), "/home/diesel/Desktop/截图录屏_deepin-terminal_20201114221419.png");
 }
 
 TEST_F(TstItemWidget, textTest)
 {
-    QByteArray buf;
-
-    // 复制文本时产生的数据，用于测试
-    QFile file(":/qrc/text.buf");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "file open failed";
-        file.close();
-    } else {
-        buf = file.readAll();
-    }
-
-    delete widget;
-    widget = nullptr;
-    widget = new ItemWidget(new ItemData(buf));
-
-    ASSERT_TRUE(widget->text().contains("1234567890abcdefg"));
-}
-
-TEST_F(TstItemWidget, fileTest)
-{
-    QByteArray buf;
-
-    // 复制文件时产生的数据，用于测试
-    QFile file(":/qrc/file.buf");
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "file open failed";
-        file.close();
-    } else {
-        buf = file.readAll();
-    }
-
-    delete widget;
-    widget = nullptr;
-    widget = new ItemWidget(new ItemData(buf));
-
-    ASSERT_EQ(widget->itemData()->urls().first().toLocalFile(), "/home/diesel/Desktop/截图录屏_deepin-terminal_20201114221419.png");
+    ItemWidget w(m_textData);
+    ASSERT_TRUE(w.text().contains("1234567890abcdefg"));
 }
 
 TEST_F(TstItemWidget, propertyTest)
 {
+    ItemWidget w(m_imageData);
+
     QString text = "abcdefghijklmnopqrstuvwxyz";
-    widget->setText(text, QString::number(text.length()));
-    widget->setAlpha(120);
-    widget->setOpacity(0.5);
+    w.setText(text, QString::number(text.length()));
+    w.setAlpha(120);
+    w.setOpacity(0.5);
 }
 
 TEST_F(TstItemWidget, method_getCornerGeometryList_Test)
@@ -103,7 +96,7 @@ TEST_F(TstItemWidget, method_getCornerGeometryList_Test)
     QRectF rectF(0, 0, 100, 100);
     QSizeF sizeF(50, 50);
 
-    ASSERT_EQ(widget->getCornerGeometryList(rectF, sizeF).size(), 4);
+    ASSERT_EQ(ItemWidget::getCornerGeometryList(rectF, sizeF).size(), 4);
 }
 
 TEST_F(TstItemWidget, method_getIconPixmap_Test)

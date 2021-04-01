@@ -64,7 +64,7 @@ TEST_F(TstListView, keyPressTest)
 TEST_F(TstListView, uiTest)
 {
     ClipboardModel *model = new ClipboardModel(list);
-    ItemDelegate *delegate = new ItemDelegate;
+    ItemDelegate *delegate = new ItemDelegate(list);
 
     list->setItemDelegate(delegate);
 

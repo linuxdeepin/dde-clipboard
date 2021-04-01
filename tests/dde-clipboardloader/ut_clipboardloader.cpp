@@ -45,6 +45,7 @@ TEST_F(TstClipboardLoader, setImageData)
 
     loader->setImageData(info, newData);
 
-    ASSERT_TRUE(true);
+    delete newData;
+    newData = nullptr;
 }
 
