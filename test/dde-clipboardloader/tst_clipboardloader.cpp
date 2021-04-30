@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QMimeData>
+#include <QStyle>
 
 class TstClipboardLoader : public testing::Test
 {
@@ -32,7 +33,8 @@ TEST_F(TstClipboardLoader, coverageTest)
 
 TEST_F(TstClipboardLoader, setImageData)
 {
-    QPixmap srcPix(":/qrc/desktop.jpg");
+    QStyle *style = QApplication::style();
+    const QPixmap &srcPix = style->standardPixmap(QStyle::SP_DialogYesButton);
     qApp->clipboard()->setPixmap(srcPix);
     ItemInfo info;
 

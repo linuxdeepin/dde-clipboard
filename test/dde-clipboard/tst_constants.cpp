@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
-#include "clipboardmodel.h"
 
+#include "clipboardmodel.h"
 #include "constants.h"
+
+#include <QApplication>
 
 class TstConstants : public testing::Test
 {
@@ -21,7 +23,9 @@ TEST_F(TstConstants, coverageTest)
     Globals::GetScale(QSize(200,300), 1000, 1000);
 
     QPixmap pix;
-    QPixmap testPix(":/qrc/testPix.png");
+    QStyle *style = QApplication::style();
+    const QPixmap &testPix = style->standardPixmap(QStyle::SP_DialogYesButton);
+
     Globals::pixmapScaled(pix);
     Globals::GetRoundPixmap(pix, QColor(Qt::red));
 

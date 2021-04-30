@@ -4,6 +4,7 @@
 #include "itemdata.h"
 
 #include <QFile>
+#include <QApplication>
 
 class TstItemWidget : public testing::Test
 {
@@ -36,7 +37,8 @@ public:
 
 TEST_F(TstItemWidget, coverageTest)
 {
-    QPixmap testPix(":/qrc/testPix.png");
+    QStyle *style = QApplication::style();
+    const QPixmap &testPix = style->standardPixmap(QStyle::SP_DialogYesButton);
 
     FileIconData data;
     widget->setThumnail(testPix);

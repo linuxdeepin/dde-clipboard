@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qrc/testPix.png</file>
         <file>qrc/text.buf</file>
         <file>qrc/image.buf</file>
         <file>qrc/file.buf</file>
