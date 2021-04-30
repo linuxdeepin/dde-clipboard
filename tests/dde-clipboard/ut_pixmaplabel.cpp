@@ -8,7 +8,8 @@ class TstPixmapLabel : public testing::Test
 public:
     void SetUp() override
     {
-        QPixmap pix(":/qrc/testPix.png");
+        QStyle *style = QApplication::style();
+        const QPixmap &pix = style->standardPixmap(QStyle::SP_DialogYesButton);
         QList<QPixmap> list;
         list << pix;
         list << pix;

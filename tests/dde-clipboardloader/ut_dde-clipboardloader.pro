@@ -24,6 +24,3 @@ INCLUDEPATH += ../../dde-clipboardloader
 # gcov链接参数
 QMAKE_CXXFLAGS += -g -Wall -fprofile-arcs -ftest-coverage -O0
 QMAKE_LFLAGS += -g -Wall -fprofile-arcs -ftest-coverage  -O0
-
-RESOURCES += \
-    $$PWD/qrc.qrc
