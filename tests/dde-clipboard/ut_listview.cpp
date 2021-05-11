@@ -5,6 +5,7 @@
 
 #include <QtTest>
 #include <QDebug>
+#include <QSignalSpy>
 
 class TstListView : public testing::Test
 {
@@ -37,19 +38,16 @@ public:
     ItemDelegate *delegate = nullptr;
 };
 
-TEST_F(TstListView, coverageTest)
-{
-    ASSERT_NE(list, nullptr);
-}
-
 TEST_F(TstListView, scrollToTest)
 {
+    // nothing happend
     list->scrollTo(QModelIndex());
 }
 
 TEST_F(TstListView, keyPressTest)
 {
     list->show();
+    QTest::qWait(1);
 
     QTest::keyPress(list, Qt::Key_Up);
     QTest::keyPress(list, Qt::Key_Down);
@@ -57,8 +55,13 @@ TEST_F(TstListView, keyPressTest)
     QTest::mouseMove(list, QPoint(list->geometry().center()));
 
     // other key press
-    QTest::keyPress(list, Qt::Key_A);
+    QTest::keyPress(list, Qt::Key_Tab);
     QTest::keyPress(list, Qt::Key_Backtab);
+    QTest::qWait(1);
+
+    QTest::keyPress(list->viewport(), Qt::Key_Tab);
+    QTest::keyPress(list->viewport(), Qt::Key_Backtab);
+    QTest::qWait(1);
 }
 
 TEST_F(TstListView, uiTest)
@@ -67,6 +70,10 @@ TEST_F(TstListView, uiTest)
     ItemDelegate *delegate = new ItemDelegate(list);
 
     list->setItemDelegate(delegate);
+    list->setModel(model);
+
+    list->show();
+    QTest::qWait(10);
 
     QByteArray textbuf;
     QByteArray imagebuf;
@@ -99,14 +106,39 @@ TEST_F(TstListView, uiTest)
     }
     file3.close();
 
-    model->dataComing(textbuf);
-    model->dataComing(imagebuf);
-    model->dataComing(filebuf);
+    for (int i = 0; i < 10; ++i) {
+        model->dataComing(textbuf);
+        model->dataComing(imagebuf);
+        model->dataComing(filebuf);
+    }
+    // 留出时间让listview绘制
+    QTest::qWait(10);
 
-    ASSERT_EQ(model->data().size(), 3);
+    ASSERT_EQ(model->data().size(), 30);
     ASSERT_EQ(model->data().first()->urls().size(), 3);
 
-    model->destroy(model->data().last());
-//    QThread::msleep(300 + 10);
-//    ASSERT_EQ(model->data().size(), 2);
+    QSignalSpy spy(model, &ClipboardModel::dataChanged);
+
+    model->destroy(model->data().first());
+    QTest::qWait(AnimationTime + 20);
+    ASSERT_EQ(spy.count(), 1);
+
+    QVariant vaildVar = model->data(list->indexAt(QPoint(0, 0)), 0);
+    ASSERT_TRUE(vaildVar.isValid());
+    QVariant invalidVar = model->data(QModelIndex(), 0);
+    ASSERT_FALSE(invalidVar.isValid());
+
+    // 测试dataReborn信号发送
+    QSignalSpy rebornSpy(model, &ClipboardModel::dataReborn);
+    model->reborn(model->data().last());
+    ASSERT_EQ(rebornSpy.count(), 1);
+
+    model->reborn(model->data().first());
+    ASSERT_EQ(rebornSpy.count(), 2);
+
+    model->clear();
+    ASSERT_EQ(spy.count(), 2);
+
+    //    QThread::msleep(300 + 10);
+    //    ASSERT_EQ(model->data().size(), 2);
 }

@@ -45,6 +45,11 @@ PixmapLabel::PixmapLabel(QWidget *parent)
 
 }
 
+/*!
+ * \~chinese \name setText
+ * \~chinese \brief 设置剪切板中的文字
+ * \~chinese \param text 剪切板中需要显示的文字
+ */
 void PixmapLabel::setText(const QString &text)
 {
     m_text = text.left(1024);//减少elideText计算消耗
@@ -52,6 +57,11 @@ void PixmapLabel::setText(const QString &text)
     update();
 }
 
+/*!
+ * \~chinese \name setPixmapList
+ * \~chinese \brief 设置剪切板中显示的内容
+ * \~chinese \param list 存放图片的容器
+ */
 void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 {
     m_pixmapList = list;
@@ -59,24 +69,29 @@ void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
     update();
 }
 
+/*!
+ * \~chinese \name minimumSizeHint
+ * \~chinese \brief 推荐显示的最小大小(宽度为180,高度为100)
+ */
 QSize PixmapLabel::minimumSizeHint() const
 {
     return QSize(FileIconWidth, FileIconHeight);
 }
 
+/*!
+ * \~chinese \name sizeHint
+ * \~chinese \brief 推荐显示的大小
+ */
 QSize PixmapLabel::sizeHint() const
 {
     return QSize(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight);
 }
 
 void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption::WrapMode wordWrap,
-                            Qt::TextElideMode mode, qreal lineHeight, int flags, QStringList *lines,
-                            QPainter *painter, QPointF offset, const QColor &shadowColor, const QPointF &shadowOffset,
-                            const QBrush &background, qreal backgroundRadius, QList<QRectF> *boundingRegion)
+                            Qt::TextElideMode mode, qreal lineHeight, int flags, QStringList *lines)
 {
     qreal height = 0;
-    bool drawBackground = background.style() != Qt::NoBrush;
-    bool drawShadow = shadowColor.isValid();
+    QPointF offset(0, 0);
 
     QString text = layout->engine()->hasFormats() ? layout->engine()->block.text() : layout->text();
     QTextOption &text_option = *const_cast<QTextOption *>(&layout->textOption());
@@ -88,13 +103,8 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
     else if (flags & Qt::AlignHCenter)
         text_option.setAlignment(Qt::AlignHCenter);
 
-    if (painter) {
-        text_option.setTextDirection(painter->layoutDirection());
-        layout->setFont(painter->font());
-    } else {
-        // dont paint
-        layout->engine()->ignoreBidi = true;
-    }
+    // dont paint
+    layout->engine()->ignoreBidi = true;
 
     auto naturalTextRect = [&](const QRectF rect) {
         QRectF new_rect = rect;
@@ -104,20 +114,9 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
         return new_rect;
     };
 
-    auto drawShadowFun = [&](const QTextLine & line) {
-        const QPen pen = painter->pen();
-
-        painter->setPen(shadowColor);
-        line.draw(painter, shadowOffset);
-
-        // restore
-        painter->setPen(pen);
-    };
-
     layout->beginLayout();
 
     QTextLine line = layout->createLine();
-    QRectF lastLineRect;
 
     while (line.isValid()) {
         height += lineHeight;
@@ -145,90 +144,7 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
 
         const QRectF rect = naturalTextRect(line.naturalTextRect());
 
-        if (painter) {
-            if (drawBackground) {
-                const QMarginsF margins(backgroundRadius, 0, backgroundRadius, 0);
-                QRectF backBounding = rect;
-                QPainterPath path;
-
-                if (lastLineRect.isValid()) {
-                    if (qAbs(rect.width() - lastLineRect.width()) < backgroundRadius * 2) {
-                        backBounding.setWidth(lastLineRect.width());
-                        backBounding.moveCenter(rect.center());
-                        path.moveTo(lastLineRect.x() - backgroundRadius, lastLineRect.bottom() - backgroundRadius);
-                        path.lineTo(lastLineRect.x(), lastLineRect.bottom() - 1);
-                        path.lineTo(lastLineRect.right(), lastLineRect.bottom() - 1);
-                        path.lineTo(lastLineRect.right() + backgroundRadius, lastLineRect.bottom() - backgroundRadius);
-                        path.lineTo(lastLineRect.right() + backgroundRadius, backBounding.bottom() - backgroundRadius);
-                        path.arcTo(backBounding.right() - backgroundRadius, backBounding.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 0, -90);
-                        path.lineTo(backBounding.x(), backBounding.bottom());
-                        path.arcTo(backBounding.x() - backgroundRadius, backBounding.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 270, -90);
-                        lastLineRect = backBounding;
-                    } else if (lastLineRect.width() > rect.width()) {
-                        backBounding += margins;
-                        path.moveTo(backBounding.x() - backgroundRadius, backBounding.y() - 1);
-                        path.arcTo(backBounding.x() - backgroundRadius * 2, backBounding.y() - 1, backgroundRadius * 2, backgroundRadius * 2 + 1, 90, -90);
-                        path.lineTo(backBounding.x(), backBounding.bottom() - backgroundRadius);
-                        path.arcTo(backBounding.x(), backBounding.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 180, 90);
-                        path.lineTo(backBounding.right() - backgroundRadius, backBounding.bottom());
-                        path.arcTo(backBounding.right() - backgroundRadius * 2, backBounding.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 270, 90);
-                        path.lineTo(backBounding.right(), backBounding.top() + backgroundRadius);
-                        path.arcTo(backBounding.right(), backBounding.top() - 1, backgroundRadius * 2, backgroundRadius * 2 + 1, 180, -90);
-                        path.closeSubpath();
-                        lastLineRect = rect;
-                    } else {
-                        backBounding += margins;
-                        path.moveTo(lastLineRect.x() - backgroundRadius * 2, lastLineRect.bottom());
-                        path.arcTo(lastLineRect.x() - backgroundRadius * 3, lastLineRect.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 270, 90);
-                        path.lineTo(lastLineRect.x(), lastLineRect.bottom() - 1);
-                        path.lineTo(lastLineRect.right(), lastLineRect.bottom() - 1);
-                        path.lineTo(lastLineRect.right() + backgroundRadius, lastLineRect.bottom() - backgroundRadius * 2);
-                        path.arcTo(lastLineRect.right() + backgroundRadius, lastLineRect.bottom() - backgroundRadius * 2, backgroundRadius * 2, backgroundRadius * 2, 180, 90);
-
-                        //                        path.arcTo(lastLineRect.x() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
-                        //                        path.lineTo(lastLineRect.x() - backgroundReaius * 3, lastLineRect.bottom());
-                        //                        path.moveTo(lastLineRect.right(), lastLineRect.bottom());
-                        //                        path.arcTo(lastLineRect.right() - backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 270, 90);
-                        //                        path.arcTo(lastLineRect.right() + backgroundReaius, lastLineRect.bottom() - backgroundReaius * 2, backgroundReaius * 2, backgroundReaius * 2, 180, 90);
-                        //                        path.lineTo(lastLineRect.right(), lastLineRect.bottom());
-
-                        path.addRoundedRect(backBounding, backgroundRadius, backgroundRadius);
-                        lastLineRect = rect;
-                    }
-                } else {
-                    lastLineRect = backBounding;
-                    path.addRoundedRect(backBounding + margins, backgroundRadius, backgroundRadius);
-                }
-
-                bool a = painter->testRenderHint(QPainter::Antialiasing);
-                qreal o = painter->opacity();
-
-                painter->setRenderHint(QPainter::Antialiasing, true);
-                painter->setOpacity(1);
-                painter->fillPath(path, background);
-                painter->setRenderHint(QPainter::Antialiasing, a);
-                painter->setOpacity(o);
-            }
-
-            if (drawShadow) {
-                drawShadowFun(line);
-            }
-
-            line.draw(painter, QPointF(0, 0));
-        }
-
-        if (boundingRegion) {
-            boundingRegion->append(rect);
-        }
-
         offset.setY(offset.y() + lineHeight);
-
-        //        // find '\n'
-        //        int text_length_line = line.textLength();
-        //        for (int start = line.textStart(); start < line.textStart() + text_length_line; ++start) {
-        //            if (text.at(start) == '\n')
-        //                height += lineHeight;
-        //        }
 
         if (lines) {
             lines->append(text.mid(line.textStart(), line.textLength()));
@@ -257,9 +173,21 @@ QPair<QString, int> PixmapLabel::getNextValidString(const QStringList &list, int
     return QPair<QString, int>("", list.size() - 1);
 }
 
+/*!
+ * \~chinese \name elideText
+ * \~chinese \brief 将文本转换为一定的格式返回
+ * \~chinese \param text 文本信息
+ * \~chinese \param size 显示文字窗口的大小
+ * \~chinese \param wordWrap 控制换行符出现的位置
+ * \~chinese \param mode 控制省略文本中省略号“…”的位置
+ * \~chinese \param font 字体大小
+ * \~chinese \param lineHeight 字符的行高
+ * \~chinese \param flags 控制字体的对齐方式
+ * \~chinese \return 转换好格式的文本
+ */
 QString PixmapLabel::elideText(const QString &text, const QSizeF &size,
                                QTextOption::WrapMode wordWrap, const QFont &font,
-                               Qt::TextElideMode mode, qreal lineHeight, qreal flags)
+                               Qt::TextElideMode mode, qreal lineHeight, int flags)
 {
     QTextLayout textLayout(text);
 

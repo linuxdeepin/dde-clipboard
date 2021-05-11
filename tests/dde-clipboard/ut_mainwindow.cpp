@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
+
+#define private public
 #include "mainwindow.h"
+#undef private
 
 #include <QTest>
 #include <QLabel>
@@ -24,50 +27,36 @@ public:
 
 TEST_F(TstMainWindow, coverage_Test)
 {
-    ASSERT_NE(window, nullptr);
+    MainWindow *w = new MainWindow;
+
+    w->Show();
+    QTest::qWait(AnimationTime * 3 / 2 + 10);
+
+    w->Hide();
+    QTest::qWait(AnimationTime * 3 / 2 + 10);
+
+    w->geometryChanged();
+    QTest::qWait(1);
+
+    delete w;
+    w = nullptr;
 }
 
-TEST_F(TstMainWindow, showAni_Test)
+TEST_F(TstMainWindow, animation_Test)
 {
     window->showAni();
+    QTest::qWait(AnimationTime * 3 / 2 + 10);
+    ASSERT_TRUE(window->isVisible());
 
-    QThread::msleep(450);
-
-    ASSERT_EQ(window->isVisible(), true);
-}
-
-TEST_F(TstMainWindow, hideAni_Test)
-{
     window->hideAni();
+    QTest::qWait(AnimationTime * 3 / 2 + 10);
+    ASSERT_FALSE(window->isVisible());
 
-    QThread::msleep(450);
-
-    ASSERT_EQ(window->isVisible(), false);
-}
-
-TEST_F(TstMainWindow, Toggle_Test)
-{
     bool visible = window->isVisible();
-
     window->Toggle();
-    QThread::msleep(450);
+    QTest::qWait(AnimationTime * 3 / 2 + 10);
     ASSERT_TRUE(!visible);
-}
 
-TEST_F(TstMainWindow, startLoader_Test)
-{
+    // 服务器上没有loader进程，所以不做校验
     window->startLoader();
-
-    const QByteArray processName = "dde-clipboardloader";
-
-    QProcess ps;
-    QStringList args;
-    args<<"-c";
-    args<<QString("ps -ef | grep %1").arg(QString::fromLatin1(processName));
-    ps.start("sh",args);
-    ps.waitForReadyRead();
-    QByteArray buf = ps.readAllStandardOutput();
-    ps.close();
-
-//    EXPECT_TRUE(buf.contains("/usr/bin/" + processName));
 }

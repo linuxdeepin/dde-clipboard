@@ -5,6 +5,8 @@
 
 #include <QFile>
 #include <QApplication>
+#include <QSignalSpy>
+#include <QTest>
 
 class TstItemWidget : public testing::Test
 {
@@ -83,14 +85,50 @@ TEST_F(TstItemWidget, textTest)
     ASSERT_TRUE(w.text().contains("1234567890abcdefg"));
 }
 
+TEST_F(TstItemWidget, fileTest)
+{
+
+
+}
+
 TEST_F(TstItemWidget, propertyTest)
 {
     ItemWidget w(m_imageData);
 
     QString text = "abcdefghijklmnopqrstuvwxyz";
     w.setText(text, QString::number(text.length()));
+
     w.setAlpha(120);
+    ASSERT_EQ(w.unHoverAlpha(), 120);
+    ASSERT_EQ(w.hoverAlpha(), 120);
+
     w.setOpacity(0.5);
+}
+
+TEST_F(TstItemWidget, focus_Test)
+{
+    ItemWidget w(m_textData);
+
+    QSignalSpy focusSpy(&w, &ItemWidget::hoverStateChanged);
+    QEvent focusInE(QEvent::FocusIn);
+    qApp->sendEvent(&w, &focusInE);
+    ASSERT_EQ(focusSpy.count(), 1);
+
+    QEvent focusOutE(QEvent::FocusOut);
+    qApp->sendEvent(&w, &focusOutE);
+    ASSERT_EQ(focusSpy.count(), 2);
+
+    ItemWidget fileWidget(m_fileData);
+    QEvent dbClickE(QEvent::MouseButtonDblClick);
+    qApp->sendEvent(&fileWidget, &dbClickE);
+
+    QSignalSpy closeFocusSpy(&w, &ItemWidget::closeHasFocus);
+    QKeyEvent changeFocusEvent(QKeyEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "change focus");
+    qApp->sendEvent(&fileWidget, &changeFocusEvent);
+    ASSERT_EQ(closeFocusSpy.count(), 0);
+
+    QKeyEvent returnEvent(QKeyEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+    qApp->sendEvent(&fileWidget, &returnEvent);
 }
 
 TEST_F(TstItemWidget, method_getCornerGeometryList_Test)

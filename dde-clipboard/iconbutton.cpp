@@ -18,12 +18,22 @@ IconButton::IconButton(QWidget *parent)
 
 }
 
+/*!
+ * \~chinese \name IconButton
+ * \~chinese \brief 创建一个带文字的按钮
+ * \~chinese \param text 按钮上需要显示的文字
+ */
 IconButton::IconButton(const QString &text, QWidget *parent)
     : IconButton(parent)
 {
     setText(text);
 }
 
+/*!
+ * \~chinese \name setText
+ * \~chinese \brief 设置按钮上显示的文字
+ * \~chinese \param text 按钮上需要显示的文字
+ */
 void IconButton::setText(const QString &text)
 {
     m_text = text;
@@ -62,6 +72,11 @@ void IconButton::paintEvent(QPaintEvent *event)
     }
 }
 
+/*!
+ * \~chinese \name setFocusState
+ * \~chinese \brief 控制按钮被选中时,设置m_hasFocus的状态
+ * \~chinese \param has 是否被选中
+ */
 void IconButton::setFocusState(bool has)
 {
     m_hasFocus = has;
@@ -69,9 +84,14 @@ void IconButton::setFocusState(bool has)
     update();
 }
 
+/*!
+ * \~chinese \name setBackOpacity
+ * \~chinese \brief 设置控件背景不透明度
+ * \~chinese \param opacity 不透明度,取值范围为(0-255)
+ */
 void IconButton::setBackOpacity(int opacity)
 {
-    if (opacity < 0 || m_opacity > 255)
+    if (opacity < 0 || opacity > 255)
         return;
 
     m_opacity = opacity;
@@ -81,6 +101,11 @@ void IconButton::setBackOpacity(int opacity)
     update();
 }
 
+/*!
+ * \~chinese \name setRadius
+ * \~chinese \brief 设置控件圆角半径
+ * \~chinese \param radius 半径,当输入的半径<=0时控件显示为直角
+ */
 void IconButton::setRadius(int radius)
 {
     m_radius = radius;

@@ -196,10 +196,10 @@ void MainWindow::initUI()
     QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
     titleLayout->setContentsMargins(20, 0, 10, 0);
 
-    QLabel *titleLabel = new QLabel(tr("Clipboard"));
+    QLabel *titleLabel = new QLabel(tr("Clipboard"), this);
     titleLabel->setFont(DFontSizeManager::instance()->t3());
 
-    m_clearButton = new IconButton(tr("Clear all"));
+    m_clearButton = new IconButton(tr("Clear all"), this);
     connect(m_clearButton, &IconButton::clicked, m_model, &ClipboardModel::clear);
 
     titleLayout->addWidget(titleLabel);

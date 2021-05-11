@@ -50,8 +50,10 @@ public:
     const QList<QUrl> &urls();                  // 文件链接
     const QDateTime &time();                    // 复制时间
     const QString &text();                      // 内容预览
-    void setDataEnabled(bool enable) {m_enable = enable;}
-    bool dataEnabled() {return m_enable;}
+
+    inline bool dataEnabled() { return m_enable; }
+    void setDataEnabled(bool enable) { m_enable = enable; }
+
     void setPixmap(const QPixmap &pixmap);
     QPixmap pixmap();                           // 缩略图
     const DataType &type() {return m_type;}
@@ -61,15 +63,8 @@ public:
     const QList<QPixmap> &FileIcons();          //IconDataList没有数据时再使用FileIcons
     const QList<FileIconData> &IconDataList();  //优先使用IconDataList
     const QSize &pixSize() const;               //返回m_variantImage中pixmap原始size
-    /*!
-     * \~chinese \name remove
-     * \~chinese \brief 将当前剪切块数据移除,调用此函数会发出ItemData::destroy的信号
-     */
+
     void remove();
-    /*!
-     * \~chinese \name popTop
-     * \~chinese \brief 将当前剪切块置顶,调用此函数会发出ItemData::reborn的信号
-     */
     void popTop();
 
 Q_SIGNALS:

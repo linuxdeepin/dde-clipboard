@@ -31,33 +31,6 @@ static inline QString textUriListLiteral() { return QStringLiteral("text/uri-lis
 static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
 static inline QString applicationXQtImageLiteral() { return QStringLiteral("application/x-qt-image"); }
 
-QByteArray Info2Buf(const ItemInfo &info)
-{
-    QByteArray buf;
-
-    QByteArray iconBuf;
-    if (info.m_formatMap.keys().contains("x-dfm-copied/file-icons")) {
-        iconBuf = info.m_formatMap["x-dfm-copied/file-icons"];
-    }
-
-    QDataStream stream(&buf, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_11);
-    stream << info.m_formatMap
-           << info.m_type
-           << info.m_urls
-           << info.m_hasImage;
-    if (info.m_hasImage) {
-        stream << info.m_variantImage;
-        stream << info.m_pixSize;
-    }
-    stream  << info.m_enable
-            << info.m_text
-            << info.m_createTime
-            << iconBuf;
-
-    return buf;
-
-}
 ItemInfo Buf2Info(const QByteArray &buf)
 {
     QByteArray tempBuf = buf;
@@ -222,11 +195,19 @@ const QList<FileIconData> &ItemData::IconDataList()
     return m_iconDataList;
 }
 
+/*!
+ * \~chinese \name remove
+ * \~chinese \brief 将当前剪切块数据移除,调用此函数会发出ItemData::destroy的信号
+ */
 void ItemData::remove()
 {
     emit destroy(this);
 }
 
+/*!
+ * \~chinese \name popTop
+ * \~chinese \brief 将当前剪切块置顶,调用此函数会发出ItemData::reborn的信号
+ */
 void ItemData::popTop()
 {
     emit reborn(this);

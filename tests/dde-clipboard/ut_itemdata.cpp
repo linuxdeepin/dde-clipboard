@@ -3,6 +3,7 @@
 #include "itemdata.h"
 
 #include <QDebug>
+#include <QSignalSpy>
 
 class TstItemData : public testing::Test
 {
@@ -25,5 +26,17 @@ public:
 
 TEST_F(TstItemData, coverageTest)
 {
+    data->setDataEnabled(true);
+    ASSERT_TRUE(data->dataEnabled());
+
     data->setDataEnabled(false);
+    ASSERT_FALSE(data->dataEnabled());
+
+    QSignalSpy destroySpy(data, &ItemData::destroy);
+    data->remove();
+    ASSERT_EQ(destroySpy.count(), 1);
+
+    QSignalSpy popSpy(data, &ItemData::reborn);
+    data->popTop();
+    ASSERT_EQ(popSpy.count(), 1);
 }

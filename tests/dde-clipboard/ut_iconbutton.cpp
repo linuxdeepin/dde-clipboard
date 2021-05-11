@@ -33,6 +33,46 @@ TEST_F(TstIconButton, coverageTest)
     btn->setRadius(10000);
 }
 
+TEST_F(TstIconButton, method_test)
+{
+    btn->setBackOpacity(128);
+    ASSERT_EQ(btn->backOpacity(), 128);
+    btn->setBackOpacity(-1);
+    ASSERT_EQ(btn->backOpacity(), 128);
+    btn->setBackOpacity(0);
+    ASSERT_EQ(btn->backOpacity(), 0);
+    btn->setBackOpacity(256);
+    ASSERT_EQ(btn->backOpacity(), 0);
+    btn->setBackOpacity(255);
+    ASSERT_EQ(btn->backOpacity(), 255);
+    QTest::qWait(10);
+
+    btn->setRadius(10);
+    ASSERT_EQ(btn->radius(), 10);
+
+    btn->setFocusState(true);
+    ASSERT_TRUE(btn->focusState());
+
+    btn->setFocusState(false);
+    ASSERT_FALSE(btn->focusState());
+    QTest::qWait(10);
+}
+
+TEST_F(TstIconButton, paintTest)
+{
+    // 触发paintEvent,看是否正常运行
+    btn->show();
+    QTest::qWait(10);
+
+    // 模拟enterEvent
+    QEvent enterE(QEvent::Enter);
+    qApp->sendEvent(btn, &enterE);
+
+    // 模拟leaveEvent
+    QEvent leaveE(QEvent::Leave);
+    qApp->sendEvent(btn, &leaveE);
+}
+
 TEST_F(TstIconButton, keyPressTest)
 {
     QSignalSpy spy(btn, SIGNAL(clicked()));

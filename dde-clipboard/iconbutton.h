@@ -13,36 +13,19 @@ class IconButton : public DWidget
     Q_OBJECT
 public:
     explicit IconButton(QWidget *parent = nullptr);
-    /*!
-     * \~chinese \name IconButton
-     * \~chinese \brief 创建一个带文字的按钮
-     * \~chinese \param text 按钮上需要显示的文字
-     */
+
     explicit IconButton(const QString &text, QWidget *parent = nullptr);
 
-    /*!
-     * \~chinese \name setText
-     * \~chinese \brief 设置按钮上显示的文字
-     * \~chinese \param text 按钮上需要显示的文字
-     */
+    inline const QString &text() { return m_text; }
     void setText(const QString &text);
-    /*!
-     * \~chinese \name setFocusState
-     * \~chinese \brief 控制按钮被选中时,设置m_hasFocus的状态
-     * \~chinese \param has 是否被选中
-     */
+
+    inline bool focusState() { return m_hasFocus; }
     void setFocusState(bool has);
-    /*!
-     * \~chinese \name setBackOpacity
-     * \~chinese \brief 设置控件背景不透明度
-     * \~chinese \param opacity 不透明度,取值范围为(0-255)
-     */
+
+    inline int backOpacity() { return m_opacity; }
     void setBackOpacity(int opacity);
-    /*!
-     * \~chinese \name setRadius
-     * \~chinese \brief 设置控件圆角半径
-     * \~chinese \param radius 半径,当输入的半径<=0时控件显示为直角
-     */
+
+    inline int radius() { return m_radius; }
     void setRadius(int radius);
 
 Q_SIGNALS:
