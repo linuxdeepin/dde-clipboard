@@ -29,3 +29,6 @@ cd ..
 genhtml -o $REPORT_DIR $BUILD_DIR/coverage.info
 #rm -rf $BUILD_DIR
 #rm -rf ../$BUILD_DIR
+
+mv asan_clipboard.log* asan_dde-clipboard.log
+mv asan_loader.log* asan_dde-clipboardloader.log
