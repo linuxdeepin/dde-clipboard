@@ -8,19 +8,21 @@ cd ../
 rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
-qmake ../dde-clipboard/
+qmake CONFIG+=debug ../dde-clipboard/
 make
-qmake ../dde-clipboardloader/
+qmake CONFIG+=debug ../dde-clipboardloader/
 make
 
 cd ../tests/
 rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
-qmake ../dde-clipboard/
+qmake CONFIG+=debug ../dde-clipboard/
 make check
-qmake ../dde-clipboardloader/
+mv asan_loader.log* asan_dde-clipboard.log
+qmake CONFIG+=debug ../dde-clipboardloader/
 make check
+mv asan_loader.log* asan_dde-clipboardloader.log
 
 lcov -d ./ -c -o coverage_all.info
 #lcov --extract coverage_all.info $EXTRACT_ARGS --output-file coverage.info
@@ -29,6 +31,3 @@ cd ..
 genhtml -o $REPORT_DIR $BUILD_DIR/coverage.info
 #rm -rf $BUILD_DIR
 #rm -rf ../$BUILD_DIR
-
-mv asan_clipboard.log* asan_dde-clipboard.log
-mv asan_loader.log* asan_dde-clipboardloader.log
