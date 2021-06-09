@@ -279,11 +279,11 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
                 str.replace(str.size() - 3, 3, "...");
             }
             if(rectIndex==(maxLineCount-1)){
-                QString str = pair.first.trimmed();
+                QString lastStr = pair.first.trimmed();
                 pair = getNextValidString(labelTexts, lineFrom);
                 lineFrom = pair.second;
-                str += pair.first.trimmed();
-                painter.drawText(textRect,fontMetrics().elidedText(str,Qt::ElideRight,width()-2),option);
+                lastStr += pair.first.trimmed();
+                painter.drawText(textRect,fontMetrics().elidedText(lastStr,Qt::ElideRight,width()-2),option);
             }
             else {
                 painter.drawText(textRect, pair.first.trimmed(), option);

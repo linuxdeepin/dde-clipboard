@@ -7,14 +7,6 @@
 
 class TstConstants : public testing::Test
 {
-public:
-    void SetUp() override
-    {
-    }
-
-    void TearDown() override
-    {
-    }
 };
 
 TEST_F(TstConstants, coverageTest)

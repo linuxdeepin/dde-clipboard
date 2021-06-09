@@ -59,7 +59,7 @@ class MainWindow : public DBlurEffectWidget
     Q_PROPERTY(int width READ getWidth WRITE setFixedWidth)
     Q_PROPERTY(int x READ getX WRITE setX)
 public:
-    MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
 public Q_SLOTS:

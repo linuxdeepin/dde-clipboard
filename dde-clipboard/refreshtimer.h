@@ -25,10 +25,9 @@ private:
 
     void start()
     {
-        timer.start(900);
-        connect(&timer, &QTimer::timeout, [ = ] {
-            if (QDateTime::currentDateTime().toString("hhmmss") == "000000")
-            {
+        m_timer.start(900);
+        connect(&m_timer, &QTimer::timeout, [ = ] {
+            if (QDateTime::currentDateTime().toString("hhmmss") == "000000") {
                 Q_EMIT forceRefresh();
             }
         });
@@ -38,7 +37,7 @@ Q_SIGNALS:
     void forceRefresh();
 
 private:
-    QTimer timer;
+    QTimer m_timer;
 };
 
 #endif // REFRESHTIMER_H

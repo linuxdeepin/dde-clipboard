@@ -395,7 +395,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
                     }
                 }
                 if (!getByUrl) {
-                    qSort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
+                    std::sort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
                         return pix1.size().width() < pix2.size().width();
                     });
                     setFileIcons(pixmapList);
@@ -482,11 +482,16 @@ QList<QRectF> ItemWidget::getCornerGeometryList(const QRectF &baseRect, const QS
     int offset = int(baseRect.width() / 8);
     const QSizeF &offset_size = cornerSize / 2;
 
-    list << QRectF(QPointF(std::floor(baseRect.right() - offset - offset_size.width()),
-                           std::floor(baseRect.bottom() - offset - offset_size.height())), cornerSize);
-    list << QRectF(QPointF(std::floor(baseRect.left() + offset - offset_size.width()), std::floor(list.first().top())), cornerSize);
-    list << QRectF(QPointF(std::floor(list.at(1).left()), std::floor(baseRect.top() + offset - offset_size.height())), cornerSize);
-    list << QRectF(QPointF(std::floor(list.first().left()), std::floor(list.at(2).top())), cornerSize);
+    QRectF r1 = QRectF(QPointF(std::floor(baseRect.right() - offset - offset_size.width()),
+                                  std::floor(baseRect.bottom() - offset - offset_size.height())), cornerSize);
+    QRectF r2 = QRectF(QPointF(std::floor(baseRect.left() + offset - offset_size.width()), std::floor(r1.top())), cornerSize);
+    QRectF r3 = QRectF(QPointF(std::floor(r2.left()), std::floor(baseRect.top() + offset - offset_size.height())), cornerSize);
+    QRectF r4 = QRectF(QPointF(std::floor(r1.left()), std::floor(r3.top())), cornerSize);
+
+    list << r1;
+    list << r2;
+    list << r3;
+    list << r4;
 
     return list;
 }

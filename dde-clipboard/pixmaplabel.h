@@ -35,7 +35,7 @@ class PixmapLabel : public DLabel
 {
 public:
     PixmapLabel(const QList<QPixmap> &list, QWidget *parent = nullptr);
-    PixmapLabel(QWidget *parent = nullptr);
+    explicit PixmapLabel(QWidget *parent = nullptr);
 
     /*!
      * \~chinese \name text

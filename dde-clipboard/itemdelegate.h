@@ -32,7 +32,7 @@
 class ItemDelegate : public QStyledItemDelegate
 {
 public:
-    ItemDelegate(QObject *parent = nullptr);
+    explicit ItemDelegate(QObject *parent = nullptr);
 
     /*!
      * \~chinese \name paint
