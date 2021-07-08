@@ -18,10 +18,10 @@ rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 qmake CONFIG+=debug ../dde-clipboard/
-make check
+TESTARGS="--gtest_output=xml:dde_test_report_clipboard.xml"  make check -j$(nproc)
 mv asan_loader.log* asan_dde-clipboard.log
 qmake CONFIG+=debug ../dde-clipboardloader/
-make check
+TESTARGS="--gtest_output=xml:dde_test_report_clipboardloader.xml"  make check -j$(nproc)
 mv asan_loader.log* asan_dde-clipboardloader.log
 
 lcov -d ./ -c -o coverage_all.info
