@@ -139,6 +139,9 @@ void ClipboardLoader::doWork()
 
     const QMimeData *mimeData = m_board->mimeData();
 
+    if (mimeData->formats().isEmpty())
+        return;
+
     // 适配厂商云桌面粘贴问题
     if (mimeData->formats().contains("uos/remote-copy")) {
         qDebug() << "FROM_SHENXINFU_CLIPBOARD_MANAGER";
