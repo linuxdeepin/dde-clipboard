@@ -105,6 +105,8 @@ public Q_SLOTS:
      */
     void onHoverStateChanged(bool hover);
 
+    void onThemeTypeChanged();
+
 private Q_SLOTS:
     /*!
      * \~chinese \name onRefreshTime

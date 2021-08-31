@@ -210,6 +210,11 @@ void ItemWidget::onHoverStateChanged(bool hover)
     update();
 }
 
+void ItemWidget::onThemeTypeChanged()
+{
+    setThumnail(m_pixmap);
+}
+
 void ItemWidget::onRefreshTime()
 {
     m_timeLabel->setText(CreateTimeString(m_createTime));
@@ -442,10 +447,6 @@ void ItemWidget::initConnect()
     connect(m_closeButton, &IconButton::clicked, this, &ItemWidget::onClose);
     connect(this, &ItemWidget::closeHasFocus, this, [&](bool has) {
         m_closeButton->setFocusState(has);
-    });
-
-    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
-        setThumnail(m_pixmap);
     });
 }
 

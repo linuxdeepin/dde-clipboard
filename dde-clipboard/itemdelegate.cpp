@@ -29,6 +29,8 @@
 #include <QKeyEvent>
 #include <QApplication>
 
+#include <DGuiApplicationHelper>
+
 DWIDGET_USE_NAMESPACE
 
 ItemDelegate::ItemDelegate(QObject *parent)
@@ -50,6 +52,7 @@ QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem 
     Q_UNUSED(option);
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
     ItemWidget *w = new ItemWidget(data, parent);
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, w, &ItemWidget::onThemeTypeChanged);
     w->installEventFilter(parent);
     return w;
 }
