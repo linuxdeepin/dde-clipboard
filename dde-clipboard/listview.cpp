@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "itemdata.h"
 #include "itemwidget.h"
+#include "clipboardmodel.h"
 
 #include <QEvent>
 #include <QKeyEvent>
@@ -10,6 +11,8 @@
 #include <QTimer>
 #include <QPropertyAnimation>
 #include <QScroller>
+#include <QDrag>
+#include <QMimeData>
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
@@ -141,4 +144,33 @@ bool ListView::CreateAnimation(int idx)
     ani->setDuration(AnimationTime);
     ani->start(QPropertyAnimation::DeleteWhenStopped);
     return true;
+}
+
+void ListView::mousePressEvent(QMouseEvent *event)
+{
+    QListView::mousePressEvent(event);
+
+    QModelIndex dataIndex = currentIndex();
+    if (!dataIndex.isValid())
+        return;
+
+    ClipboardModel *model = static_cast<ClipboardModel *>(this->model());
+    ItemData *data = model->data().at(dataIndex.row());
+
+    QDrag *drag = new QDrag(this);
+    QMimeData *mimeData = new QMimeData;
+
+    QString keyStr;
+    QByteArray byteArray;
+
+    QMap<QString, QByteArray>::const_iterator itor = data->formatMap().constBegin();
+    while (itor != data->formatMap().constEnd()) {
+          keyStr = itor.key();
+          byteArray = itor.value();
+          mimeData->setData(keyStr, byteArray);
+          itor++;
+      }
+
+    drag->setMimeData(mimeData);
+    drag->exec(Qt::CopyAction);
 }

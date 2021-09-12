@@ -349,4 +349,3 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     Q_UNUSED(event);
     return;
 }
-

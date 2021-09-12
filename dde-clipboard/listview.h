@@ -36,6 +36,9 @@ public:
 
 Q_SIGNALS:
     void extract(const QModelIndex &index);
+
+protected:
+    virtual void mousePressEvent(QMouseEvent *event) override;
 };
 
 #endif // LISTVIEW_H
