@@ -142,3 +142,12 @@ TEST_F(TstListView, uiTest)
     //    QThread::msleep(300 + 10);
     //    ASSERT_EQ(model->data().size(), 2);
 }
+
+TEST_F(TstListView, mousePressTest)
+{
+    list->show();
+    QTest::qWait(1);
+
+    list->setCurrentIndex(QModelIndex());
+    QTest::mousePress(list, Qt::LeftButton, Qt::NoModifier);
+}
