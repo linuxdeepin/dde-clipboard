@@ -173,5 +173,6 @@ protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *event) override;
     virtual void focusInEvent(QFocusEvent *event) override;
     virtual void focusOutEvent(QFocusEvent *event) override;
+    virtual bool eventFilter(QObject *watcher, QEvent *event) override;
 };
 #endif // ITEMBASEWIDGET_H

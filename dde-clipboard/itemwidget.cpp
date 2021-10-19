@@ -46,7 +46,6 @@
 #include <QGraphicsOpacityEffect>
 
 #include <DFontSizeManager>
-#include <DGuiApplicationHelper>
 
 #include "dgiofile.h"
 #include "dgiofileinfo.h"
@@ -74,6 +73,10 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     initUI();
     initData(m_data);
     initConnect();
+
+    qApp->installEventFilter(this);
+
+    m_refreshTimer->start();
 }
 
 const QString &ItemWidget::text()
@@ -436,17 +439,10 @@ void ItemWidget::initData(QPointer<ItemData> data)
 void ItemWidget::initConnect()
 {
     connect(m_refreshTimer, &QTimer::timeout, this, &ItemWidget::onRefreshTime);
-    m_refreshTimer->start();
     connect(RefreshTimer::instance(), &RefreshTimer::forceRefresh, this, &ItemWidget::onRefreshTime);
     connect(this, &ItemWidget::hoverStateChanged, this, &ItemWidget::onHoverStateChanged);
     connect(m_closeButton, &IconButton::clicked, this, &ItemWidget::onClose);
-    connect(this, &ItemWidget::closeHasFocus, this, [&](bool has) {
-        m_closeButton->setFocusState(has);
-    });
-
-    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [ = ] {
-        setThumnail(m_pixmap);
-    });
+    connect(this, &ItemWidget::closeHasFocus, m_closeButton, &IconButton::setFocusState);
 }
 
 QString ItemWidget::CreateTimeString(const QDateTime &time)
@@ -708,4 +704,13 @@ void ItemWidget::focusOutEvent(QFocusEvent *event)
     }
 
     return DWidget::focusOutEvent(event);
+}
+
+bool ItemWidget::eventFilter(QObject *watcher, QEvent *event)
+{
+    if (watcher == qApp && event->type() == QEvent::ThemeChange) {
+        setThumnail(m_pixmap);
+    }
+
+    return false;
 }
