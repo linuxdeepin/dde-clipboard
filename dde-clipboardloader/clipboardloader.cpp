@@ -203,7 +203,7 @@ void ClipboardLoader::doWork()
             return;
         }
         info.m_formatMap.insert("text/plain", m_board->text().toUtf8());
-        if (info.m_text.isEmpty())
+        if (info.m_text.isEmpty() || m_board->text().isEmpty())
             return;
 
         info.m_type = Text;
