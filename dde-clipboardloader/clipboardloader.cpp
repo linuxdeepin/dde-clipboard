@@ -137,6 +137,10 @@ void ClipboardLoader::doWork()
     ItemInfo info;
     info.m_variantImage = 0;
 
+    // 快速复制时mimedata很可能是无效的(一般表现为获取的数据为空), 下面是qt的说明
+    // The pointer returned might become invalidated when the contents
+    // of the clipboard changes; either by calling one of the setter functions
+    // or externally by the system clipboard changing.
     const QMimeData *mimeData = m_board->mimeData();
 
     if (mimeData->formats().isEmpty())
@@ -164,9 +168,13 @@ void ClipboardLoader::doWork()
     }
 
     //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
-    const QPixmap &srcPix = m_board->pixmap();
     if (mimeData->hasImage()) {
+        const QPixmap &srcPix = m_board->pixmap();
+        if (srcPix.isNull())
+            return;
+
         info.m_pixSize = srcPix.size();
+        m_lastPix = srcPix;
         if (!cachePixmap(srcPix, info)) {
             info.m_variantImage = srcPix;
         }
@@ -186,13 +194,18 @@ void ClipboardLoader::doWork()
         info.m_type = Image;
     } else if (mimeData->hasUrls()) {
         info.m_urls = mimeData->urls();
-
-        if (!info.m_urls.count())
+        if (info.m_urls.isEmpty())
             return;
+
         //文件类型吧整个formats信息都拿出来，里面包含了文件的图标，以及文件的url数据等。
-        for (int i = 0; i < mimeData->formats().size(); ++i) {
-            info.m_formatMap.insert(mimeData->formats()[i], mimeData->data(mimeData->formats()[i]));
+        for (const QString &format : mimeData->formats()) {
+            const QByteArray &data = mimeData->data(format);
+            if (!data.isEmpty())
+                info.m_formatMap.insert(format, data);
         }
+        if (info.m_formatMap.isEmpty())
+            return;
+
         info.m_type = File;
     } else {
         if (mimeData->hasText()) {
@@ -202,17 +215,17 @@ void ClipboardLoader::doWork()
         } else {
             return;
         }
-        info.m_formatMap.insert("text/plain", m_board->text().toUtf8());
-        if (info.m_text.isEmpty() || m_board->text().isEmpty())
+        if (info.m_text.isEmpty())
             return;
 
+        info.m_formatMap.insert("text/plain", info.m_text.toUtf8());
         info.m_type = Text;
     }
+
     info.m_createTime = QDateTime::currentDateTime();
     info.m_enable = true;
 
     m_lastTimeStamp = currTimeStamp;
-    m_lastPix = srcPix;
 
     QByteArray buf;
     buf = Info2Buf(info);
