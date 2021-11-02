@@ -27,7 +27,8 @@
 #include <QMimeData>
 #include <QDir>
 
-const QString PixCacheDir = "/.clipboard-pix";  //图片缓存目录名
+const QString PixCacheDir = "/.clipboard-pix";  // 图片缓存目录名
+const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
 
 QByteArray Info2Buf(const ItemInfo &info)
 {
@@ -215,10 +216,12 @@ void ClipboardLoader::doWork()
         } else {
             return;
         }
-        if (info.m_text.isEmpty())
+
+        const QByteArray &textByteArray = info.m_text.toUtf8();
+        if (info.m_text.isEmpty() || textByteArray.size() > MAX_BETYARRAY_SIZE)
             return;
 
-        info.m_formatMap.insert("text/plain", info.m_text.toUtf8());
+        info.m_formatMap.insert("text/plain", std::move(textByteArray));
         info.m_type = Text;
     }
 
