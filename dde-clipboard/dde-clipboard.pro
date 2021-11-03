@@ -13,8 +13,9 @@ CONFIG += c++11 link_pkgconfig
 PKGCONFIG += dtkwidget dtkgui gio-qt dframeworkdbus
 
 # 增加安全编译参数
-QMAKE_CFLAGS += -fstack-protector-strong -D_FORTITY_SOURCE=1 -z noexecstack -pie -fPIC -z lazy
-QMAKE_CXXFLAGS += -fstack-protector-strong -D_FORTITY_SOURCE=1 -z noexecstack -pie -fPIC -z lazy
+QMAKE_LFLAGS += -z noexecstack -pie -z relro -z now
+QMAKE_CFLAGS += -fstack-protector-all -D_FORTITY_SOURCE=1
+QMAKE_CXXFLAGS += -fstack-protector-all -D_FORTITY_SOURCE=1
 
 DBUS_ADAPTORS += ./com.deepin.dde.Clipboard.xml
 
