@@ -333,14 +333,13 @@ void MainWindow::adjustPosition()
 
 QRect MainWindow::getDisplayScreen()
 {
-    QRect dockRect = m_dockInter->geometry();
-    for (const auto& monitorPath : m_displayInter->monitors()) {
-        DisplayMonitor monitor("com.deepin.daemon.Display", monitorPath.path(), QDBusConnection::sessionBus());
-        QRect screenRect(monitor.x(), monitor.y(), monitor.width(), monitor.height());
-        if (screenRect.contains(dockRect))
-            return screenRect;
+    QPoint dockCenterPoint = QRect(m_daemonDockInter->frontendWindowRect()).center() / qApp->devicePixelRatio();
+    for (auto s : qApp->screens()) {
+        if (s->geometry().contains(dockCenterPoint)) {
+            return s->geometry();
+        }
     }
-    return m_displayInter->primaryRect();
+    return qApp->primaryScreen() ? qApp->primaryScreen()->geometry() : QRect();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
