@@ -333,7 +333,7 @@ void MainWindow::adjustPosition()
 
 QRect MainWindow::getDisplayScreen()
 {
-    QPoint dockCenterPoint = QRect(m_daemonDockInter->frontendWindowRect()).center() / qApp->devicePixelRatio();
+    QPoint dockCenterPoint = QRect(m_dockInter->geometry()).center() / qApp->devicePixelRatio();
     for (auto s : qApp->screens()) {
         if (s->geometry().contains(dockCenterPoint)) {
             return s->geometry();
