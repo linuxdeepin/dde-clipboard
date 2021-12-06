@@ -20,6 +20,11 @@
  */
 #ifndef WORKER_H
 #define WORKER_H
+
+#include "constants.h"
+#include "waylandcopyclient.h"
+#include "dbus/iteminfo.h"
+
 #include <QObject>
 #include <QClipboard>
 #include <QDBusMetaType>
@@ -30,28 +35,6 @@
 #include <QDBusArgument>
 #include <QDateTime>
 #include <QUrl>
-
-#include "constants.h"
-
-enum DataType {
-    Unknown,
-    Text,
-    Image,
-    File
-};
-
-struct ItemInfo {
-    QMap<QString, QByteArray> m_formatMap;
-    DataType m_type = Unknown;
-    QList<QUrl> m_urls;
-    bool m_hasImage = false;
-    QVariant m_variantImage;
-    QSize m_pixSize;
-    bool m_enable;
-    QString m_text;
-    QDateTime m_createTime;
-    QList<FileIconData> m_iconDataList;
-};
 
 class ClipboardLoader : public QObject
 {
@@ -69,17 +52,18 @@ public Q_SLOTS:
     void dataReborned(const QByteArray &buf);
 
 private Q_SLOTS:
-    void doWork();
+    void doWork(int protocolType);
+
+Q_SIGNALS:
+    void dataComing(const QByteArray &buf);
 
 private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
     QPixmap m_lastPix;
+    WaylandCopyClient *m_waylandCopyClient;
 
     static QString m_pixPath;
-
-Q_SIGNALS:
-    void dataComing(const QByteArray &buf);
 };
 
 #endif // WORKER_H

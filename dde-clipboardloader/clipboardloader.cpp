@@ -29,6 +29,8 @@
 
 const QString PixCacheDir = "/.clipboard-pix";  // 图片缓存目录名
 const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
+const int X11_PROTOCOL = 0;                     // x11协议
+const int WAYLAND_PROTOCOL = 1;                 // wayland协议
 
 QByteArray Info2Buf(const ItemInfo &info)
 {
@@ -98,8 +100,20 @@ QString ClipboardLoader::m_pixPath;
 
 ClipboardLoader::ClipboardLoader()
     : m_board(qApp->clipboard())
+    , m_waylandCopyClient(nullptr)
 {
-    connect(m_board, &QClipboard::dataChanged, this, &ClipboardLoader::doWork);
+    if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
+        m_waylandCopyClient = &WaylandCopyClient::ref();
+        m_waylandCopyClient->init();
+
+        connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
+            this->doWork(WAYLAND_PROTOCOL);
+        });
+    }
+
+    connect(m_board, &QClipboard::dataChanged, this, [this] {
+        this->doWork(X11_PROTOCOL);
+    });
 
     QDir dir(QDir::homePath() + PixCacheDir);
     if (dir.exists() && dir.removeRecursively()) {
@@ -111,12 +125,9 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
 {
     ItemInfo info;
     info.m_variantImage = 0;
-
     info = Buf2Info(buf);
 
-    // set
     QMimeData *mimeData = new QMimeData;
-
     QMapIterator<QString, QByteArray> it(info.m_formatMap);
     while (it.hasNext()) {
         it.next();
@@ -130,10 +141,13 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
     default:
         break;
     }
+
     m_board->setMimeData(mimeData);
+    if (m_waylandCopyClient)
+        m_waylandCopyClient->setItmeInfo(info);
 }
 
-void ClipboardLoader::doWork()
+void ClipboardLoader::doWork(int protocolType)
 {
     ItemInfo info;
     info.m_variantImage = 0;
@@ -142,9 +156,8 @@ void ClipboardLoader::doWork()
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
     // or externally by the system clipboard changing.
-    const QMimeData *mimeData = m_board->mimeData();
-
-    if (mimeData->formats().isEmpty())
+    const QMimeData *mimeData= protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
+    if (!mimeData || mimeData->formats().isEmpty())
         return;
 
     // 适配厂商云桌面粘贴问题
@@ -170,7 +183,7 @@ void ClipboardLoader::doWork()
 
     //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
     if (mimeData->hasImage()) {
-        const QPixmap &srcPix = m_board->pixmap();
+        const QPixmap &srcPix = qvariant_cast<QPixmap>(mimeData->imageData()) ;
         if (srcPix.isNull())
             return;
 

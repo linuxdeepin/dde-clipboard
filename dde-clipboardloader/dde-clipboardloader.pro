@@ -1,4 +1,7 @@
-QT += gui widgets dbus
+QT += gui widgets dbus core
+
+LIBS     += -lKF5WaylandClient
+INCLUDEPATH += /usr/include/KF5
 
 TARGET = dde-clipboardloader
 TEMPLATE = app
