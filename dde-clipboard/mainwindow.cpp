@@ -19,6 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "mainwindow.h"
+#include "displaymanager.h"
 #include "constants.h"
 
 #include <QLabel>
@@ -245,6 +246,7 @@ void MainWindow::initAni()
 
 void MainWindow::initConnect()
 {
+    connect(DisplayManager::instance(), &DisplayManager::screenInfoChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
     connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
 
     connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
@@ -282,13 +284,12 @@ void MainWindow::adjustPosition()
 {
     // 屏幕尺寸
     QRect rect = getDisplayScreen();
-    qreal scale = qApp->primaryScreen()->devicePixelRatio();
     rect.setWidth(WindowWidth);
-    rect.setHeight(int(std::round(qreal(rect.height()) / scale)));
+    rect.setHeight(int(std::round(qreal(rect.height()))));
 
     QRect dockRect = m_dockInter->geometry();
-    dockRect.setWidth(int(std::round(qreal(dockRect.width()) / scale)));
-    dockRect.setHeight(int(std::round(qreal(dockRect.height()) / scale)));
+    dockRect.setWidth(int(std::round(qreal(dockRect.width()))));
+    dockRect.setHeight(int(std::round(qreal(dockRect.height()))));
 
     // 初始化剪切板位置
     switch (m_daemonDockInter->position()) {
