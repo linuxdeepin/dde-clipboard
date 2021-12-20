@@ -1,4 +1,4 @@
-INCLUDEPATH += dbus
+INCLUDEPATH += dbus displaymanager
 
 SOURCES += \
     $$PWD/dbus/clipboardloaderinterface.cpp \
@@ -10,7 +10,8 @@ SOURCES += \
     $$PWD/itemwidget.cpp \
     $$PWD/listview.cpp \
     $$PWD/mainwindow.cpp \
-    $$PWD/pixmaplabel.cpp
+    $$PWD/pixmaplabel.cpp \
+    $$PWD/displaymanager/displaymanager.cpp
 
 HEADERS += \
     $$PWD/dbus/clipboardloaderinterface.h \
@@ -25,4 +26,5 @@ HEADERS += \
     $$PWD/listview.h \
     $$PWD/mainwindow.h \
     $$PWD/pixmaplabel.h \
-    $$PWD/refreshtimer.h
+    $$PWD/refreshtimer.h \
+    $$PWD/displaymanager/displaymanager.h
