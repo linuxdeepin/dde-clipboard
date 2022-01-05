@@ -105,15 +105,6 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
 
     // dont paint
     layout->engine()->ignoreBidi = true;
-
-    auto naturalTextRect = [&](const QRectF rect) {
-        QRectF new_rect = rect;
-
-        new_rect.setHeight(lineHeight);
-
-        return new_rect;
-    };
-
     layout->beginLayout();
 
     QTextLine line = layout->createLine();
@@ -141,9 +132,6 @@ void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption
         }
 
         line.setPosition(offset);
-
-        const QRectF rect = naturalTextRect(line.naturalTextRect());
-
         offset.setY(offset.y() + lineHeight);
 
         if (lines) {

@@ -129,12 +129,10 @@ void MainWindow::hideAni()
 
 void MainWindow::startLoader()
 {
-    QProcess *process = new QProcess(this);
-    process->startDetached("dde-clipboardloader");
-    process->waitForStarted();
-    process->waitForFinished();
-    process->deleteLater();
-    process = Q_NULLPTR;
+    QProcess process;
+    process.startDetached("dde-clipboardloader");
+    process.waitForStarted();
+    process.waitForFinished();
 }
 
 void MainWindow::Show()

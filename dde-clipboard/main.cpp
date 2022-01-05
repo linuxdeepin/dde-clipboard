@@ -33,8 +33,8 @@ DCORE_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
-    DGuiApplicationHelper::setUseInactiveColorGroup(false);
-    DGuiApplicationHelper::setColorCompositingEnabled(true);
+    DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
+    DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::ColorCompositing, true);
 
     DApplication *app = DApplication::globalApplication(argc, argv);
 

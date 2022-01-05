@@ -168,7 +168,7 @@ void ListView::mousePressEvent(QMouseEvent *event)
           keyStr = itor.key();
           byteArray = itor.value();
           mimeData->setData(keyStr, byteArray);
-          itor++;
+          ++itor;
       }
 
     drag->setMimeData(mimeData);
