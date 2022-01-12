@@ -292,14 +292,14 @@ void MainWindow::adjustPosition()
     // 初始化剪切板位置
     switch (m_daemonDockInter->position()) {
     case DOCK_TOP:
-        rect.moveTop(dockRect.height());
+        rect.moveTop(rect.top() + dockRect.height());
         rect.setHeight(rect.height() - dockRect.height());
         break;
     case DOCK_BOTTOM:
         rect.setHeight(rect.height() - dockRect.height());
         break;
     case DOCK_LEFT:
-        rect.moveLeft(dockRect.width());
+        rect.moveLeft(rect.left() + dockRect.width());
         break;
     default:;
     }
