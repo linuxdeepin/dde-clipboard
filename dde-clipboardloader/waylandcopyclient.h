@@ -21,7 +21,7 @@
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
 
-#include "dbus/iteminfo.h"
+#include "iteminfo.h"
 
 #include <QMimeData>
 #include <QPointer>

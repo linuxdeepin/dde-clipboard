@@ -23,7 +23,7 @@
 
 #include "constants.h"
 #include "waylandcopyclient.h"
-#include "dbus/iteminfo.h"
+#include "iteminfo.h"
 
 #include <QObject>
 #include <QClipboard>

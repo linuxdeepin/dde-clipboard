@@ -4,12 +4,9 @@ Priority: optional
 Maintainer: Deepin Sysdev <sysdev@deepin.com>
 Build-Depends: debhelper (>= 8.0.0),
  pkg-config,
- libqt5svg5-dev,
- libdtkcore-dev,
+ cmake,
  libdtkwidget-dev,
- libdtkgui-dev,
  qttools5-dev-tools,
- deepin-desktop-base | deepin-desktop-server | deepin-desktop-device,
  libdtkcore5-bin,
  qtbase5-private-dev,
  libgio-qt-dev,

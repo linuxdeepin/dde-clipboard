@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     int ret = RUN_ALL_TESTS();
     qDebug() << "end dde-clipboard test cases ..............";
 #ifdef QT_DEBUG
-    __sanitizer_set_report_path("asan_loader.log");
+    __sanitizer_set_report_path("asan_board.log");
 #endif
     return ret;
 }
