@@ -188,7 +188,6 @@ void ClipboardLoader::doWork(int protocolType)
             return;
 
         info.m_pixSize = srcPix.size();
-        m_lastPix = srcPix;
         if (!cachePixmap(srcPix, info)) {
             info.m_variantImage = srcPix;
         }
@@ -203,6 +202,7 @@ void ClipboardLoader::doWork(int protocolType)
             qDebug() << "system repeat image";
             return;
         }
+        m_lastPix = srcPix;
 
         info.m_hasImage = true;
         info.m_type = Image;
