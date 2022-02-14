@@ -144,7 +144,7 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
 
     m_board->setMimeData(mimeData);
     if (m_waylandCopyClient)
-        m_waylandCopyClient->setItmeInfo(info);
+        m_waylandCopyClient->setMimeData(mimeData);
 }
 
 void ClipboardLoader::doWork(int protocolType)
@@ -156,7 +156,7 @@ void ClipboardLoader::doWork(int protocolType)
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
     // or externally by the system clipboard changing.
-    const QMimeData *mimeData= protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
+    const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
     if (!mimeData || mimeData->formats().isEmpty())
         return;
 
@@ -192,13 +192,14 @@ void ClipboardLoader::doWork(int protocolType)
             info.m_variantImage = srcPix;
         }
 
-        info.m_formatMap.insert("application/x-qt-image", info.m_variantImage.toByteArray());
+        info.m_formatMap.insert(ApplicationXQtImageLiteral, info.m_variantImage.toByteArray());
         info.m_formatMap.insert("TIMESTAMP", currTimeStamp);
         if (info.m_variantImage.isNull())
             return;
 
         // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
-        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()) {
+        // wayland下时间戳可能为空
+        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage() && !qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
             qDebug() << "system repeat image";
             return;
         }
@@ -234,7 +235,7 @@ void ClipboardLoader::doWork(int protocolType)
         if (info.m_text.isEmpty() || textByteArray.size() > MAX_BETYARRAY_SIZE)
             return;
 
-        info.m_formatMap.insert("text/plain", std::move(textByteArray));
+        info.m_formatMap.insert(TextPlainLiteral, std::move(textByteArray));
         info.m_type = Text;
     }
 

@@ -67,8 +67,9 @@ public:
     virtual ~WaylandCopyClient();
 
     void init();
-    QMimeData *mimeData();
-    void setItmeInfo(const ItemInfo& info);
+    const QMimeData *mimeData();
+    void setMimeData(QMimeData *mimeData);
+    void sendOffer();
 
 private:
     void setupRegistry(Registry *registry);

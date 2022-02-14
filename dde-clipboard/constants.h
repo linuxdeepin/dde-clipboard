@@ -53,6 +53,12 @@ const static int AnimationTime = 300;           //ms
 static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
 static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";
 
+static const QString TextUriListLiteral QStringLiteral("text/uri-list");
+static const QString TextHtmlLiteral QStringLiteral("text/html");
+static const QString TextPlainLiteral QStringLiteral("text/plain");
+static const QString ApplicationXColorLiteral QStringLiteral("application/x-color");
+static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
+
 typedef struct {
     QStringList cornerIconList;
     QIcon fileIcon;

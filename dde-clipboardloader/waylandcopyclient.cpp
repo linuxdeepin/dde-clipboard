@@ -19,11 +19,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "waylandcopyclient.h"
+#include "constants.h"
 
 #include <QEventLoop>
 #include <QMimeData>
 #include <QImageReader>
 #include <QtConcurrent/QtConcurrent>
+#include <QImageWriter>
+#include <QMutexLocker>
+#include <QMutex>
 
 #include <KF5/KWayland/Client/connection_thread.h>
 #include <KF5/KWayland/Client/event_queue.h>
@@ -54,6 +58,42 @@ static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
 static inline QStringList imageReadMimeFormats()
 {
     return imageMimeFormats(QImageReader::supportedImageFormats());
+}
+
+static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
+{
+    QByteArray content;
+    if (mimeType == QLatin1String("text/plain")) {
+        content = mimeData->text().toUtf8();
+    } else if (mimeData->hasImage()
+               && (mimeType == QLatin1String("application/x-qt-image")
+                   || mimeType.startsWith(QLatin1String("image/")))) {
+        QImage image = qvariant_cast<QImage>(mimeData->imageData());
+        if (!image.isNull()) {
+            QBuffer buf;
+            buf.open(QIODevice::ReadWrite);
+            QByteArray fmt = "BMP";
+            if (mimeType.startsWith(QLatin1String("image/"))) {
+                QByteArray imgFmt = mimeType.mid(6).toUpper().toLatin1();
+                if (QImageWriter::supportedImageFormats().contains(imgFmt))
+                    fmt = imgFmt;
+            }
+            QImageWriter wr(&buf, fmt);
+            wr.write(image);
+            content = buf.buffer();
+        }
+    } else if (mimeType == QLatin1String("application/x-color")) {
+        content = qvariant_cast<QColor>(mimeData->colorData()).name().toLatin1();
+    } else if (mimeType == QLatin1String("text/uri-list")) {
+        QList<QUrl> urls = mimeData->urls();
+        for (int i = 0; i < urls.count(); ++i) {
+            content.append(urls.at(i).toEncoded());
+            content.append('\n');
+        }
+    } else {
+        content = mimeData->data(mimeType);
+    }
+    return content;
 }
 
 DMimeData::DMimeData()
@@ -98,12 +138,8 @@ QVariant DMimeData::retrieveData(const QString &mimeType, QVariant::Type preferr
         } else {
             qWarning() << "Qt: Invalid color format";
         }
-    } else if (data.userType() != int(preferredType) && data.userType() == QMetaType::QByteArray) {
-        // try to use mime data's internal conversion stuf.
-        DMimeData *that = const_cast<DMimeData *>(this);
-        that->setData(mimeType, data.toByteArray());
+    } else {
         data = QMimeData::retrieveData(mimeType, preferredType);
-        that->clear();
     }
     return data;
 }
@@ -157,7 +193,7 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
 
         connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [&] {
                 m_copyControlSource = nullptr;
-                setItmeInfo(m_itemInfo);
+                sendOffer();
         });
 
         connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
@@ -180,7 +216,11 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
 
     QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
     int mimeTypeCount = mimeTypeList.count();
+
     // 将所有的数据插入到mime data中
+    static QMutex setMimeDataMutex;
+    static int mimeTypeIndex = 0;
+    mimeTypeIndex = 0;
     for (const QString &mimeType : mimeTypeList) {
         int pipeFds[2];
         if (pipe(pipeFds) != 0) {
@@ -189,19 +229,17 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
         }
 
         // 根据mime类取数据，写入pipe中
-        qDebug() << "Write data to pipe";
         offer->receive(mimeType, pipeFds[1]);
-        int retFd1 = close(pipeFds[1]);
-        qDebug() << "Close pipe fd1 ret: " << retFd1;
+        close(pipeFds[1]);
         // 异步从pipe中读取数据写入mime data中
         QtConcurrent::run([pipeFds, this, mimeType, mimeTypeCount] {
-            qDebug() << "read mimeType: " << mimeType;
             QFile readPipe;
             if (readPipe.open(pipeFds[0], QIODevice::ReadOnly)) {
                 if (readPipe.isReadable()) {
                     const QByteArray &data = readPipe.readAll();
-                    qDebug() << "Read pipe data finished: " << mimeType;
                     if (!data.isEmpty()) {
+                        // 需要加锁进行同步，否则可能会崩溃
+                        QMutexLocker locker(&setMimeDataMutex);
                         m_mimeData->setData(mimeType, data);
                     } else {
                         qWarning() << "Pipe data is empty, mime type: " << mimeType;
@@ -212,35 +250,43 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
             } else {
                 qWarning() << "Open pipe failed!";
             }
-            int retFd0 = close(pipeFds[0]);
-            qDebug() << "close pipe fd0 ret: " << retFd0;
-            static int mimeTypeIndex = 0;
+            close(pipeFds[0]);
             if (++mimeTypeIndex >= mimeTypeCount) {
                 qDebug() << "emit dataChanged";
-                emit this->dataChanged();
                 mimeTypeIndex = 0;
+                emit this->dataChanged();
             }
         });
     }
 }
 
-QMimeData* WaylandCopyClient::mimeData()
+const QMimeData* WaylandCopyClient::mimeData()
 {
     return m_mimeData;
 }
 
-void WaylandCopyClient::setItmeInfo(const ItemInfo &info)
+void WaylandCopyClient::setMimeData(QMimeData *mimeData) {
+    m_mimeData = mimeData;
+    sendOffer();
+}
+
+void WaylandCopyClient::sendOffer()
 {
-    m_itemInfo = info;
     m_copyControlSource = m_dataControlDeviceManager->createDataSource(this);
     if (!m_copyControlSource)
         return;
 
     connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
-    QMapIterator<QString, QByteArray> it(info.m_formatMap);
-    while (it.hasNext()) {
-        it.next();
-        m_copyControlSource->offer(it.key());
+    for (const QString &format : m_mimeData->formats()) {
+        // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
+        if (ApplicationXQtImageLiteral == format) {
+            QStringList imageFormats = imageReadMimeFormats();
+            for (int i = 0; i < imageFormats.size(); ++i) {
+                m_copyControlSource->offer(imageFormats.at(i));
+            }
+            continue;
+        }
+        m_copyControlSource->offer(format);
     }
 
     m_dataControlDevice->setSelection(0, m_copyControlSource);
@@ -249,13 +295,10 @@ void WaylandCopyClient::setItmeInfo(const ItemInfo &info)
 
 void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) const
 {
-    auto it = m_itemInfo.m_formatMap.find(mimeType);
-    if (it == m_itemInfo.m_formatMap.end())
-        return;
-
     QFile f;
     if (f.open(fd, QFile::WriteOnly, QFile::AutoCloseHandle)) {
-        f.write(it.value());
+        const QByteArray &ba = getByteArray(m_mimeData, mimeType);
+        f.write(ba);
         f.close();
     }
 }
@@ -265,7 +308,7 @@ QList<QString> WaylandCopyClient::filterMimeType(const QList<QString> &mimeTypeL
     QList<QString> tmpList;
     for (const QString &mimeType : mimeTypeList) {
         // 根据窗管的要求，不读取纯大写、和不含'/'的字段，因为源窗口可能没有写入这些字段的数据，导致获取数据的线程一直等待。
-        if ((mimeType.toUpper() != mimeType && mimeType.contains("/"))
+        if ((mimeType.contains("/") && mimeType.toUpper() != mimeType)
                 || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
                 || mimeType == "TIMESTAMP") {
             tmpList.append(mimeType);

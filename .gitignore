@@ -2,3 +2,5 @@
 *.cpp.autosave
 *.h.autosave
 build*/
+.vscode/
+*.user
