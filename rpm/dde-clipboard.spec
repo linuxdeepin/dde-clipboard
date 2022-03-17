@@ -16,6 +16,8 @@ License:        GPLv3+
 URL:            http://shuttle.corp.deepin.com/cache/repos/eagle/release-candidate/RERFNS4wLjAuNjU3NQ/pool/main/d/dde-clipboard/
 Source0:        %{name}_%{version}.orig.tar.xz
 
+
+BuildRequires:  cmake
 BuildRequires:  qt5-qtbase-devel
 BuildRequires:  qt5-linguist
 BuildRequires:  dtkwidget-devel
@@ -34,9 +36,9 @@ Qt platform theme integration plugins for DDE
 %autosetup
 
 %build
-export PATH=$PATH:/usr/lib64/qt5/bin
 mkdir build && cd build
-%{_libdir}/qt5/bin/qmake ..
+export PATH=%{_qt5_bindir}:$PATH
+%cmake -DCMAKE_INSTALL_PREFIX=%{_prefix} -DARCHITECTURE=%{_arch}
 %{__make}
 
 %install
