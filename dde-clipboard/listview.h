@@ -1,6 +1,7 @@
 #ifndef LISTVIEW_H
 #define LISTVIEW_H
 #include <QListView>
+#include <QPointer>
 
 /*!
  * \~chinese \class ListView
@@ -39,6 +40,10 @@ Q_SIGNALS:
 
 protected:
     virtual void mousePressEvent(QMouseEvent *event) override;
+
+private:
+    bool m_mousePressed;
+    QPointer<QMimeData> m_mimeData;
 };
 
 #endif // LISTVIEW_H

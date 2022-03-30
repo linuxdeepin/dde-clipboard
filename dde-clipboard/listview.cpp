@@ -16,6 +16,8 @@
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
+    , m_mousePressed(false)
+    , m_mimeData(nullptr)
 {
     setAutoFillBackground(false);
     viewport()->setAutoFillBackground(false);
@@ -28,6 +30,12 @@ ListView::ListView(QWidget *parent)
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
+
+    QScroller::grabGesture(this, QScroller::LeftMouseButtonGesture);
+    QScroller *scroller = QScroller::scroller(this);
+    QScrollerProperties sp;
+    sp.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, QScrollerProperties::OvershootWhenScrollable);
+    scroller->setScrollerProperties(sp);
 }
 
 void ListView::keyPressEvent(QKeyEvent *event)
@@ -61,10 +69,21 @@ void ListView::keyPressEvent(QKeyEvent *event)
 
 void ListView::mouseMoveEvent(QMouseEvent *event)
 {
+    qDebug() << Q_FUNC_INFO;
     const QModelIndex index = indexAt(event->pos());
     if (index.isValid()) {
         setCurrentIndex(index);
     }
+
+    if (!geometry().contains(event->pos()) && m_mousePressed) {
+        m_mousePressed = false;
+        if (m_mimeData) {
+            QDrag *drag = new QDrag(this);
+            drag->setMimeData(m_mimeData);
+            drag->exec(Qt::CopyAction);
+        }
+    }
+
     return QListView::mouseMoveEvent(event);
 }
 
@@ -157,20 +176,21 @@ void ListView::mousePressEvent(QMouseEvent *event)
     ClipboardModel *model = static_cast<ClipboardModel *>(this->model());
     ItemData *data = model->data().at(dataIndex.row());
 
-    QDrag *drag = new QDrag(this);
-    QMimeData *mimeData = new QMimeData;
-
-    QString keyStr;
-    QByteArray byteArray;
+    if (!m_mimeData)
+        m_mimeData = new QMimeData;
 
     QMap<QString, QByteArray>::const_iterator itor = data->formatMap().constBegin();
     while (itor != data->formatMap().constEnd()) {
-          keyStr = itor.key();
-          byteArray = itor.value();
-          mimeData->setData(keyStr, byteArray);
-          ++itor;
-      }
+        m_mimeData->setData(itor.key(), itor.value());
+        ++itor;
+    }
 
-    drag->setMimeData(mimeData);
-    drag->exec(Qt::CopyAction);
+    // 如果是触摸屏，当鼠标拖动到剪切板外部的时候才认为是拖拽行为，否则认为是滑动剪切板列表。
+    if (event->source() == Qt::MouseEventSynthesizedByQt) {
+        m_mousePressed = true;
+    } else {
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(m_mimeData);
+        drag->exec(Qt::CopyAction);
+    }
 }
