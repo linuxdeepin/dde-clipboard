@@ -21,12 +21,8 @@
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
 
-#include "iteminfo.h"
-
 #include <QMimeData>
 #include <QPointer>
-
-#include <DSingleton>
 
 namespace KWayland
 {
@@ -55,12 +51,9 @@ public:
                                       QVariant::Type preferredType) const;
 };
 
-DCORE_USE_NAMESPACE
-
-class WaylandCopyClient : public QObject, public DSingleton<WaylandCopyClient>
+class WaylandCopyClient : public QObject
 {
     Q_OBJECT
-    friend class Dtk::Core::DSingleton<WaylandCopyClient>;
 
 public:
     explicit WaylandCopyClient(QObject *parent = nullptr);
@@ -70,6 +63,7 @@ public:
     const QMimeData *mimeData();
     void setMimeData(QMimeData *mimeData);
     void sendOffer();
+    static WaylandCopyClient& ref();
 
 private:
     void setupRegistry(Registry *registry);
@@ -81,6 +75,7 @@ Q_SIGNALS:
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
     void onDataOffered(DataControlOfferV1 *offer);
+    void onDataChanged();
 
 private:
     QThread *m_connectionThread;
@@ -91,7 +86,6 @@ private:
     DataControlSourceV1 *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
-    ItemInfo m_itemInfo;
 };
 
 #endif // COPYCLIENT_H

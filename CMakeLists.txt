@@ -107,7 +107,7 @@ file(GLOB QM_FILES "translations/*.qm")
 install(FILES ${QM_FILES} DESTINATION share/${BIN_NAME}/translations)
 
 ## desktop file
-file(GLOB DESKTOP_FILE "dde-clipboard/dde-clipboard.desktop")
+file(GLOB DESKTOP_FILE "misc/dde-clipboard.desktop")
 install(FILES ${DESKTOP_FILE} DESTINATION share/applications)
 
 ## autostart
@@ -115,45 +115,118 @@ set(AUTOSTART_FILE ${DESKTOP_FILE})
 install(FILES ${AUTOSTART_FILE} DESTINATION /etc/xdg/autostart)
 
 ## dbus service
-file(GLOB SERVICE_FILE "dde-clipboard/com.deepin.dde.Clipboard.service")
+file(GLOB SERVICE_FILE "misc/com.deepin.dde.Clipboard.service")
 install(FILES ${SERVICE_FILE} DESTINATION share/dbus-1/services)
 
 ## bin
 install(TARGETS ${BIN_NAME} DESTINATION bin)
 
-#----------------------------dde-clipboardloader------------------------------
-set(LOADER_NAME dde-clipboardloader)
+#----------------------------dde-clipboard-daemon------------------------------
+set(BIN_NAME dde-clipboard-daemon)
 
-file(GLOB_RECURSE ClipboardLoader_SCRS
-    "dde-clipboardloader/*.h"
-    "dde-clipboardloader/*.cpp"
-)
-list(REMOVE_ITEM ClipboardLoader_SCRS "${CMAKE_SOURCE_DIR}/dde-clipboardloader/main.cpp")
-
-add_executable(${LOADER_NAME}
-    ${ClipboardLoader_SCRS}
-    dde-clipboardloader/main.cpp
-    dde-clipboard/constants.h
-    dde-clipboard/dbus/iteminfo.h
-)
-target_include_directories(${LOADER_NAME} PUBLIC
-    ${DtkWidget_INCLUDE_DIRS}
-    KF5::WaylandClient
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
+file(GLOB_RECURSE dde-clipboard-daemon_SCRS
+    "dde-clipboard-daemon/main.cpp"
+    "dde-clipboard-daemon/dbus_manager.cpp"
+    "dde-clipboard-daemon/dbus_manager.h"
 )
 
-target_link_libraries(${LOADER_NAME} PRIVATE
-    ${DtkWidget_LIBRARIES}
-    KF5::WaylandClient
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
+add_executable(${BIN_NAME}
+    ${dde-clipboard-daemon_SCRS}
 )
 
-## bin
-install(TARGETS ${LOADER_NAME} DESTINATION bin)
+target_include_directories(${BIN_NAME} PUBLIC
+  ${Qt5Widget_INCLUDE_DIRS}
+  ${Qt5Core_INCLUDE_DIRS}
+  ${DtkCore_INCLUDE_DIRS}
+  )
+
+target_link_libraries(${BIN_NAME} PRIVATE
+  ${Qt5DBus_LIBRARIES}
+  ${Qt5Core_LIBRARIES}
+  ${Qt5Widgets_LIBRARIES}
+  ${DtkCore_LIBRARIES}
+)
+
+install(TARGETS ${BIN_NAME} DESTINATION bin)
+install(FILES misc/dde-clipboard-daemon.service
+    DESTINATION /lib/systemd/user
+)
+install(FILES misc/dde-clipboard-daemon.desktop
+    DESTINATION /usr/share/applications/
+)
+install(FILES misc/dde-clipboard-daemon.desktop
+    DESTINATION /etc/xdg/autostart/
+)
+
+#----------------------------dde-clipboard-loader------------------------------
+set(PLUGIN_NAME "dde-clipboard-loader")
+
+file(GLOB_RECURSE dde-clipboard-loader_SCRS
+    "dde-clipboard-daemon/plugin/dde-clipboard-loader/*.h"
+    "dde-clipboard-daemon/plugin/dde-clipboard-loader/*.cpp"
+    "dde-clipboard-daemon/plugin/dde-clipboard-loader/src/*.h"
+    "dde-clipboard-daemon/plugin/dde-clipboard-loader/src/*.cpp"
+)
+
+add_definitions("${QT_DEFINITIONS} -DCLIPBOARD_LIBRARY")
+
+add_library(${PLUGIN_NAME} SHARED
+    ${dde-clipboard-loader_SCRS}
+)
+
+set_target_properties(${PLUGIN_NAME} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY
+    plugins/
+)
+
+target_include_directories(${PLUGIN_NAME} PUBLIC
+  ${Qt5Widget_INCLUDE_DIRS}
+  ${Qt5DBus_INCLUDE_DIRS}
+  KF5::WaylandServer
+  "dde-clipboard-daemon/plugin/dde-clipboard-loader/src"
+  )
+
+target_link_libraries(${PLUGIN_NAME} PRIVATE
+  ${Qt5Widgets_LIBRARIES}
+  ${Qt5DBus_LIBRARIES}
+  KF5::WaylandClient
+)
+
+install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-clipboard/)
+
+#----------------------------dde-clipboard-manager------------------------------
+set(PLUGIN_NAME "dde-clipboard-manager")
+
+file(GLOB_RECURSE dde-clipboard-manager_SRCS
+    "dde-clipboard-daemon/plugin/dde-clipboard-manager/*.h"
+    "dde-clipboard-daemon/plugin/dde-clipboard-manager/*.cpp"
+    "dde-clipboard-daemon/plugin/dde-clipboard-manager/src/*.h"
+    "dde-clipboard-daemon/plugin/dde-clipboard-manager/src/*.cpp"
+)
+
+add_definitions("${QT_DEFINITIONS} -DCLIPBOARD_LIBRARY")
+
+add_library(${PLUGIN_NAME} SHARED ${dde-clipboard-manager_SRCS})
+
+set_target_properties(${PLUGIN_NAME} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY
+    plugins/
+)
+
+target_include_directories(${PLUGIN_NAME} PUBLIC
+  ${Qt5Widget_INCLUDE_DIRS}
+  ${Qt5DBus_INCLUDE_DIRS}
+  KF5::WaylandServer
+  "dde-clipboard-daemon/plugin/dde-clipboard-manager/src"
+  )
+
+target_link_libraries(${PLUGIN_NAME} PRIVATE
+  ${Qt5Widgets_LIBRARIES}
+  ${Qt5DBus_LIBRARIES}
+  KF5::WaylandClient
+)
+
+install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-clipboard/)
 
 #----------------------------ut-dde-clipboard------------------------------
 set(UT_BIN_NAME ut-dde-clipboard)
@@ -187,44 +260,6 @@ target_link_libraries(${UT_BIN_NAME} PRIVATE
     ${DtkWidget_LIBRARIES}
     ${GIO_LIBRARIES}
     ${DFrameworkDBus_LIBRARIES}
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
-    Qt5::Test
-    -lpthread
-    -lgcov
-    -lgtest
-)
-
-#--------------------------ut-dde-clipboardloader----------------------------
-set(UT_LOADER_NAME ut-dde-clipboardloader)
-
-file(GLOB_RECURSE ut_Clipboardloader_SCRS
-    "tests/dde-clipboardloader/*.h"
-    "tests/dde-clipboardloader/*.cpp"
-)
-
-add_executable(${UT_LOADER_NAME}
-    ${ClipboardLoader_SCRS}
-    ${ut_Clipboardloader_SCRS}
-    dde-clipboard/constants.h
-    dde-clipboard/dbus/iteminfo.h
-)
-# 用于测试覆盖率的编译条件
-target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
-
-target_include_directories(${UT_LOADER_NAME} PUBLIC
-    ${DtkWidget_INCLUDE_DIRS}
-    KF5::WaylandClient
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
-    Qt5::Test
-)
-
-target_link_libraries(${UT_LOADER_NAME} PRIVATE
-    ${DtkWidget_LIBRARIES}
-    KF5::WaylandClient
     Qt5::Core
     Qt5::Widgets
     Qt5::DBus

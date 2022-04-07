@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "clipboardloader.h"
+#include "clipboard_loader.h"
 
 #include <QApplication>
 #include <QDBusMetaType>
@@ -57,8 +57,8 @@ QByteArray Info2Buf(const ItemInfo &info)
             << iconBuf;
 
     return buf;
-
 }
+
 ItemInfo Buf2Info(const QByteArray &buf)
 {
     QByteArray tempBuf = buf;

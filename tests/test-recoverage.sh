@@ -17,7 +17,6 @@ mkdir -p ../tests/$REPORT_DIR
 
 lcov -c -i -d ./ -o init.info
 ./ut-dde-clipboard --gtest_output=xml:./$REPORT_DIR/ut-report_dde-clipboard.xml
-./ut-dde-clipboardloader --gtest_output=xml:./$REPORT_DIR/ut-report_dde-clipboardloader.xml
 lcov -c -d ./ -o cover.info
 lcov -a init.info -a cover.info -o total.info
 lcov -r total.info "*/tests/*" "*/usr/include*" '*tests*' -o final.info
@@ -27,4 +26,3 @@ genhtml -o ./$HTML_DIR final.info
 mv ./$HTML_DIR/index.html ./$HTML_DIR/cov_dde-clipboard.html
 
 mv asan_board.log* asan_dde-clipboard.log
-mv asan_loader.log* asan_dde-clipboardloader.log

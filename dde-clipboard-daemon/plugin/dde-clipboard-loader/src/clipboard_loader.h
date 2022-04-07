@@ -18,11 +18,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef WORKER_H
-#define WORKER_H
+#ifndef CLIPBOARDLOADER_H
+#define CLIPBOARDLOADER_H
 
 #include "constants.h"
-#include "waylandcopyclient.h"
+#include "wayland_copy_client.h"
 #include "iteminfo.h"
 
 #include <QObject>
@@ -40,6 +40,7 @@ class ClipboardLoader : public QObject
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.deepin.dde.ClipboardLoader")
+
 public:
     ClipboardLoader();
 
@@ -66,4 +67,4 @@ private:
     static QString m_pixPath;
 };
 
-#endif // WORKER_H
+#endif // CLIPBOARDLOADER_H

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Comment=Dde clipboard daemon
+Exec=systemctl --user enable dde-clipboard-daemon.service --now --runtime
+Name=Dde clipboard daemon
+NoDisplay=true
+OnlyShowIn=Deepin
+Type=Application
+X-Deepin-Vendor=user-custom

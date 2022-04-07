@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "waylandcopyclient.h"
-#include "constants.h"
+//#include "constants.h"
 
 #include <QEventLoop>
 #include <QMimeData>
@@ -39,6 +39,8 @@
 #include <KF5/KWayland/Client/datacontroloffer.h>
 
 #include <unistd.h>
+
+static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
 
 static QStringList imageMimeFormats(const QList<QByteArray> &imageFormats)
 {
@@ -167,6 +169,13 @@ WaylandCopyClient::~WaylandCopyClient()
         m_mimeData->deleteLater();
 }
 
+WaylandCopyClient& WaylandCopyClient::ref()
+{
+    static WaylandCopyClient instance;
+
+    return instance;
+}
+
 void WaylandCopyClient::init()
 {
     connect(m_connectionThreadObject, &ConnectionThread::connected, this, [this] {
@@ -179,6 +188,7 @@ void WaylandCopyClient::init()
     m_connectionThreadObject->moveToThread(m_connectionThread);
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
+    connect(this, &WaylandCopyClient::dataChanged, this, &WaylandCopyClient::onDataChanged);
 }
 
 void WaylandCopyClient::setupRegistry(Registry *registry)
@@ -260,6 +270,11 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
     }
 }
 
+void WaylandCopyClient::onDataChanged()
+{
+    sendOffer();
+}
+
 const QMimeData* WaylandCopyClient::mimeData()
 {
     return m_mimeData;
@@ -295,6 +310,7 @@ void WaylandCopyClient::sendOffer()
 
 void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) const
 {
+    qDebug() << "SendDataRequest" << endl;
     QFile f;
     if (f.open(fd, QFile::WriteOnly, QFile::AutoCloseHandle)) {
         const QByteArray &ba = getByteArray(m_mimeData, mimeType);
