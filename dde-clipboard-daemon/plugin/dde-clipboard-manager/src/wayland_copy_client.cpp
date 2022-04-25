@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "waylandcopyclient.h"
+#include "wayland_copy_client.h"
 //#include "constants.h"
 
 #include <QEventLoop>
@@ -33,10 +33,10 @@
 #include <KF5/KWayland/Client/event_queue.h>
 #include <KF5/KWayland/Client/registry.h>
 #include <KF5/KWayland/Client/seat.h>
-#include <KF5/KWayland/Client/datacontroldevicemanager.h>
-#include <KF5/KWayland/Client/datacontroldevice.h>
-#include <KF5/KWayland/Client/datacontrolsource.h>
-#include <KF5/KWayland/Client/datacontroloffer.h>
+#include <KF5/KWayland/Client/datadevicemanager.h>
+#include <KF5/KWayland/Client/datadevice.h>
+#include <KF5/KWayland/Client/datasource.h>
+#include <KF5/KWayland/Client/dataoffer.h>
 
 #include <unistd.h>
 
@@ -201,12 +201,12 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
         m_dataControlDeviceManager = registry->createDataControlDeviceManager(name, version, this);
         m_dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
 
-        connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [&] {
+        connect(m_dataControlDevice, &DataDevice::selectionCleared, this, [&] {
                 m_copyControlSource = nullptr;
                 sendOffer();
         });
 
-        connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
+        connect(m_dataControlDevice, &DataDevice::dataOffered, this, &WaylandCopyClient::onDataOffered);
     });
 
     registry->setEventQueue(m_eventQueue);
@@ -214,7 +214,7 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
     registry->setup();
 }
 
-void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offer)
+void WaylandCopyClient::onDataOffered(KWayland::Client::DataOffer* offer)
 {
     qDebug() << "data offered";
     if (!offer)
@@ -224,14 +224,14 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
         m_mimeData = new DMimeData();
     m_mimeData->clear();
 
-    QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
+    QList<QMimeType> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
     int mimeTypeCount = mimeTypeList.count();
 
     // 将所有的数据插入到mime data中
     static QMutex setMimeDataMutex;
     static int mimeTypeIndex = 0;
     mimeTypeIndex = 0;
-    for (const QString &mimeType : mimeTypeList) {
+    for (const QMimeType &mimeType : mimeTypeList) {
         int pipeFds[2];
         if (pipe(pipeFds) != 0) {
             qWarning() << "Create pipe failed.";
@@ -250,7 +250,7 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
                     if (!data.isEmpty()) {
                         // 需要加锁进行同步，否则可能会崩溃
                         QMutexLocker locker(&setMimeDataMutex);
-                        m_mimeData->setData(mimeType, data);
+                        m_mimeData->setData(mimeType.name(), data);
                     } else {
                         qWarning() << "Pipe data is empty, mime type: " << mimeType;
                     }
@@ -291,7 +291,7 @@ void WaylandCopyClient::sendOffer()
     if (!m_copyControlSource)
         return;
 
-    connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
+    connect(m_copyControlSource, &DataSource::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
     for (const QString &format : m_mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
         if (ApplicationXQtImageLiteral == format) {
@@ -319,14 +319,15 @@ void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) co
     }
 }
 
-QList<QString> WaylandCopyClient::filterMimeType(const QList<QString> &mimeTypeList)
+QList<QMimeType> WaylandCopyClient::filterMimeType(const QList<QMimeType> &mimeTypeList)
 {
-    QList<QString> tmpList;
-    for (const QString &mimeType : mimeTypeList) {
+    QList<QMimeType> tmpList;
+    for (const QMimeType &mimeType : mimeTypeList) {
+        const QString &mimtTypeName = mimeType.name();
         // 根据窗管的要求，不读取纯大写、和不含'/'的字段，因为源窗口可能没有写入这些字段的数据，导致获取数据的线程一直等待。
-        if ((mimeType.contains("/") && mimeType.toUpper() != mimeType)
-                || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
-                || mimeType == "TIMESTAMP") {
+        if ((mimtTypeName.contains("/") && mimtTypeName.toUpper() != mimtTypeName)
+                || mimtTypeName == "FROM_DEEPIN_CLIPBOARD_MANAGER"
+                || mimtTypeName == "TIMESTAMP") {
             tmpList.append(mimeType);
         }
     }

@@ -31,7 +31,7 @@
 #include <QJsonObject>
 #include <QTimer>
 
-#include "waylandcopyclient.h"
+#include "wayland_copy_client.h"
 
 static WaylandCopyClient *manager = nullptr;
 static UnloadFun unloadFun = nullptr;

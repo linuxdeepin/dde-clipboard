@@ -35,10 +35,10 @@ class ConnectionThread;
 class EventQueue;
 class Registry;
 class Seat;
-class DataControlDeviceManager;
-class DataControlDeviceV1;
-class DataControlSourceV1;
-class DataControlOfferV1;
+class DataDeviceManager;
+class DataDevice;
+class DataSource;
+class DataOffer;
 } //Client
 } //KWayland
 
@@ -73,22 +73,22 @@ private:
     explicit WaylandCopyClient(QObject *parent = nullptr);
 
     void setupRegistry(Registry *registry);
-    QList<QString> filterMimeType(const QList<QString> &mimeTypeList);
+    QList<QMimeType> filterMimeType(const QList<QMimeType> &mimeTypeList);
 
 Q_SIGNALS:
     void dataChanged();
 
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
-    void onDataOffered(DataControlOfferV1 *offer);
+    void onDataOffered(DataOffer *offer);
 
 private:
     QThread *m_connectionThread;
     ConnectionThread *m_connectionThreadObject;
     EventQueue *m_eventQueue;
-    DataControlDeviceManager *m_dataControlDeviceManager;
-    DataControlDeviceV1 *m_dataControlDevice;
-    DataControlSourceV1 *m_copyControlSource;
+    DataDeviceManager *m_dataControlDeviceManager;
+    DataDevice *m_dataControlDevice;
+    DataSource *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
     ItemInfo m_itemInfo;
