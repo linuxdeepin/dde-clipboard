@@ -23,6 +23,7 @@
 
 #include <QMimeData>
 #include <QPointer>
+#include <QMimeType>
 
 namespace KWayland
 {

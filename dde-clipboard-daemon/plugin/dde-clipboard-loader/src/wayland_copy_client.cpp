@@ -195,7 +195,7 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
         m_seat = registry->createSeat(name, version, this);
     });
 
-    connect(registry, &Registry::dataControlDeviceManagerAnnounced, this, [this, registry] (quint32 name, quint32 version) {
+    connect(registry, &Registry::dataDeviceManagerAnnounced, this, [this, registry] (quint32 name, quint32 version) {
         m_dataControlDeviceManager = registry->createDataDeviceManager(name, version, this);
         m_dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
 
