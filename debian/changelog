@@ -1,8 +1,8 @@
-dde-clipboard (6.0.0.0) unstable; urgency=low
+dde-clipboard (6.0.0) unstable; urgency=low
 
-  * release 6.0.0.0
+  * release 6.0.0
 
- --  <fanpengcheng@uniontech.com>  Tue, 14 June 2022 16:56:13 +0800
+ --  <fanpengcheng@uniontech.com>  Tue, 14 Jun 2022 16:56:13 +0800
 
 dde-clipboard (1.0.0) unstable; urgency=low
 
