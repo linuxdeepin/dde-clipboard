@@ -220,7 +220,7 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
     if (!offer)
         return;
 
-    if (m_mimeData)
+    if (!m_mimeData)
         m_mimeData = new DMimeData();
     m_mimeData->clear();
 
@@ -281,6 +281,8 @@ const QMimeData* WaylandCopyClient::mimeData()
 }
 
 void WaylandCopyClient::setMimeData(QMimeData *mimeData) {
+    if (m_mimeData)
+        m_mimeData->deleteLater();
     m_mimeData = mimeData;
     sendOffer();
 }
