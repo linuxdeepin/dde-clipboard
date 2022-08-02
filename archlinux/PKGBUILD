@@ -1,0 +1,27 @@
+# Maintainer: justforlxz <justforlxz@gmail.com>
+
+pkgname=deepin-clipboard-git
+pkgver=5.3.16
+pkgrel=1
+pkgdesc='DDE clipboard manager component'
+arch=('x86_64' 'aarch64')
+url="https://github.com/linuxdeepin/dde-clipboard"
+license=('GPL3')
+depends=('deepin-qt5integration' 'gio-qt')
+makedepends=('qt5-tools' 'cmake' 'ninja' 'gtest')
+conflicts=('deepin-clipboard')
+provides=('deepin-clipboard')
+groups=('deepin-git')
+source=("source.tar.gz")
+sha512sums=('SKIP')
+
+build() {
+  cd $deepin_source_name
+  cmake -B build -GNinja -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+
+package() {
+  cd $deepin_source_name
+  cmake --install build --prefix $pkgdir/usr
+}
