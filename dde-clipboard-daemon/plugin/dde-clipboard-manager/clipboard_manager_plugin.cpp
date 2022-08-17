@@ -31,27 +31,35 @@
 #include <QJsonObject>
 #include <QTimer>
 
+#ifdef USE_DEEPIN_WAYLAND
 #include "waylandcopyclient.h"
 
 static WaylandCopyClient *manager = nullptr;
+#endif // USE_DEEPIN_WAYLAND
+
 static UnloadFun unloadFun = nullptr;
 static QByteArray info;
 bool Start()
 {
+#ifdef USE_DEEPIN_WAYLAND
     if (QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
         manager = &WaylandCopyClient::ref();
         manager->init();
     }
+#endif // USE_DEEPIN_WAYLAND
+
     return true;
 }
 
 bool Stop()
 {
+#ifdef USE_DEEPIN_WAYLAND
     if (manager) {
         QDeferredDeleteEvent *event = new QDeferredDeleteEvent;
         qApp->postEvent(manager, event);
         manager = nullptr;
     }
+#endif // USE_DEEPIN_WAYLAND
 
     if (unloadFun) {
         unloadFun = nullptr;

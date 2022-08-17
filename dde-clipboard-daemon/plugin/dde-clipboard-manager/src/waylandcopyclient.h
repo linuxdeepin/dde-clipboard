@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef USE_DEEPIN_WAYLAND
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
 
@@ -89,3 +90,4 @@ private:
 };
 
 #endif // COPYCLIENT_H
+#endif // USE_DEEPIN_WAYLAND

@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef USE_DEEPIN_WAYLAND
 #include "waylandcopyclient.h"
 //#include "constants.h"
 
@@ -335,3 +336,4 @@ QList<QString> WaylandCopyClient::filterMimeType(const QList<QString> &mimeTypeL
 
     return tmpList;
 }
+#endif // USE_DEEPIN_WAYLAND

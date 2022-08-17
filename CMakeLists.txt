@@ -4,6 +4,11 @@ set(BIN_NAME dde-clipboard)
 
 project(${BIN_NAME})
 
+option(USE_DEEPIN_WAYLAND "option for kwayland support" ON)
+if (USE_DEEPIN_WAYLAND)
+    add_definitions(-DUSE_DEEPIN_WAYLAND)
+endif()
+
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -41,8 +46,10 @@ endif ()
 # Find the library
 find_package(PkgConfig REQUIRED)
 find_package(DtkWidget REQUIRED)
-find_package(KF5Wayland REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets DBus Test REQUIRED)
+if (USE_DEEPIN_WAYLAND)
+    find_package(KF5Wayland REQUIRED)
+endif()
 
 pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
 pkg_check_modules(GIO REQUIRED gio-qt)
@@ -170,9 +177,7 @@ file(GLOB_RECURSE dde-clipboard-loader_SCRS
 
 add_definitions("${QT_DEFINITIONS} -DCLIPBOARD_LIBRARY")
 
-add_library(${PLUGIN_NAME} SHARED
-    ${dde-clipboard-loader_SCRS}
-)
+add_library(${PLUGIN_NAME} SHARED ${dde-clipboard-loader_SCRS})
 
 set_target_properties(${PLUGIN_NAME} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY
@@ -182,14 +187,13 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
 target_include_directories(${PLUGIN_NAME} PUBLIC
   ${Qt5Widget_INCLUDE_DIRS}
   ${Qt5DBus_INCLUDE_DIRS}
-  KF5::WaylandServer
-  "dde-clipboard-daemon/plugin/dde-clipboard-loader/src"
-  )
+  ${CMAKE_SOURCE_DIR}/dde-clipboard-daemon/plugin/dde-clipboard-loader/src
+)
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE
   ${Qt5Widgets_LIBRARIES}
   ${Qt5DBus_LIBRARIES}
-  KF5::WaylandClient
+  $<$<BOOL:${USE_DEEPIN_WAYLAND}>:KF5::WaylandServer>
 )
 
 install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-clipboard/)
@@ -216,14 +220,13 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
 target_include_directories(${PLUGIN_NAME} PUBLIC
   ${Qt5Widget_INCLUDE_DIRS}
   ${Qt5DBus_INCLUDE_DIRS}
-  KF5::WaylandServer
-  "dde-clipboard-daemon/plugin/dde-clipboard-manager/src"
+  ${CMAKE_SOURCE_DIR}/dde-clipboard-daemon/plugin/dde-clipboard-manager/src
   )
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE
   ${Qt5Widgets_LIBRARIES}
   ${Qt5DBus_LIBRARIES}
-  KF5::WaylandClient
+  $<$<BOOL:${USE_DEEPIN_WAYLAND}>:KF5::WaylandServer>
 )
 
 install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-clipboard/)
