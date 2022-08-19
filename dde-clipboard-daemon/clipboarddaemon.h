@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2019 ~ 2022 Uniontech Technology Co., Ltd.
+ * Copyright (C) 2020 ~ 2022 Deepin Technology Co., Ltd.
  *
- * Author:     fanpengcheng <fanpengcheng@uniontech.com>
+ * Author:     zhaoyingzhen <zhaoyingzhen@uniontech.com>
  *
- * Maintainer: fanpengcheng <fanpengcheng@uniontech.com>
+ * Maintainer: zhaoyingzhen <zhaoyingzhen@uniontech.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CLIPBOARD_MANAGER_PLUGIN_GLOBAL_H
-#define CLIPBOARD_MANAGER_PLUGIN_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#ifndef CLIPBOARD_DAEMON_H
+#define CLIPBOARD_DAEMON_H
 
-#if defined(CLIPBOARDMANAGER_LIBRARY)
-#  define CLIPBOARDMANAGERSHARED_EXPORT Q_DECL_EXPORT
-#else
-#  define CLIPBOARDMANAGERSHARED_EXPORT Q_DECL_IMPORT
-#endif
+#include <QObject>
 
-#endif // CLIPBOARD_MANAGER_PLUGIN_GLOBAL_H
+class ClipboardDaemon : public QObject
+{
+    Q_OBJECT
+public:
+    explicit ClipboardDaemon(QObject *parent = nullptr);
+};
+
+#endif //CLIPBOARD_DAEMON_H

@@ -12,7 +12,8 @@ Build-Depends: debhelper (>= 8.0.0),
  libgio-qt-dev,
  libdframeworkdbus-dev,
  libgtest-dev,
- libkf5wayland-dev (=4:5.90.0-1+u035)
+ extra-cmake-modules,
+ libdwayland-dev,
 Standards-Version: 3.9.5
 Homepage: https://github.com/linuxdeepin/dde-clipboard
 

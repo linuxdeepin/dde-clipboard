@@ -18,11 +18,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "clipboard_loader.h"
+#include "clipboardloader.h"
 
 #include <QApplication>
-#include <QDBusMetaType>
-#include <QDebug>
 #include <QClipboard>
 #include <QMimeData>
 #include <QDir>
@@ -98,26 +96,28 @@ ItemInfo Buf2Info(const QByteArray &buf)
 
 QString ClipboardLoader::m_pixPath;
 
-ClipboardLoader::ClipboardLoader()
-    : m_board(qApp->clipboard())
+ClipboardLoader::ClipboardLoader(QObject *parent)
+    : QObject(parent)
+    , m_board(nullptr)
     , m_waylandCopyClient(nullptr)
 {
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
-        m_waylandCopyClient = &WaylandCopyClient::ref();
+        m_waylandCopyClient = new WaylandCopyClient(this);
         m_waylandCopyClient->init();
 
         connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
             this->doWork(WAYLAND_PROTOCOL);
         });
+    } else {
+        m_board = qApp->clipboard();
+        connect(m_board, &QClipboard::dataChanged, this, [this] {
+            this->doWork(X11_PROTOCOL);
+        });
     }
-
-    connect(m_board, &QClipboard::dataChanged, this, [this] {
-        this->doWork(X11_PROTOCOL);
-    });
 
     QDir dir(QDir::homePath() + PixCacheDir);
     if (dir.exists() && dir.removeRecursively()) {
-        qDebug() << "ClipboardLoder startup, remove old cache, path:" << dir.path();
+        qDebug() << "ClipboardLoader startup, remove old cache, path:" << dir.path();
     }
 }
 
@@ -142,7 +142,9 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
         break;
     }
 
-    m_board->setMimeData(mimeData);
+    if (m_board)
+        m_board->setMimeData(mimeData);
+
     if (m_waylandCopyClient)
         m_waylandCopyClient->setMimeData(mimeData);
 }
@@ -155,7 +157,7 @@ void ClipboardLoader::doWork(int protocolType)
     // 快速复制时mimedata很可能是无效的(一般表现为获取的数据为空), 下面是qt的说明
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
-    // or externally by the system clipboard changing.
+    // or externally by the system clipboard changing.`
     const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
     if (!mimeData || mimeData->formats().isEmpty())
         return;

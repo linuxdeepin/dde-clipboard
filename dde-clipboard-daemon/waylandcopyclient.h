@@ -21,6 +21,7 @@
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
 
+#include <QMutex>
 #include <QMimeData>
 #include <QPointer>
 #include <QMimeType>
@@ -33,18 +34,20 @@ class ConnectionThread;
 class EventQueue;
 class Registry;
 class Seat;
-class DataDeviceManager;
-class DataDevice;
-class DataSource;
-class DataOffer;
+class DataControlDeviceV1;
+class DataControlDeviceManager;
+class DataControlSourceV1;
+class DataControlOfferV1;
 } //Client
 } //KWayland
+
+class ReadPipeDataTask;
 
 using namespace KWayland::Client;
 
 class DMimeData : public QMimeData
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     DMimeData();
     ~DMimeData();
@@ -64,29 +67,37 @@ public:
     const QMimeData *mimeData();
     void setMimeData(QMimeData *mimeData);
     void sendOffer();
-    static WaylandCopyClient& ref();
 
 private:
     void setupRegistry(Registry *registry);
-    QList<QMimeType> filterMimeType(const QList<QMimeType> &mimeTypeList);
+    QStringList filterMimeType(const QStringList &mimeTypeList);
 
 Q_SIGNALS:
     void dataChanged();
 
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
-    void onDataOffered(DataOffer *offer);
+    void onDataOffered(DataControlOfferV1 *offer);
     void onDataChanged();
+
+private:
+    void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
+    void tryStopOldTask();
+    void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
 
 private:
     QThread *m_connectionThread;
     ConnectionThread *m_connectionThreadObject;
     EventQueue *m_eventQueue;
-    DataDeviceManager *m_dataControlDeviceManager;
-    DataDevice *m_dataControlDevice;
-    DataSource *m_copyControlSource;
+    DataControlDeviceManager *m_dataControlDeviceManager;
+    DataControlDeviceV1 *m_dataControlDevice;
+    DataControlSourceV1 *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
+
+    qint64 m_curOffer;
+    QStringList m_curMimeTypes;
+    QList<ReadPipeDataTask *> m_tasks;
 };
 
 #endif // COPYCLIENT_H

@@ -19,15 +19,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QApplication>
+#include <QDBusError>
 #include <QDBusConnection>
-#include <QDebug>
-#include <QCommandLineOption>
-#include <QCommandLineParser>
-#include <QMetaClassInfo>
 
 #include <DLog>
 
-#include "dbus_manager.h"
+#include "clipboarddaemon.h"
 
 DCORE_USE_NAMESPACE
 
@@ -36,19 +33,20 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName("deepin");
     a.setApplicationName("dde-clipboard-daemon");
+
     DLogManager::registerConsoleAppender();
     DLogManager::registerFileAppender();
 
-    DBusManager *manager = DBusManager::instance();
-    const QString &interface = "com.deepin.daemon.Clipboard";
-    const QString &path = "/com/deepin/daemon/Clipboard";
-
+    const QString interface = "com.deepin.daemon.Clipboard";
+    const QString path = "/com/deepin/daemon/Clipboard";
     if (!QDBusConnection::sessionBus().registerService(interface)) {
-        qDebug() << "DBus register failed, error message:" << QDBusConnection::sessionBus().lastError().message();
+        qWarning() << "DBus register failed, error message:" << QDBusConnection::sessionBus().lastError().message();
         exit(-1);
     }
-    QDBusConnection::sessionBus().registerObject(path, manager, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
-    manager->LoadAllPlugins();
+
+    ClipboardDaemon daemon;
+    QDBusConnection::sessionBus().registerObject(path, &daemon, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
     qDebug() << "Everything is ok!";
+
     return a.exec();
 }
