@@ -7,8 +7,9 @@
 
 #include "constants.h"
 #ifdef USE_DEEPIN_KF5_WAYLAND
-#include "wayland_copy_client.h"
+#include "waylandcopyclient.h"
 #endif
+
 #include "iteminfo.h"
 
 #include <QObject>
@@ -28,7 +29,7 @@ class ClipboardLoader : public QObject
     Q_CLASSINFO("D-Bus Interface", "com.deepin.dde.ClipboardLoader")
 
 public:
-    ClipboardLoader();
+    explicit ClipboardLoader(QObject *parent = nullptr);
 
     bool cachePixmap(const QPixmap &srcPix, ItemInfo &info);
     void setImageData(const ItemInfo &info, QMimeData *&mimeData);

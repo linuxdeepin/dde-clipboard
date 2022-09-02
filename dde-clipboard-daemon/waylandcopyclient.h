@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifdef USE_DEEPIN_KF5_WAYLAND
-#ifndef WAYLANDCOPYCLIENT_H
-#define WAYLANDCOPYCLIENT_H
+#ifndef COPYCLIENT_H
+#define COPYCLIENT_H
 
-#include "iteminfo.h"
-
+#include <QMutex>
 #include <QMimeData>
 #include <QPointer>
+#include <QMimeType>
 
 namespace KWayland
 {
@@ -19,8 +19,8 @@ class ConnectionThread;
 class EventQueue;
 class Registry;
 class Seat;
-class DataControlDeviceManager;
 class DataControlDeviceV1;
+class DataControlDeviceManager;
 class DataControlSourceV1;
 class DataControlOfferV1;
 } //Client
@@ -30,8 +30,7 @@ using namespace KWayland::Client;
 
 class DMimeData : public QMimeData
 {
-Q_OBJECT
-
+    Q_OBJECT
 public:
     DMimeData();
     ~DMimeData();
@@ -39,25 +38,22 @@ public:
                                       QVariant::Type preferredType) const;
 };
 
-
 class WaylandCopyClient : public QObject
 {
     Q_OBJECT
 
 public:
+    explicit WaylandCopyClient(QObject *parent = nullptr);
     virtual ~WaylandCopyClient();
 
     void init();
     const QMimeData *mimeData();
     void setMimeData(QMimeData *mimeData);
     void sendOffer();
-    static WaylandCopyClient& ref();
 
 private:
-    explicit WaylandCopyClient(QObject *parent = nullptr);
-
     void setupRegistry(Registry *registry);
-    QList<QString> filterMimeType(const QList<QString> &mimeTypeList);
+    QStringList filterMimeType(const QStringList &mimeTypeList);
 
 Q_SIGNALS:
     void dataChanged();
@@ -65,6 +61,7 @@ Q_SIGNALS:
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
     void onDataOffered(DataControlOfferV1 *offer);
+    void onDataChanged();
 
 private:
     QThread *m_connectionThread;
@@ -75,8 +72,7 @@ private:
     DataControlSourceV1 *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
-    ItemInfo m_itemInfo;
 };
 
-#endif // WAYLANDCOPYCLIENT_H
+#endif // COPYCLIENT_H
 #endif

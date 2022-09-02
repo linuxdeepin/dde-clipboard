@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifdef USE_DEEPIN_KF5_WAYLAND
 #include "waylandcopyclient.h"
-//#include "constants.h"
 
 #include <QEventLoop>
 #include <QMimeData>
@@ -11,13 +11,11 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QImageWriter>
 #include <QMutexLocker>
-#include <QMutex>
 
 #include <KWayland/Client/connection_thread.h>
 #include <KWayland/Client/event_queue.h>
 #include <KWayland/Client/registry.h>
 #include <KWayland/Client/seat.h>
-#include <KWayland/Client/datacontroldevicemanager.h>
 #include <KWayland/Client/datacontroldevice.h>
 #include <KWayland/Client/datacontrolsource.h>
 #include <KWayland/Client/datacontroloffer.h>
@@ -138,7 +136,7 @@ WaylandCopyClient::WaylandCopyClient(QObject *parent)
     , m_dataControlDeviceManager(nullptr)
     , m_dataControlDevice(nullptr)
     , m_copyControlSource(nullptr)
-    , m_mimeData(new DMimeData)
+    , m_mimeData(new DMimeData())
     , m_seat(nullptr)
 {
 
@@ -149,15 +147,9 @@ WaylandCopyClient::~WaylandCopyClient()
     m_connectionThread->quit();
     m_connectionThread->wait();
     m_connectionThreadObject->deleteLater();
+
     if (m_mimeData)
         m_mimeData->deleteLater();
-}
-
-WaylandCopyClient& WaylandCopyClient::ref()
-{
-    static WaylandCopyClient instance;
-
-    return instance;
 }
 
 void WaylandCopyClient::init()
@@ -172,6 +164,8 @@ void WaylandCopyClient::init()
     m_connectionThreadObject->moveToThread(m_connectionThread);
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
+
+    // clipboard Manager的功能
     connect(this, &WaylandCopyClient::dataChanged, this, &WaylandCopyClient::onDataChanged);
 }
 
@@ -200,21 +194,23 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
 
 void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offer)
 {
-    qDebug() << "data offered";
     if (!offer)
+        return;
+
+    QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
+    if (mimeTypeList.isEmpty())
         return;
 
     if (!m_mimeData)
         m_mimeData = new DMimeData();
     m_mimeData->clear();
 
-    QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
-    int mimeTypeCount = mimeTypeList.count();
+    static int readCount = 0;
+    static QMutex mimeDataLock;
+    readCount = 0;
 
     // 将所有的数据插入到mime data中
-    static QMutex setMimeDataMutex;
-    static int mimeTypeIndex = 0;
-    mimeTypeIndex = 0;
+    int mimeTypeCount = mimeTypeList.count();
     for (const QString &mimeType : mimeTypeList) {
         int pipeFds[2];
         if (pipe(pipeFds) != 0) {
@@ -225,6 +221,7 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
         // 根据mime类取数据，写入pipe中
         offer->receive(mimeType, pipeFds[1]);
         close(pipeFds[1]);
+
         // 异步从pipe中读取数据写入mime data中
         QtConcurrent::run([pipeFds, this, mimeType, mimeTypeCount] {
             QFile readPipe;
@@ -233,7 +230,7 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
                     const QByteArray &data = readPipe.readAll();
                     if (!data.isEmpty()) {
                         // 需要加锁进行同步，否则可能会崩溃
-                        QMutexLocker locker(&setMimeDataMutex);
+                        QMutexLocker locker(&mimeDataLock);
                         m_mimeData->setData(mimeType, data);
                     } else {
                         qWarning() << "Pipe data is empty, mime type: " << mimeType;
@@ -244,10 +241,10 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
             } else {
                 qWarning() << "Open pipe failed!";
             }
+
             close(pipeFds[0]);
-            if (++mimeTypeIndex >= mimeTypeCount) {
-                qDebug() << "emit dataChanged";
-                mimeTypeIndex = 0;
+            if (++readCount >= mimeTypeCount) {
+                readCount = 0;
                 emit this->dataChanged();
             }
         });
@@ -264,11 +261,15 @@ const QMimeData* WaylandCopyClient::mimeData()
     return m_mimeData;
 }
 
-void WaylandCopyClient::setMimeData(QMimeData *mimeData) {
+void WaylandCopyClient::setMimeData(QMimeData *mimeData)
+{
     if (m_mimeData)
         m_mimeData->deleteLater();
+
     m_mimeData = mimeData;
     sendOffer();
+
+    Q_EMIT dataChanged();
 }
 
 void WaylandCopyClient::sendOffer()
@@ -296,7 +297,6 @@ void WaylandCopyClient::sendOffer()
 
 void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) const
 {
-    qDebug() << "SendDataRequest" << endl;
     QFile f;
     if (f.open(fd, QFile::WriteOnly, QFile::AutoCloseHandle)) {
         const QByteArray &ba = getByteArray(m_mimeData, mimeType);
@@ -305,14 +305,14 @@ void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) co
     }
 }
 
-QList<QString> WaylandCopyClient::filterMimeType(const QList<QString> &mimeTypeList)
+QStringList WaylandCopyClient::filterMimeType(const QStringList &mimeTypeList)
 {
-    QList<QString> tmpList;
+    QStringList tmpList;
     for (const QString &mimeType : mimeTypeList) {
         // 根据窗管的要求，不读取纯大写、和不含'/'的字段，因为源窗口可能没有写入这些字段的数据，导致获取数据的线程一直等待。
         if ((mimeType.contains("/") && mimeType.toUpper() != mimeType)
-                || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
-                || mimeType == "TIMESTAMP") {
+            || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
+            || mimeType == "TIMESTAMP") {
             tmpList.append(mimeType);
         }
     }
