@@ -2,11 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "clipboard_loader.h"
+#include "clipboardloader.h"
 
 #include <QApplication>
-#include <QDBusMetaType>
-#include <QDebug>
 #include <QClipboard>
 #include <QMimeData>
 #include <QDir>
@@ -82,15 +80,16 @@ ItemInfo Buf2Info(const QByteArray &buf)
 
 QString ClipboardLoader::m_pixPath;
 
-ClipboardLoader::ClipboardLoader()
-    : m_board(qApp->clipboard())
+ClipboardLoader::ClipboardLoader(QObject *parent)
+    : QObject(parent)
+    , m_board(nullptr)
 #ifdef USE_DEEPIN_KF5_WAYLAND
     , m_waylandCopyClient(nullptr)
 #endif
 {
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
 #ifdef USE_DEEPIN_KF5_WAYLAND
-        m_waylandCopyClient = &WaylandCopyClient::ref();
+        m_waylandCopyClient = new WaylandCopyClient(this);
         m_waylandCopyClient->init();
 
         connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
@@ -99,15 +98,16 @@ ClipboardLoader::ClipboardLoader()
 #else
         qWarning() << "we will not work with wayland";
 #endif
+    } else {
+        m_board = qApp->clipboard();
+        connect(m_board, &QClipboard::dataChanged, this, [this] {
+            this->doWork(X11_PROTOCOL);
+        });
     }
-
-    connect(m_board, &QClipboard::dataChanged, this, [this] {
-        this->doWork(X11_PROTOCOL);
-    });
 
     QDir dir(QDir::homePath() + PixCacheDir);
     if (dir.exists() && dir.removeRecursively()) {
-        qDebug() << "ClipboardLoder startup, remove old cache, path:" << dir.path();
+        qDebug() << "ClipboardLoader startup, remove old cache, path:" << dir.path();
     }
 }
 
@@ -132,7 +132,9 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
         break;
     }
 
-    m_board->setMimeData(mimeData);
+    if (m_board)
+        m_board->setMimeData(mimeData);
+
 #ifdef USE_DEEPIN_KF5_WAYLAND
     if (m_waylandCopyClient)
         m_waylandCopyClient->setMimeData(mimeData);
