@@ -1,37 +1,49 @@
-### dde-clipboard
+# dde-clipboard
 
 dde-clipboard is a beautifully designed and simple clipboard management component developed by Deepin Technology.
 
-### Dependencies
+## Dependencies
+You can also check the "Depends" provided in the `debian/control` file.
 
-_The **master** branch is current development branch, build dependencies may changes without update README.md, refer to `./debian/control` for a working build depends list_
-
-* pkg-config
-* libdtkwidget-dev
-* qtbase5-private-dev
-* libgio-qt-dev
-* libdframeworkdbus-dev
-* libgtest-dev
-* libkf5wayland-dev
+### Build dependencies
+You can also check the "Build-Depends" provided in the `debian/control` file.
 
 ## Installation
 
-dde-clipboard should be pre-installed on Deepin.  If you means install it from system package repo，you can do the following ： 
+### Build from source code
 
+1. Make sure you have installed all dependencies.
+```bash
+sudo apt build-dep dde-clipboard
 ```
-$ apt install dde-clipboard
+
+2. Build
+```bash
+mkdir build
+cd build
+cmake ..
+make
 ```
 
-### Usage
+3. Install
+```bash
+sudo make install
+```
+## Getting help
 
-Execute dde-clipboard
+Any usage issues can ask for help via
+
+* [Gitter](https://gitter.im/orgs/linuxdeepin/rooms)
+* [IRC channel](https://webchat.freenode.net/?channels=deepin)
+* [WiKi](https://wiki.deepin.org)
+* [Forum](https://bbs.deepin.org)
+* [Developer Center](https://github.com/linuxdeepin/dde-clipboard) 
 
 ## Getting involved
 
 We encourage you to report issues and contribute changes
 
- - [Contribution guide for developers](https://github.com/linuxdeepin/developer-center/wiki/Contribution-Guidelines-for-Developers-en) (English)
- - [开发者代码贡献指南](https://github.com/linuxdeepin/developer-center/wiki/Contribution-Guidelines-for-Developers) (中文)
- 
+- [**Contribution guide for developers**](https://github.com/linuxdeepin/developer-center/wiki/Contribution-Guidelines-for-Developers-en) 
+
 ## License
-This project is licensed under GPLv3 or any later version.
+dde-clipboard is licensed under [GPL-3.0-or-later](LICENSE).
