@@ -18,9 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifdef USE_DEEPIN_KF5_WAYLAND
 #ifndef WAYLANDCOPYCLIENT_H
 #define WAYLANDCOPYCLIENT_H
-
 
 #include "iteminfo.h"
 
@@ -95,3 +96,4 @@ private:
 };
 
 #endif // WAYLANDCOPYCLIENT_H
+#endif

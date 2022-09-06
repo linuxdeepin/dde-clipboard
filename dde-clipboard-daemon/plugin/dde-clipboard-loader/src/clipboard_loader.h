@@ -22,7 +22,9 @@
 #define CLIPBOARDLOADER_H
 
 #include "constants.h"
+#ifdef USE_DEEPIN_KF5_WAYLAND
 #include "wayland_copy_client.h"
+#endif
 #include "iteminfo.h"
 
 #include <QObject>
@@ -62,7 +64,9 @@ private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
     QPixmap m_lastPix;
+#ifdef USE_DEEPIN_KF5_WAYLAND
     WaylandCopyClient *m_waylandCopyClient;
+#endif
 
     static QString m_pixPath;
 };

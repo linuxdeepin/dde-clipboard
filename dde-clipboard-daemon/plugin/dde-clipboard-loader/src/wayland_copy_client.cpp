@@ -18,6 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef USE_DEEPIN_KF5_WAYLAND
 #include "wayland_copy_client.h"
 
 #include "constants.h"
@@ -30,14 +31,14 @@
 #include <QMutexLocker>
 #include <QMutex>
 
-#include <KF5/KWayland/Client/connection_thread.h>
-#include <KF5/KWayland/Client/event_queue.h>
-#include <KF5/KWayland/Client/registry.h>
-#include <KF5/KWayland/Client/seat.h>
-#include <KF5/KWayland/Client/datacontroldevicemanager.h>
-#include <KF5/KWayland/Client/datacontroldevice.h>
-#include <KF5/KWayland/Client/datacontrolsource.h>
-#include <KF5/KWayland/Client/datacontroloffer.h>
+#include <KWayland/Client/connection_thread.h>
+#include <KWayland/Client/event_queue.h>
+#include <KWayland/Client/registry.h>
+#include <KWayland/Client/seat.h>
+#include <KWayland/Client/datacontroldevicemanager.h>
+#include <KWayland/Client/datacontroldevice.h>
+#include <KWayland/Client/datacontrolsource.h>
+#include <KWayland/Client/datacontroloffer.h>
 
 #include <unistd.h>
 
@@ -329,3 +330,4 @@ QList<QString> WaylandCopyClient::filterMimeType(const QList<QString> &mimeTypeL
 
     return tmpList;
 }
+#endif
