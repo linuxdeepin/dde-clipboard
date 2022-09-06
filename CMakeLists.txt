@@ -47,6 +47,20 @@ find_package(Qt5 COMPONENTS Core Widgets DBus Test REQUIRED)
 pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
 pkg_check_modules(GIO REQUIRED gio-qt)
 
+try_compile(USE_DEEPIN_KF5_WAYLAND
+              ${CMAKE_CURRENT_BINARY_DIR}/try_compile
+            SOURCES
+              ${CMAKE_CURRENT_SOURCE_DIR}/tests/kf5_wayland_test.cc
+            LINK_LIBRARIES
+              KF5::WaylandClient
+)
+
+message(STATUS "USE_DEEPIN_KF5_WAYLAND ${USE_DEEPIN_KF5_WAYLAND}")
+
+if(USE_DEEPIN_KF5_WAYLAND)
+  add_definitions(-DUSE_DEEPIN_KF5_WAYLAND)
+endif()
+
 function(generation_dbus_adaptor xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -a ${class_file} -c ${class_name} ${xml}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -182,7 +196,7 @@ set_target_properties(${PLUGIN_NAME} PROPERTIES
 target_include_directories(${PLUGIN_NAME} PUBLIC
   ${Qt5Widget_INCLUDE_DIRS}
   ${Qt5DBus_INCLUDE_DIRS}
-  KF5::WaylandServer
+  KF5::WaylandClient
   "dde-clipboard-daemon/plugin/dde-clipboard-loader/src"
   )
 

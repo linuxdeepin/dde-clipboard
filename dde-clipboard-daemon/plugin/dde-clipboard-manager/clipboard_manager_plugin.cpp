@@ -32,26 +32,33 @@
 #include <QTimer>
 
 #include "waylandcopyclient.h"
-
+#ifdef USE_DEEPIN_KF5_WAYLAND
 static WaylandCopyClient *manager = nullptr;
+#endif
 static UnloadFun unloadFun = nullptr;
 static QByteArray info;
 bool Start()
 {
     if (QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
+#ifdef USE_DEEPIN_KF5_WAYLAND
         manager = &WaylandCopyClient::ref();
         manager->init();
+#else
+        qWarning() << "we will not work with wayland";
+#endif
     }
     return true;
 }
 
 bool Stop()
 {
+#ifdef USE_DEEPIN_KF5_WAYLAND
     if (manager) {
         QDeferredDeleteEvent *event = new QDeferredDeleteEvent;
         qApp->postEvent(manager, event);
         manager = nullptr;
     }
+#endif
 
     if (unloadFun) {
         unloadFun = nullptr;
