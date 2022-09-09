@@ -29,15 +29,15 @@ make
 ```bash
 sudo make install
 ```
+
 ## Getting help
 
 Any usage issues can ask for help via
 
-* [Gitter](https://gitter.im/orgs/linuxdeepin/rooms)
-* [IRC channel](https://webchat.freenode.net/?channels=deepin)
-* [WiKi](https://wiki.deepin.org)
+* [Matrix](https://matrix.to/#/#deepin-community:matrix.org)
 * [Forum](https://bbs.deepin.org)
-* [Developer Center](https://github.com/linuxdeepin/dde-clipboard) 
+* [WiKi](https://wiki.deepin.org/)
+* [Developer Center](https://github.com/linuxdeepin/developer-center/issues) 
 
 ## Getting involved
 
