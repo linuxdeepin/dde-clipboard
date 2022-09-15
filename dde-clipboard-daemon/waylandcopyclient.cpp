@@ -212,25 +212,24 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
     // 将所有的数据插入到mime data中
     int mimeTypeCount = mimeTypeList.count();
     for (const QString &mimeType : mimeTypeList) {
-        int pipeFds[2];
-        if (pipe(pipeFds) != 0) {
-            qWarning() << "Create pipe failed.";
-            return;
-        }
-
-        // 根据mime类取数据，写入pipe中
-        offer->receive(mimeType, pipeFds[1]);
-        close(pipeFds[1]);
-
         // 异步从pipe中读取数据写入mime data中
-        QtConcurrent::run([pipeFds, this, mimeType, mimeTypeCount] {
+        QtConcurrent::run([offer, this, mimeType, mimeTypeCount] {
+            int pipeFds[2];
+            if (pipe(pipeFds) != 0) {
+                qWarning() << "Create pipe failed.";
+                return;
+            }
+
+            // 根据mime类取数据，写入pipe中
+            offer->receive(mimeType, pipeFds[1]);
+            m_connectionThreadObject->roundtrip();
+            close(pipeFds[1]);
+
             QFile readPipe;
             if (readPipe.open(pipeFds[0], QIODevice::ReadOnly)) {
                 if (readPipe.isReadable()) {
                     const QByteArray &data = readPipe.readAll();
                     if (!data.isEmpty()) {
-                        // 需要加锁进行同步，否则可能会崩溃
-                        QMutexLocker locker(&mimeDataLock);
                         m_mimeData->setData(mimeType, data);
                     } else {
                         qWarning() << "Pipe data is empty, mime type: " << mimeType;
@@ -238,6 +237,7 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
                 } else {
                     qWarning() << "Pipe is not readable";
                 }
+                readPipe.close();
             } else {
                 qWarning() << "Open pipe failed!";
             }
