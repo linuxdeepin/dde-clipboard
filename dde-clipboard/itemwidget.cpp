@@ -237,6 +237,7 @@ void ItemWidget::initUI()
     titleLayout->setSpacing(0);
     titleLayout->setContentsMargins(10, 0, 10, 0);
     titleLayout->addWidget(m_nameLabel);
+    titleLayout->addStretch();
     titleLayout->addWidget(m_timeLabel);
     titleLayout->addWidget(m_closeButton);
 

@@ -69,6 +69,8 @@ protected:
      * \~chinese \param event 事件
      */
     virtual void leaveEvent(QEvent *event) override;
+    virtual void resizeEvent(QResizeEvent *event) override;
+    virtual QSize sizeHint() const override;
 };
 
 #endif // ICONBUTTON_
