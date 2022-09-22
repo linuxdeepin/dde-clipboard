@@ -26,6 +26,8 @@ class DataControlOfferV1;
 } //Client
 } //KWayland
 
+class ReadPipeDataTask;
+
 using namespace KWayland::Client;
 
 class DMimeData : public QMimeData
@@ -64,6 +66,11 @@ protected slots:
     void onDataChanged();
 
 private:
+    void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
+    void tryStopOldTask();
+    void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
+
+private:
     QThread *m_connectionThread;
     ConnectionThread *m_connectionThreadObject;
     EventQueue *m_eventQueue;
@@ -72,6 +79,10 @@ private:
     DataControlSourceV1 *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
+
+    qint64 m_curOffer;
+    QStringList m_curMimeTypes;
+    QList<ReadPipeDataTask *> m_tasks;
 };
 
 #endif // COPYCLIENT_H
