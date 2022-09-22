@@ -178,16 +178,18 @@ void MainWindow::initUI()
     QWidget *titleWidget = new QWidget;
     QHBoxLayout *titleLayout = new QHBoxLayout(titleWidget);
     titleLayout->setContentsMargins(20, 0, 10, 0);
+    titleLayout->setAlignment(Qt::AlignVCenter);
 
     QLabel *titleLabel = new QLabel(tr("Clipboard"), this);
-    titleLabel->setFont(DFontSizeManager::instance()->t3());
+    DFontSizeManager::instance()->bind(titleLabel, DFontSizeManager::T3);
 
     m_clearButton = new IconButton(tr("Clear all"), this);
     connect(m_clearButton, &IconButton::clicked, m_model, &ClipboardModel::clear);
 
     titleLayout->addWidget(titleLabel);
+    titleLayout->addStretch();
     titleLayout->addWidget(m_clearButton);
-    m_clearButton->setFixedSize(100, 36);
+    m_clearButton->setFixedHeight(36);
     m_clearButton->setBackOpacity(200);
     m_clearButton->setRadius(8);
     m_clearButton->setVisible(false);

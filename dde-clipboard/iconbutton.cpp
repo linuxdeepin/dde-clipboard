@@ -76,6 +76,18 @@ void IconButton::paintEvent(QPaintEvent *event)
     }
 }
 
+QSize IconButton::sizeHint() const
+{
+    qDebug() << Q_FUNC_INFO;
+    return QSize(fontMetrics().width(m_text) + 20, fontMetrics().height() + 10);
+}
+
+void IconButton::resizeEvent(QResizeEvent *event)
+{
+    resize(QSize(fontMetrics().width(m_text) + 20, fontMetrics().height() + 10));
+    DWidget::resizeEvent(event);
+}
+
 /*!
  * \~chinese \name setFocusState
  * \~chinese \brief 控制按钮被选中时,设置m_hasFocus的状态
