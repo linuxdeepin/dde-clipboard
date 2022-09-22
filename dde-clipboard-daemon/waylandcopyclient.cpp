@@ -4,6 +4,7 @@
 
 #ifdef USE_DEEPIN_KF5_WAYLAND
 #include "waylandcopyclient.h"
+#include "readpipedatatask.h"
 
 #include <QEventLoop>
 #include <QMimeData>
@@ -138,6 +139,7 @@ WaylandCopyClient::WaylandCopyClient(QObject *parent)
     , m_copyControlSource(nullptr)
     , m_mimeData(new DMimeData())
     , m_seat(nullptr)
+    , m_curOffer(0)
 {
 
 }
@@ -201,53 +203,64 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
     if (mimeTypeList.isEmpty())
         return;
 
+    m_curMimeTypes = mimeTypeList;
+
+    if (m_curOffer && qint64(offer) != m_curOffer) {
+        tryStopOldTask();
+    }
+    m_curOffer = qint64(offer);
+
     if (!m_mimeData)
         m_mimeData = new DMimeData();
     m_mimeData->clear();
 
-    static int readCount = 0;
-    static QMutex mimeDataLock;
-    readCount = 0;
+    execTask(mimeTypeList, offer);
+}
 
-    // 将所有的数据插入到mime data中
-    int mimeTypeCount = mimeTypeList.count();
-    for (const QString &mimeType : mimeTypeList) {
-        int pipeFds[2];
-        if (pipe(pipeFds) != 0) {
-            qWarning() << "Create pipe failed.";
-            return;
+void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer)
+{
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (!threadPool)
+        return;
+
+    for (const QString &mimeType : mimeTypes) {
+        ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
+        connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
+        task->setAutoDelete(true);
+        threadPool->start(task);
+
+        m_tasks.append(task);
+    }
+}
+
+void WaylandCopyClient::tryStopOldTask()
+{
+    QThreadPool *threadPool = QThreadPool::globalInstance();
+    if (!threadPool)
+        return;
+
+    for (ReadPipeDataTask *task : m_tasks) {
+        if (!threadPool->tryTake(task)){
+            if (task)
+                task->stopRunning();
         }
+    }
+}
 
-        // 根据mime类取数据，写入pipe中
-        offer->receive(mimeType, pipeFds[1]);
-        close(pipeFds[1]);
+void WaylandCopyClient::taskDataReady(qint64 offer, const QString &mimeType, const QByteArray &data)
+{
+    if (offer != m_curOffer) {
+        return;
+    }
 
-        // 异步从pipe中读取数据写入mime data中
-        QtConcurrent::run([pipeFds, this, mimeType, mimeTypeCount] {
-            QFile readPipe;
-            if (readPipe.open(pipeFds[0], QIODevice::ReadOnly)) {
-                if (readPipe.isReadable()) {
-                    const QByteArray &data = readPipe.readAll();
-                    if (!data.isEmpty()) {
-                        // 需要加锁进行同步，否则可能会崩溃
-                        QMutexLocker locker(&mimeDataLock);
-                        m_mimeData->setData(mimeType, data);
-                    } else {
-                        qWarning() << "Pipe data is empty, mime type: " << mimeType;
-                    }
-                } else {
-                    qWarning() << "Pipe is not readable";
-                }
-            } else {
-                qWarning() << "Open pipe failed!";
-            }
+    m_curMimeTypes.removeOne(mimeType);
 
-            close(pipeFds[0]);
-            if (++readCount >= mimeTypeCount) {
-                readCount = 0;
-                emit this->dataChanged();
-            }
-        });
+    m_mimeData->setData(mimeType, data);
+    if (m_curMimeTypes.isEmpty()) {
+        m_curOffer = 0;
+        m_tasks.clear();
+
+        Q_EMIT dataChanged();
     }
 }
 
@@ -319,4 +332,5 @@ QStringList WaylandCopyClient::filterMimeType(const QStringList &mimeTypeList)
 
     return tmpList;
 }
+
 #endif
