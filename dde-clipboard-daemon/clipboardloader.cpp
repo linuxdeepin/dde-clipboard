@@ -90,7 +90,6 @@ ClipboardLoader::ClipboardLoader(QObject *parent)
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
 #ifdef USE_DEEPIN_KF5_WAYLAND
         m_waylandCopyClient = new WaylandCopyClient(this);
-        m_waylandCopyClient->init();
 
         connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
             this->doWork(WAYLAND_PROTOCOL);
