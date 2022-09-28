@@ -39,12 +39,12 @@ Copyright: None
 License: CC0-1.0
 
 # xml2cpp
-Files: dde-clipboard/dbus/*
+Files: src/dde-clipboard/dbus/*
 Copyright: The Qt Company Ltd.
 License: CC0-1.0
 
 # xml 
-Files: dde-clipboard/com.deepin.dde.Clipboard.xml
+Files: src/dde-clipboard/com.deepin.dde.Clipboard.xml
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
 
