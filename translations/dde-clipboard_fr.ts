@@ -71,7 +71,7 @@
     <message>
         <location filename="../mainwindow.cpp" line="187"/>
         <source>Clipboard</source>
-        <translation>Presse-papiers </translation>
+        <translation>Presse-papiers</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="190"/>
