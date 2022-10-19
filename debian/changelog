@@ -1,3 +1,11 @@
+dde-clipboard (6.0.1) unstable; urgency=medium
+
+  [ Deepin Packages Builder ]
+  * fix: fix time format issue in chagelog(Influence: 无)
+  * fix: 修复v23wayland下剪切板无数据的问题。(Bug: 147089)(Influence: 剪切板全量功能，尤其是wayland下剪切板功能。)
+
+ -- baodi <baodi@uniontech.com>  Wed, 19 Oct 2022 13:04:00 +0800
+
 dde-clipboard (6.0.0) unstable; urgency=low
 
   * release 6.0.0
