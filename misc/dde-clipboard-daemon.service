@@ -1,12 +1,15 @@
 [Unit]
 Description=dde-clipboard-daemon
 
+Wants=dde-session-daemon.target
+After=dde-session-daemon.target
+
 [Service]
 Type=dbus
 BusName=com.deepin.daemon.Clipboard
 ExecStart=/usr/bin/dde-clipboard-daemon
-Restart=always
-RestartSec=1
+TimeoutStartSec=infinity
+Slice=components.slice
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=dde-session-daemon.target
