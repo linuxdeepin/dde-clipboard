@@ -29,12 +29,12 @@ ClipboardDaemon::ClipboardDaemon(QObject *parent)
     : QObject(parent)
 {
     QDBusConnection connection = QDBusConnection::sessionBus();
-    if (!connection.registerService("com.deepin.dde.ClipboardLoader")) {
+    if (!connection.registerService("org.deepin.dde.ClipboardLoader1")) {
         qInfo() << "error:" << connection.lastError().message();
     }
 
     ClipboardLoader *clipboardLoader = new ClipboardLoader(this);
-    connection.registerObject("/com/deepin/dde/ClipboardLoader", clipboardLoader,
+    connection.registerObject("/org/deepin/dde/ClipboardLoader1", clipboardLoader,
                               QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
 
     // 剪切板管理和提供UI数据的功能合并，WaylandCopyClient只实例化一次
