@@ -1,3 +1,12 @@
+dde-clipboard (1:6.0.2) unstable; urgency=medium
+
+  [ TagBuilder ]
+  * chore: Retrigger build(Influence: 无)
+  * fix: 修复注销时反复尝试启动的问题(Task: 203055)(Influence: 理论上加快注销的时间)
+  * chore: V23接口改造适配(Task: 207483)(Influence: 无)
+
+ -- zhaoyingzhen <zhaoyingzhen@uniontech.com>  Tue, 13 Dec 2022 17:38:08 +0800
+
 dde-clipboard (6.0.1) unstable; urgency=medium
 
   [ Deepin Packages Builder ]
