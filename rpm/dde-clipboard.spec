@@ -50,7 +50,7 @@ popd
 /etc/xdg/autostart/dde-clipboard.desktop
 %{_bindir}/%{name}
 %{_bindir}/%{name}loader
-%{_datadir}/dbus-1/services/org.deepin.dde.Clipboard1.service
+%{_datadir}/dbus-1/services/com.deepin.dde.Clipboard.service
 %{_datadir}/%{name}/translations/
 %{_datadir}/applications/dde-clipboard.desktop
 

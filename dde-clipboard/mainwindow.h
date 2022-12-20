@@ -34,9 +34,9 @@
 #include <DWindowManagerHelper>
 #include <DRegionMonitor>
 
-#include "monitor_interface.h"
-#include "dock_interface.h"
-#include "display_interface.h"
+#include <com_deepin_daemon_display_monitor.h>
+#include <com_deepin_dde_daemon_dock.h>
+#include <com_deepin_daemon_display.h>
 
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
@@ -45,9 +45,9 @@ class QPushButton;
 class QPropertyAnimation;
 class QSequentialAnimationGroup;
 
-using DBusDisplay = org::deepin::dde::Display1;
-using DisplayMonitor = org::deepin::dde::display1::Monitor;
-using DBusDaemonDock = org::deepin::dde::daemon::Dock1;
+using DBusDisplay = com::deepin::daemon::Display;
+using DisplayMonitor = com::deepin::daemon::display::Monitor;
+using DBusDaemonDock = com::deepin::dde::daemon::Dock;
 
 /*!
  * \~chinese \class MainWindow

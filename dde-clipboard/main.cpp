@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 
     MainWindow w;
 
-    QDBusInterface interface("org.deepin.dde.ClipboardLoader1", "/org/deepin/dde/ClipboardLoader1",
-                                 "org.deepin.dde.ClipboardLoader1",
+    QDBusInterface interface("com.deepin.dde.ClipboardLoader", "/com/deepin/dde/ClipboardLoader",
+                                 "com.deepin.dde.ClipboardLoader",
                                  QDBusConnection::sessionBus());
     if (!interface.isValid()) {
         qDebug() << "start loader...";

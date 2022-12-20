@@ -50,8 +50,8 @@ const static int ContentMargin = 21;
 const static int TextContentTopMargin = 20;
 const static int AnimationTime = 300;           //ms
 
-static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
-static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";
+static const QString DBusClipBoardService = "com.deepin.dde.Clipboard";
+static const QString DBusClipBoardPath = "/com/deepin/dde/Clipboard";
 
 static const QString TextUriListLiteral QStringLiteral("text/uri-list");
 static const QString TextHtmlLiteral QStringLiteral("text/html");

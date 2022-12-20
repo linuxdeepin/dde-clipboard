@@ -6,7 +6,7 @@ After=dde-session-daemon.target
 
 [Service]
 Type=dbus
-BusName=org.deepin.dde.daemon.Clipboard1
+BusName=com.deepin.daemon.Clipboard
 ExecStart=/usr/bin/dde-clipboard-daemon
 TimeoutStartSec=infinity
 Slice=components.slice

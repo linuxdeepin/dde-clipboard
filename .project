@@ -2,6 +2,7 @@
        "type": "homebrew",
        "3rdparty": [],
        "ignore": ["dde-clipboard/translations", "debian"],
-       "license": ["GPLv3"]
+       "license": ["GPLv3"],
+       "importantFile": ["dde-clipboard/dde-clipboard.desktop", "dde-clipboard/com.deepin.dde.Clipboard.service", "LICENSE"]
 }
 
