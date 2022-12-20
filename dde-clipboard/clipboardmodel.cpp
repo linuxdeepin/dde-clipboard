@@ -30,8 +30,8 @@
 
 ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListModel(parent)
     , m_list(list)
-    , m_loaderInter(new ClipboardLoader("com.deepin.dde.ClipboardLoader",
-                                        "/com/deepin/dde/ClipboardLoader",
+    , m_loaderInter(new ClipboardLoader("org.deepin.dde.ClipboardLoader1",
+                                        "/org/deepin/dde/ClipboardLoader1",
                                         QDBusConnection::sessionBus(), this))
 {
     checkDbusConnect();

@@ -39,12 +39,12 @@
 #define DOCK_BOTTOM     2
 #define DOCK_LEFT       3
 
-#define MONITOR_SERVICE "com.deepin.api.XEventMonitor"
+#define MONITOR_SERVICE "org.deepin.dde.XEventMonitor1"
 
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
-    , m_displayInter(new DBusDisplay("com.deepin.daemon.Display", "/com/deepin/daemon/Display", QDBusConnection::sessionBus(), this))
-    , m_daemonDockInter(new DBusDaemonDock("com.deepin.dde.daemon.Dock", "/com/deepin/dde/daemon/Dock", QDBusConnection::sessionBus(), this))
+    , m_displayInter(new DBusDisplay("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::sessionBus(), this))
+    , m_daemonDockInter(new DBusDaemonDock("org.deepin.dde.daemon.Dock1", "/org/deepin/dde/daemon/Dock1", QDBusConnection::sessionBus(), this))
     , m_dockInter(new DBusDockInterface)
     , m_regionMonitor(nullptr)
     , m_content(new DWidget(parent))

@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.deepin.dde.Clipboard1
+Exec=/usr/bin/qdbus --literal org.desktopspec.ApplicationManager1 /org/desktopspec/ApplicationManager1 org.desktopspec.ApplicationManager1.Launch /usr/share/applications/dde-clipboard.desktop
