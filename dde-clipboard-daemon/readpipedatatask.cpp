@@ -46,7 +46,6 @@ void ReadPipeDataTask::run()
 
     // 根据mime类取数据，写入pipe中
     m_pOffer->receive(m_mimeType, pipeFds[1]);
-    m_pConnectionThread->roundtrip();
     close(pipeFds[1]);
 
     QByteArray data;
