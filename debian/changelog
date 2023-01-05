@@ -1,3 +1,9 @@
+dde-clipboard (5.4.25) UNRELEASED; urgency=medium
+
+  * update changelog for tag 5.4.25
+
+ -- Deepin Packages Builder <packages@deepin.com>  Mon, 01 Jan 2023 15:26:28 +0800
+
 dde-clipboard (1.0.0) unstable; urgency=low
 
   * Autobuild Tag 1.0.0
