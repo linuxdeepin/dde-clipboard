@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <qobject.h>
+#include <qobjectdefs.h>
+#include <qrunnable.h>
 #ifdef USE_DEEPIN_KF5_WAYLAND
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
@@ -10,6 +13,7 @@
 #include <QMimeData>
 #include <QPointer>
 #include <QMimeType>
+#include <QWaitCondition>
 
 namespace KWayland
 {
@@ -26,9 +30,8 @@ class DataControlOfferV1;
 } //Client
 } //KWayland
 
-class ReadPipeDataTask;
-
 using namespace KWayland::Client;
+
 
 class DMimeData : public QMimeData
 {
@@ -40,9 +43,12 @@ public:
                                       QVariant::Type preferredType) const;
 };
 
+class CommandServiceManager;
+class CommandService;
 class WaylandCopyClient : public QObject
 {
     Q_OBJECT
+    friend class RequestReceiveCommand;
 
 public:
     explicit WaylandCopyClient(QObject *parent = nullptr);
@@ -52,23 +58,25 @@ public:
     const QMimeData *mimeData();
     void setMimeData(QMimeData *mimeData);
     void sendOffer();
+    void call();
 
-private:
     void setupRegistry(Registry *registry);
+private:
+    void setupRegistry();
     QStringList filterMimeType(const QStringList &mimeTypeList);
+    void cleanServiceFlow(CommandService *service);
+    void wakePipeSyncCondition();
 
 Q_SIGNALS:
     void dataChanged();
 
 protected slots:
-    void onSendDataRequest(const QString &mimeType, qint32 fd) const;
+    void onThreadConnected();
+    void onSendDataRequest(const QString &mimeType, qint32 fd);
     void onDataOffered(DataControlOfferV1 *offer);
-    void onDataChanged();
-
-private:
-    void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
-    void tryStopOldTask();
-    void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
+    void onRegistrySeatAnnounced(quint32 name, quint32 version);
+    void onDeviceManagerAnnounced(quint32 name, quint32 version);
+    void onServiceFlowFinished(bool success);
 
 private:
     QThread *m_connectionThread;
@@ -79,10 +87,14 @@ private:
     DataControlSourceV1 *m_copyControlSource;
     QPointer<QMimeData> m_mimeData;
     Seat *m_seat;
-
-    qint64 m_curOffer;
-    QStringList m_curMimeTypes;
-    QList<ReadPipeDataTask *> m_tasks;
+    CommandServiceManager *m_manager;
+    Registry *m_registry;
+    QList<CommandService *> m_runningRootService;
+    QMutex m_pipeSyncMutex;
+    // REMOVE IT: 窗管无法支持异步执行,因此使用服务流时需要额外的进行同步操作
+    // 否则可能出现访问野指针的风险.
+    QWaitCondition m_pipeSyncCondition;
+    QList<CommandService *> m_writeServices;
 };
 
 #endif // COPYCLIENT_H

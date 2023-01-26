@@ -139,6 +139,8 @@ install(TARGETS ${BIN_NAME} DESTINATION bin)
 set(BIN_NAME dde-clipboard-daemon)
 
 file(GLOB_RECURSE dde-clipboard-daemon_SCRS
+   "dde-clipboard-daemon/serviceflow/*.h"
+   "dde-clipboard-daemon/serviceflow/*.cpp"
    "dde-clipboard-daemon/*.h"
    "dde-clipboard-daemon/*.cpp"
 )

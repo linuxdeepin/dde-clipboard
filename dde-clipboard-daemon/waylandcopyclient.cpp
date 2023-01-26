@@ -1,17 +1,17 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+﻿// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifdef USE_DEEPIN_KF5_WAYLAND
 #include "waylandcopyclient.h"
-#include "readpipedatatask.h"
+#include "serviceflow/servicemanager.h"
+#include "serviceflow/waylandcopyservice.h"
 
-#include <QEventLoop>
-#include <QMimeData>
 #include <QImageReader>
-#include <QtConcurrent/QtConcurrent>
-#include <QImageWriter>
+#include <QMimeData>
 #include <QMutexLocker>
+#include <QThread>
+#include <QDebug>
 
 #include <KWayland/Client/connection_thread.h>
 #include <KWayland/Client/event_queue.h>
@@ -45,41 +45,7 @@ static inline QStringList imageReadMimeFormats()
     return imageMimeFormats(QImageReader::supportedImageFormats());
 }
 
-static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
-{
-    QByteArray content;
-    if (mimeType == QLatin1String("text/plain")) {
-        content = mimeData->text().toUtf8();
-    } else if (mimeData->hasImage()
-               && (mimeType == QLatin1String("application/x-qt-image")
-                   || mimeType.startsWith(QLatin1String("image/")))) {
-        QImage image = qvariant_cast<QImage>(mimeData->imageData());
-        if (!image.isNull()) {
-            QBuffer buf;
-            buf.open(QIODevice::ReadWrite);
-            QByteArray fmt = "BMP";
-            if (mimeType.startsWith(QLatin1String("image/"))) {
-                QByteArray imgFmt = mimeType.mid(6).toUpper().toLatin1();
-                if (QImageWriter::supportedImageFormats().contains(imgFmt))
-                    fmt = imgFmt;
-            }
-            QImageWriter wr(&buf, fmt);
-            wr.write(image);
-            content = buf.buffer();
-        }
-    } else if (mimeType == QLatin1String("application/x-color")) {
-        content = qvariant_cast<QColor>(mimeData->colorData()).name().toLatin1();
-    } else if (mimeType == QLatin1String("text/uri-list")) {
-        QList<QUrl> urls = mimeData->urls();
-        for (int i = 0; i < urls.count(); ++i) {
-            content.append(urls.at(i).toEncoded());
-            content.append('\n');
-        }
-    } else {
-        content = mimeData->data(mimeType);
-    }
-    return content;
-}
+
 
 DMimeData::DMimeData()
 {
@@ -139,9 +105,10 @@ WaylandCopyClient::WaylandCopyClient(QObject *parent)
     , m_copyControlSource(nullptr)
     , m_mimeData(new DMimeData())
     , m_seat(nullptr)
-    , m_curOffer(0)
+    , m_manager(new CommandServiceManager())
+    , m_registry(nullptr)
 {
-
+    init();
 }
 
 WaylandCopyClient::~WaylandCopyClient()
@@ -152,121 +119,141 @@ WaylandCopyClient::~WaylandCopyClient()
 
     if (m_mimeData)
         m_mimeData->deleteLater();
+
+    m_manager->unregisterService(m_writeServices[0]);
+    delete m_manager;
+    qDeleteAll(m_writeServices);
+    qDeleteAll(m_runningRootService);
 }
 
 void WaylandCopyClient::init()
 {
-    connect(m_connectionThreadObject, &ConnectionThread::connected, this, [this] {
-        m_eventQueue = new EventQueue(this);
-        m_eventQueue->setup(m_connectionThreadObject);
+    // alows 10 service flow to run.
+    m_manager->setMaxServiceCount(10);
 
-        Registry *registry = new Registry(this);
-        setupRegistry(registry);
-    }, Qt::QueuedConnection );
+    connect(m_connectionThreadObject, &ConnectionThread::connected, this, &WaylandCopyClient::onThreadConnected, Qt::UniqueConnection);
     m_connectionThreadObject->moveToThread(m_connectionThread);
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
-
-    // clipboard Manager的功能
-    connect(this, &WaylandCopyClient::dataChanged, this, &WaylandCopyClient::onDataChanged);
 }
 
-void WaylandCopyClient::setupRegistry(Registry *registry)
+void WaylandCopyClient::setupRegistry()
 {
-    connect(registry, &Registry::seatAnnounced, this, [this, registry] (quint32 name, quint32 version) {
-        m_seat = registry->createSeat(name, version, this);
-    });
+    if (m_registry)
+        delete m_registry;
 
-    connect(registry, &Registry::dataControlDeviceManagerAnnounced, this, [this, registry] (quint32 name, quint32 version) {
-        m_dataControlDeviceManager = registry->createDataControlDeviceManager(name, version, this);
-        m_dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
+    m_registry = new Registry(this);
+    connect(m_registry, &Registry::seatAnnounced, this, &WaylandCopyClient::onRegistrySeatAnnounced, Qt::UniqueConnection);
+    connect(m_registry, &Registry::dataControlDeviceManagerAnnounced, this, &WaylandCopyClient::onDeviceManagerAnnounced, Qt::UniqueConnection);
 
-        connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [&] {
-                m_copyControlSource = nullptr;
-                sendOffer();
-        });
-
-        connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
-    });
-
-    registry->setEventQueue(m_eventQueue);
-    registry->create(m_connectionThreadObject);
-    registry->setup();
+    m_registry->setEventQueue(m_eventQueue);
+    m_registry->create(m_connectionThreadObject);
+    m_registry->setup();
 }
 
-void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offer)
+void WaylandCopyClient::cleanServiceFlow(CommandService *service)
 {
-    if (!offer)
-        return;
+    auto root = m_manager->findRootService(service);
+    Q_ASSERT(root);
 
-    QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
-    if (mimeTypeList.isEmpty())
-        return;
-
-    m_curMimeTypes = mimeTypeList;
-
-    if (m_curOffer && qint64(offer) != m_curOffer) {
-        tryStopOldTask();
+    m_manager->unregisterService(root);
+    m_runningRootService.removeAll(root);
+    QList<CommandService *> services = {root};
+    CommandService *header = root;
+    while (auto next = header->nextService()) {
+        services.append(next);
+        header = next;
     }
-    m_curOffer = qint64(offer);
-
-    if (!m_mimeData)
-        m_mimeData = new DMimeData();
-    m_mimeData->clear();
-
-    execTask(mimeTypeList, offer);
+    // clean service;
+    qDeleteAll(services);
 }
 
-void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer)
+void WaylandCopyClient::wakePipeSyncCondition()
 {
-    QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (!threadPool)
-        return;
-
-    for (const QString &mimeType : mimeTypes) {
-        ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
-        connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
-        task->setAutoDelete(true);
-        threadPool->start(task);
-
-        m_tasks.append(task);
-    }
+    m_pipeSyncCondition.wakeOne();
 }
 
-void WaylandCopyClient::tryStopOldTask()
+void WaylandCopyClient::onThreadConnected()
 {
-    QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (!threadPool)
+    if (m_eventQueue)
+        delete m_eventQueue;
+
+    m_eventQueue = new EventQueue(this);
+    m_eventQueue->setup(m_connectionThreadObject);
+    setupRegistry();
+}
+
+void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1 *offer)
+{
+    MimeDataFilterService *mimefilterService = new MimeDataFilterService();
+    RequestReceiveService *requestReceiveService = new RequestReceiveService(this);
+    ReadDataService *readDataService = new ReadDataService();
+    SyncMimeDataService *syncMimeDataService = new SyncMimeDataService();
+
+    mimefilterService->setNextService(requestReceiveService);
+    requestReceiveService->setNextService(readDataService);
+    readDataService->setNextService(syncMimeDataService);
+
+    connect(syncMimeDataService, &SyncMimeDataService::finished, this, &WaylandCopyClient::onServiceFlowFinished);
+
+    m_manager->registerService(mimefilterService);
+    m_runningRootService.append(mimefilterService);
+    m_manager->start(mimefilterService);
+
+    PipeCommandMessage *msg = new PipeCommandMessage();
+    msg->offer = offer;
+    msg->mimeData = m_mimeData;
+    msg->srcMimeTypes = offer->offeredMimeTypes();
+    m_manager->appendFlowMessage(msg, mimefilterService);
+
+    QMutexLocker locker(&m_pipeSyncMutex);
+    m_pipeSyncCondition.wait(&m_pipeSyncMutex);
+}
+
+void WaylandCopyClient::onRegistrySeatAnnounced(quint32 name, quint32 version)
+{
+    if (!m_registry->isValid())
+        return;
+    m_seat = m_registry->createSeat(name, version, this);
+}
+
+void WaylandCopyClient::onDeviceManagerAnnounced(quint32 name, quint32 version)
+{
+    if (m_dataControlDeviceManager)
+        m_dataControlDeviceManager->destroy();
+
+    m_dataControlDeviceManager = m_registry->createDataControlDeviceManager(name, version, this);
+    if (!m_dataControlDeviceManager->isValid())
         return;
 
-    for (ReadPipeDataTask *task : m_tasks) {
-        if (!threadPool->tryTake(task)){
-            if (task)
-                task->stopRunning();
+    auto dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
+    if (dataControlDevice != m_dataControlDevice) {
+        m_dataControlDevice = dataControlDevice;
+
+        if (m_dataControlDevice) {
+            connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [&] {
+                    m_copyControlSource = nullptr;
+                    sendOffer();
+            });
+
+            connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
         }
     }
 }
 
-void WaylandCopyClient::taskDataReady(qint64 offer, const QString &mimeType, const QByteArray &data)
+void WaylandCopyClient::onServiceFlowFinished(bool success)
 {
-    if (offer != m_curOffer) {
+    SyncMimeDataService *service = dynamic_cast<SyncMimeDataService *>(sender());
+    if (!service)
         return;
-    }
 
-    m_curMimeTypes.removeOne(mimeType);
-
-    m_mimeData->setData(mimeType, data);
-    if (m_curMimeTypes.isEmpty()) {
-        m_curOffer = 0;
-        m_tasks.clear();
-
+    if (success) {
+        // all data has updated.
         Q_EMIT dataChanged();
+        sendOffer();
     }
-}
 
-void WaylandCopyClient::onDataChanged()
-{
-    sendOffer();
+    cleanServiceFlow(service);
 }
 
 const QMimeData* WaylandCopyClient::mimeData()
@@ -287,11 +274,17 @@ void WaylandCopyClient::setMimeData(QMimeData *mimeData)
 
 void WaylandCopyClient::sendOffer()
 {
+    if (m_copyControlSource) {
+        m_copyControlSource->deleteLater();
+        disconnect(m_copyControlSource);
+    }
+
     m_copyControlSource = m_dataControlDeviceManager->createDataSource(this);
     if (!m_copyControlSource)
         return;
 
     connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
+
     for (const QString &format : m_mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
         if (ApplicationXQtImageLiteral == format) {
@@ -308,29 +301,25 @@ void WaylandCopyClient::sendOffer()
     m_connectionThreadObject->flush();
 }
 
-void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) const
+void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd)
 {
-    QFile f;
-    if (f.open(fd, QFile::WriteOnly, QFile::AutoCloseHandle)) {
-        const QByteArray &ba = getByteArray(m_mimeData, mimeType);
-        f.write(ba);
-        f.close();
-    }
-}
+    if (m_writeServices.isEmpty()) {
+         CollectWrittenDataService *collectService = new CollectWrittenDataService();
+         WriteDataToFDService *wfdService = new WriteDataToFDService();
+         collectService->setNextService(wfdService);
 
-QStringList WaylandCopyClient::filterMimeType(const QStringList &mimeTypeList)
-{
-    QStringList tmpList;
-    for (const QString &mimeType : mimeTypeList) {
-        // 根据窗管的要求，不读取纯大写、和不含'/'的字段，因为源窗口可能没有写入这些字段的数据，导致获取数据的线程一直等待。
-        if ((mimeType.contains("/") && mimeType.toUpper() != mimeType)
-            || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
-            || mimeType == "TIMESTAMP") {
-            tmpList.append(mimeType);
-        }
+         this->m_writeServices.insert(0, collectService);
+         this->m_writeServices.insert(1, wfdService);
+
+         this->m_manager->registerService(collectService);
+         this->m_manager->start(collectService);
     }
 
-    return tmpList;
+    WriteDataMessage *writeMsg = new WriteDataMessage();
+    writeMsg->fd = fd;
+    writeMsg->mimeType = mimeType;
+    writeMsg->mimeData = m_mimeData;
+    m_manager->appendFlowMessage(writeMsg, this->m_writeServices[0]);
 }
 
 #endif
