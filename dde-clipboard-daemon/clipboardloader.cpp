@@ -1,7 +1,23 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
-//
-// SPDX-License-Identifier: GPL-3.0-or-later
-
+/*
+ * Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
+ *
+ * Author:     fanpengcheng_cm <fanpengcheng_cm@deepin.com>
+ *
+ * Maintainer: fanpengcheng_cm <fanpengcheng_cm@deepin.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "clipboardloader.h"
 
 #include <QApplication>
@@ -83,21 +99,16 @@ QString ClipboardLoader::m_pixPath;
 ClipboardLoader::ClipboardLoader(QObject *parent)
     : QObject(parent)
     , m_board(nullptr)
-#ifdef USE_DEEPIN_KF5_WAYLAND
     , m_waylandCopyClient(nullptr)
 #endif
 {
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
-#ifdef USE_DEEPIN_KF5_WAYLAND
         m_waylandCopyClient = new WaylandCopyClient(this);
         m_waylandCopyClient->init();
 
         connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
             this->doWork(WAYLAND_PROTOCOL);
         });
-#else
-        qWarning() << "we will not work with wayland";
-#endif
     } else {
         m_board = qApp->clipboard();
         connect(m_board, &QClipboard::dataChanged, this, [this] {
@@ -135,7 +146,6 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
     if (m_board)
         m_board->setMimeData(mimeData);
 
-#ifdef USE_DEEPIN_KF5_WAYLAND
     if (m_waylandCopyClient)
         m_waylandCopyClient->setMimeData(mimeData);
 #endif
@@ -149,8 +159,7 @@ void ClipboardLoader::doWork(int protocolType)
     // 快速复制时mimedata很可能是无效的(一般表现为获取的数据为空), 下面是qt的说明
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
-    // or externally by the system clipboard changing.
-#ifdef USE_DEEPIN_KF5_WAYLAND
+    // or externally by the system clipboard changing.`
     const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
 #else
     const QMimeData *mimeData = m_board->mimeData();

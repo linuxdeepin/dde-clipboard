@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef USE_DEEPIN_KF5_WAYLAND
 #ifndef READ_PIPE_DATA_TASK_H
 #define READ_PIPE_DATA_TASK_H
 
@@ -48,6 +47,4 @@ private:
     ConnectionThread *m_pConnectionThread;
 };
 
-
 #endif //READ_PIPE_DATA_TASK_H
-#endif // USE_DEEPIN_KF5_WAYLAND

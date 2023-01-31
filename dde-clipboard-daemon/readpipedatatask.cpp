@@ -2,15 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef USE_DEEPIN_KF5_WAYLAND
 #include "readpipedatatask.h"
 
 #include <QDebug>
 #include <QFile>
 #include <utility>
 
-#include <KWayland/Client/connection_thread.h>
-#include <KWayland/Client/datacontroloffer.h>
+#include <DWayland/Client/connection_thread.h>
+#include <DWayland/Client/datacontroloffer.h>
 
 #include <unistd.h>
 
@@ -46,6 +45,7 @@ void ReadPipeDataTask::run()
 
     // 根据mime类取数据，写入pipe中
     m_pOffer->receive(m_mimeType, pipeFds[1]);
+    m_pConnectionThread->roundtrip();
     close(pipeFds[1]);
 
     QByteArray data;
@@ -92,5 +92,4 @@ bool ReadPipeDataTask::readData(int fd, QByteArray &data)
     return true;
 }
 
-#endif // USE_DEEPIN_KF5_WAYLAND
 

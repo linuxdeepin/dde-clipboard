@@ -415,7 +415,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
         m_contentLabel->setEnabled(false);
         QFontMetrics metrix = m_statusLabel->fontMetrics();
         QString tips = tr("(File deleted)");
-        int tipsWidth = metrix.width(tips);
+        int tipsWidth = metrix.horizontalAdvance(tips);
         QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
         m_statusLabel->setText(text + tips);
     }
@@ -657,7 +657,7 @@ void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
             m_contentLabel->setEnabled(false);
             QFontMetrics metrix = m_statusLabel->fontMetrics();
             QString tips = tr("(File deleted)");
-            int tipsWidth = metrix.width(tips);
+            int tipsWidth = metrix.horizontalAdvance(tips);
             QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
             m_statusLabel->setText(text + tips);
 

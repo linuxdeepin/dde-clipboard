@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.16)
 
 set(BIN_NAME dde-clipboard)
 
@@ -41,10 +41,13 @@ endif ()
 # Find the library
 find_package(PkgConfig REQUIRED)
 find_package(DtkWidget REQUIRED)
-find_package(KF5Wayland REQUIRED)
+find_package(DtkCore REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets DBus Test REQUIRED)
 
-pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
+find_package(ECM REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+find_package(DWayland REQUIRED)
+
 pkg_check_modules(GIO REQUIRED gio-qt)
 
 try_compile(USE_DEEPIN_KF5_WAYLAND
@@ -66,6 +69,12 @@ function(generation_dbus_adaptor xml class_name class_file option)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endfunction(generation_dbus_adaptor)
 
+set(DBUS_INTERFACE ${PROJECT_SOURCE_DIR}/dbus/interface)
+function(generation_dbus_interface xml class_name class_file)
+    execute_process(COMMAND qdbusxml2cpp-fix -c ${class_name} -p ${class_file} ${xml}
+        WORKING_DIRECTORY ${DBUS_INTERFACE})
+endfunction(generation_dbus_interface)
+
 include_directories(
     dde-clipboard
     dde-clipboard/dbus
@@ -75,11 +84,38 @@ include_directories(
 
 #----------------------------dde-clipboard------------------------------
 generation_dbus_adaptor(
-    ${CMAKE_SOURCE_DIR}/dde-clipboard/com.deepin.dde.Clipboard.xml
+    ${CMAKE_SOURCE_DIR}/dde-clipboard/org.deepin.dde.Clipboard1.xml
     ClipboardAdaptor
     ${CMAKE_CURRENT_BINARY_DIR}/clipboard_adaptor
     -N
 )
+
+generation_dbus_interface(
+    ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.Monitor.xml
+    Monitor
+    ${DBUS_INTERFACE}/monitor_interface
+)
+
+generation_dbus_interface(
+    ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.xml
+    Display1
+    ${DBUS_INTERFACE}/display_interface
+)
+
+generation_dbus_interface(
+    ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.daemon.Dock1.xml
+    Dock1
+    ${DBUS_INTERFACE}/dock_interface
+)
+
+include_directories(
+    ${PROJECT_SOURCE_DIR}/dbus/interface
+    ${PROJECT_SOURCE_DIR}/dbus/types
+    ${PROJECT_SOURCE_DIR}/dbus
+)
+
+aux_source_directory(dbus/types DBUS_TYPES)
+aux_source_directory(dbus/interface DBUS_INTERFACES)
 
 set(Clipboard_DBUS_SCRS
     ${CMAKE_CURRENT_BINARY_DIR}/clipboard_adaptor.h
@@ -96,11 +132,12 @@ add_executable(${BIN_NAME}
     ${Clipboard_SCRS}
     ${Clipboard_DBUS_SCRS}
     dde-clipboard/main.cpp
+    ${DBUS_INTERFACES}
+    ${DBUS_TYPES}
 )
 target_include_directories(${BIN_NAME} PUBLIC
     ${DtkWidget_INCLUDE_DIRS}
     ${GIO_INCLUDE_DIRS}
-    ${DFrameworkDBus_INCLUDE_DIRS}
     ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
     Qt5::Core
     Qt5::Widgets
@@ -110,7 +147,6 @@ target_include_directories(${BIN_NAME} PUBLIC
 target_link_libraries(${BIN_NAME} PRIVATE
     ${DtkWidget_LIBRARIES}
     ${GIO_LIBRARIES}
-    ${DFrameworkDBus_LIBRARIES}
     Qt5::Core
     Qt5::Widgets
     Qt5::DBus
@@ -129,7 +165,7 @@ set(AUTOSTART_FILE ${DESKTOP_FILE})
 install(FILES ${AUTOSTART_FILE} DESTINATION /etc/xdg/autostart)
 
 ## dbus service
-file(GLOB SERVICE_FILE "misc/com.deepin.dde.Clipboard.service")
+file(GLOB SERVICE_FILE "misc/org.deepin.dde.Clipboard1.service")
 install(FILES ${SERVICE_FILE} DESTINATION share/dbus-1/services)
 
 ## bin
@@ -139,8 +175,8 @@ install(TARGETS ${BIN_NAME} DESTINATION bin)
 set(BIN_NAME dde-clipboard-daemon)
 
 file(GLOB_RECURSE dde-clipboard-daemon_SCRS
-   "dde-clipboard-daemon/*.h"
-   "dde-clipboard-daemon/*.cpp"
+        "dde-clipboard-daemon/*.h"
+        "dde-clipboard-daemon/*.cpp"
 )
 
 add_executable(${BIN_NAME}
@@ -159,7 +195,7 @@ target_link_libraries(${BIN_NAME} PRIVATE
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
   ${DtkCore_LIBRARIES}
-  KF5::WaylandClient
+  DWaylandClient
 )
 
 install(TARGETS ${BIN_NAME} DESTINATION bin)
@@ -186,12 +222,15 @@ add_executable(${UT_BIN_NAME}
     ${Clipboard_SCRS}
     ${Clipboard_DBUS_SCRS}
     ${ut_Clipboard_SCRS}
+    ${DBUS_INTERFACES}
+    ${DBUS_TYPES}
 )
 # 用于测试覆盖率的编译条件
 target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
 
 target_include_directories(${UT_BIN_NAME} PUBLIC
     ${DtkWidget_INCLUDE_DIRS}
+    ${DtkCore_INCLUDE_DIRS}
     ${GIO_INCLUDE_DIRS}
     ${DFrameworkDBus_INCLUDE_DIRS}
     ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
@@ -203,6 +242,7 @@ target_include_directories(${UT_BIN_NAME} PUBLIC
 
 target_link_libraries(${UT_BIN_NAME} PRIVATE
     ${DtkWidget_LIBRARIES}
+    ${DtkCore_INCLUDE_DIRS}
     ${GIO_LIBRARIES}
     ${DFrameworkDBus_LIBRARIES}
     Qt5::Core

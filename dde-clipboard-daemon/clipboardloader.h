@@ -6,10 +6,7 @@
 #define CLIPBOARDLOADER_H
 
 #include "constants.h"
-#ifdef USE_DEEPIN_KF5_WAYLAND
 #include "waylandcopyclient.h"
-#endif
-
 #include "iteminfo.h"
 
 #include <QObject>
@@ -26,7 +23,7 @@
 class ClipboardLoader : public QObject
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "com.deepin.dde.ClipboardLoader")
+    Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.ClipboardLoader1")
 
 public:
     explicit ClipboardLoader(QObject *parent = nullptr);

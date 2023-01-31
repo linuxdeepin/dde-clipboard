@@ -13,13 +13,14 @@
 #include <QImageWriter>
 #include <QMutexLocker>
 
-#include <KWayland/Client/connection_thread.h>
-#include <KWayland/Client/event_queue.h>
-#include <KWayland/Client/registry.h>
-#include <KWayland/Client/seat.h>
-#include <KWayland/Client/datacontroldevice.h>
-#include <KWayland/Client/datacontrolsource.h>
-#include <KWayland/Client/datacontroloffer.h>
+#include <DWayland/Client/connection_thread.h>
+#include <DWayland/Client/event_queue.h>
+#include <DWayland/Client/registry.h>
+#include <DWayland/Client/seat.h>
+#include <DWayland/Client/datacontroldevice.h>
+#include <DWayland/Client/datacontroldevicemanager.h>
+#include <DWayland/Client/datacontrolsource.h>
+#include <DWayland/Client/datacontroloffer.h>
 
 #include <unistd.h>
 
@@ -291,6 +292,8 @@ void WaylandCopyClient::sendOffer()
     if (!m_copyControlSource)
         return;
 
+    // 新增接口
+    m_dataControlDevice->setCachedSelection(0, m_copyControlSource);
     connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
     for (const QString &format : m_mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
@@ -304,7 +307,6 @@ void WaylandCopyClient::sendOffer()
         m_copyControlSource->offer(format);
     }
 
-    m_dataControlDevice->setSelection(0, m_copyControlSource);
     m_connectionThreadObject->flush();
 }
 
