@@ -157,7 +157,7 @@ bool ListView::CreateAnimation(int idx)
     Q_ASSERT(index.isValid());
     QWidget *widget = this->indexWidget(index);
     if (!widget) {
-        qDebug() << "index widget not created,shoule be returned;";
+        qDebug() << "index widget not created, should be returned;";
         return false;
     }
 
