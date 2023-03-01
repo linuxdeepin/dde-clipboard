@@ -9,7 +9,7 @@ Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
 
 # gitignore
-Files: .gitignore 
+Files: .gitignore dbus/interface/.gitignore
 Copyright: None
 License: CC0-1.0
 
@@ -24,7 +24,7 @@ Copyright: None
 License: CC0-1.0
 
 # README
-Files: README.md README.zh_CN.md 
+Files: README.md README.zh_CN.md
 Copyright: UnionTech Software Technology Co., Ltd.
 License: CC-BY-4.0
 
@@ -43,12 +43,20 @@ Files: dde-clipboard/dbus/*
 Copyright: The Qt Company Ltd.
 License: CC0-1.0
 
-# xml 
+# xml
 Files: dde-clipboard/com.deepin.dde.Clipboard.xml
+  dbus/*.xml
+  dde-clipboard/org.deepin.dde.Clipboard1.xml
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
 
-# test file 
+# test file
 Files: tests/dde-clipboard/qrc/*.buf tests/dde-clipboard/ut_img.cpp tests/dde-clipboard-daemon/plugin/dde-clipboard-loader/ut_qrc.cpp
+Copyright: UnionTech Software Technology Co., Ltd.
+License: GPL-3.0-or-later
+
+# dbus type files
+Files: dbus/types/*.h
+  dbus/types/*.cpp
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
