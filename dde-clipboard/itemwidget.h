@@ -125,6 +125,13 @@ private:
 
     double getOpacity() const { return 0.0; }
 
+    /*!
+     * \~chinese \name onSelect
+     * \~chinese \brief 当内容被选中时执行的函数
+     */
+    void onSelect();
+
+
 private:
     QPointer<ItemData> m_data;
 
