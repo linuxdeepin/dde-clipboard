@@ -584,6 +584,37 @@ QPixmap ItemWidget::GetFileIcon(const FileIconData &data)
     return pix;
 }
 
+void ItemWidget::onSelect()
+{
+    if (!m_data->dataEnabled()) {
+        return;
+    }
+
+    if (m_data->type() == File) {
+        QList<QUrl> urls = m_data->urls();
+        bool has = false;
+        foreach (auto url, urls) {
+            if (QDir().exists(url.toLocalFile())) {
+                has = true;
+            }
+        }
+        if (!has) {
+            m_data->setDataEnabled(false);
+            //源文件被删除需要提示
+            m_contentLabel->setEnabled(false);
+            QFontMetrics metrix = m_statusLabel->fontMetrics();
+            QString tips = tr("(File deleted)");
+            int tipsWidth = metrix.horizontalAdvance(tips);
+            QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
+            m_statusLabel->setText(text + tips);
+
+            return;
+        }
+    }
+
+    m_data->popTop();
+}
+
 void ItemWidget::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
@@ -598,6 +629,8 @@ void ItemWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Return: {
         if (m_closeFocus) {
             onClose();
+        } else {
+            onSelect();
         }
     }
     break;
@@ -639,34 +672,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
 
 void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    if (!m_data->dataEnabled()) {
-        return DWidget::mousePressEvent(event);
-    }
-
-    if (m_data->type() == File) {
-        QList<QUrl> urls = m_data->urls();
-        bool has = false;
-        foreach (auto url, urls) {
-            if (QDir().exists(url.toLocalFile())) {
-                has = true;
-            }
-        }
-        if (!has) {
-            m_data->setDataEnabled(false);
-            //源文件被删除需要提示
-            m_contentLabel->setEnabled(false);
-            QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString tips = tr("(File deleted)");
-            int tipsWidth = metrix.horizontalAdvance(tips);
-            QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
-            m_statusLabel->setText(text + tips);
-
-            return DWidget::mousePressEvent(event);
-        }
-    }
-
-    m_data->popTop();
-
+    onSelect();
     return DWidget::mousePressEvent(event);
 }
 
