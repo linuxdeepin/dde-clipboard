@@ -47,6 +47,7 @@ find_package(Qt5 COMPONENTS Core Widgets DBus Test REQUIRED)
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 find_package(DWayland REQUIRED)
+find_package(KF5Wayland REQUIRED)
 
 pkg_check_modules(GIO REQUIRED gio-qt)
 
