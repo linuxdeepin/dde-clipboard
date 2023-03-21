@@ -99,16 +99,21 @@ QString ClipboardLoader::m_pixPath;
 ClipboardLoader::ClipboardLoader(QObject *parent)
     : QObject(parent)
     , m_board(nullptr)
+#ifdef USE_DEEPIN_KF5_WAYLAND
     , m_waylandCopyClient(nullptr)
 #endif
 {
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
+#ifdef USE_DEEPIN_KF5_WAYLAND
         m_waylandCopyClient = new WaylandCopyClient(this);
         m_waylandCopyClient->init();
 
         connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
             this->doWork(WAYLAND_PROTOCOL);
         });
+#else
+        qWarning() << "we will not work with wayland";
+#endif
     } else {
         m_board = qApp->clipboard();
         connect(m_board, &QClipboard::dataChanged, this, [this] {
@@ -145,7 +150,7 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
 
     if (m_board)
         m_board->setMimeData(mimeData);
-
+#ifdef USE_DEEPIN_KF5_WAYLAND
     if (m_waylandCopyClient)
         m_waylandCopyClient->setMimeData(mimeData);
 #endif
@@ -160,6 +165,7 @@ void ClipboardLoader::doWork(int protocolType)
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
     // or externally by the system clipboard changing.`
+#ifdef USE_DEEPIN_KF5_WAYLAND
     const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
 #else
     const QMimeData *mimeData = m_board->mimeData();
