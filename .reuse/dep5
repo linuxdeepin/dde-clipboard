@@ -39,7 +39,7 @@ Copyright: None
 License: CC0-1.0
 
 # xml2cpp
-Files: dde-clipboard/dbus/*
+Files: dde-clipboard/dbus/* dbus/*.xml dde-clipboard/org.deepin.dde.Clipboard1.xml dbus/interface/.gitignore
 Copyright: The Qt Company Ltd.
 License: CC0-1.0
 
