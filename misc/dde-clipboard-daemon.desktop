@@ -3,6 +3,6 @@ Comment=Dde clipboard daemon
 Exec=systemctl --user enable dde-clipboard-daemon.service --now --runtime
 Name=Dde clipboard daemon
 NoDisplay=true
-OnlyShowIn=Deepin
+OnlyShowIn=DDE
 Type=Application
 X-Deepin-Vendor=user-custom
