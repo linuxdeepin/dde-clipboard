@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.4) unstable; urgency=medium
+
+  * chore: Desktop文件中OnlyShowIn使用错误
+
+ -- dengbo <dengbo@uniontech.com>  Fri, 21 Apr 2023 14:31:05 +0800
+
 dde-clipboard (1:6.0.3) unstable; urgency=medium
 
   * ensure compliant with REUSE spec.
