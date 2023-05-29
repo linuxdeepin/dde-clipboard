@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_FLAGS "-g -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 # 增加安全编译参数
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-all")
@@ -164,7 +164,7 @@ install(FILES ${DESKTOP_FILE} DESTINATION share/applications)
 
 ## autostart
 set(AUTOSTART_FILE ${DESKTOP_FILE})
-install(FILES ${AUTOSTART_FILE} DESTINATION /etc/xdg/autostart)
+install(FILES ${AUTOSTART_FILE} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/xdg/autostart)
 
 ## dbus service
 file(GLOB SERVICE_FILE "misc/org.deepin.dde.Clipboard1.service")
@@ -200,7 +200,9 @@ target_link_libraries(${BIN_NAME} PRIVATE
   DWaylandClient
 )
 
-pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
+    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+endif()
 
 install(TARGETS ${BIN_NAME} DESTINATION bin)
 install(FILES misc/dde-clipboard-daemon.service
