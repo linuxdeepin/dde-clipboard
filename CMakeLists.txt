@@ -37,7 +37,7 @@ endif ()
 # Find the library
 find_package(PkgConfig REQUIRED)
 find_package(Dtk COMPONENTS Widget Core REQUIRED)
-find_package(Qt5 COMPONENTS Core Gui Widgets DBus Test REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets DBus Test Concurrent REQUIRED)
 
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
@@ -180,6 +180,7 @@ target_link_libraries(${BIN_NAME} PRIVATE
   Qt5::DBus
   Qt5::Widgets
   Dtk::Core
+  Qt5::Concurrent
   DWaylandClient
 )
 

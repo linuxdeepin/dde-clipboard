@@ -51,11 +51,11 @@ public:
     void init();
     const QMimeData *mimeData();
     void setMimeData(QMimeData *mimeData);
-    void sendOffer();
 
 private:
     void setupRegistry(Registry *registry);
     QStringList filterMimeType(const QStringList &mimeTypeList);
+    void sendOffer();
 
 Q_SIGNALS:
     void dataChanged();
@@ -67,7 +67,6 @@ protected slots:
 
 private:
     void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
-    void tryStopOldTask();
     void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
 
 private:
@@ -82,7 +81,6 @@ private:
 
     qint64 m_curOffer;
     QStringList m_curMimeTypes;
-    QList<ReadPipeDataTask *> m_tasks;
 };
 
 #endif // COPYCLIENT_H

@@ -20,7 +20,7 @@ namespace KWayland
 
 using namespace KWayland::Client;
 
-class ReadPipeDataTask : public QObject, public QRunnable
+class ReadPipeDataTask : public QObject
 {
     Q_OBJECT
 public:
@@ -28,12 +28,12 @@ public:
                               QString mimeType, QObject *parent = nullptr);
 
     void stopRunning();
+    void run();
 
 signals:
     void dataReady(qint64, const QString &, const QByteArray &);
 
-protected:
-    void run() override;
+
 
 private:
     bool readData(int fd, QByteArray &data);
