@@ -9,7 +9,7 @@
 #include <QEventLoop>
 #include <QMimeData>
 #include <QImageReader>
-#include <QtConcurrent/QtConcurrent>
+#include <QtConcurrent>
 #include <QImageWriter>
 #include <QMutexLocker>
 
@@ -167,8 +167,6 @@ void WaylandCopyClient::init()
     m_connectionThreadObject->moveToThread(m_connectionThread);
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
-
-    // clipboard Manager的功能
     connect(this, &WaylandCopyClient::dataChanged, this, &WaylandCopyClient::onDataChanged);
 }
 
@@ -182,9 +180,8 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
         m_dataControlDeviceManager = registry->createDataControlDeviceManager(name, version, this);
         m_dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
 
-        connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [&] {
+        connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [this] {
                 m_copyControlSource = nullptr;
-                sendOffer();
         });
 
         connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
@@ -206,9 +203,6 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
 
     m_curMimeTypes = mimeTypeList;
 
-    if (m_curOffer && qint64(offer) != m_curOffer) {
-        tryStopOldTask();
-    }
     m_curOffer = qint64(offer);
 
     if (!m_mimeData)
@@ -218,33 +212,15 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
     execTask(mimeTypeList, offer);
 }
 
+// NOTE: no thread, this should be block
 void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer)
 {
-    QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (!threadPool)
-        return;
-
     for (const QString &mimeType : mimeTypes) {
         ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
+
         connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
-        task->setAutoDelete(true);
-        threadPool->start(task);
 
-        m_tasks.append(task);
-    }
-}
-
-void WaylandCopyClient::tryStopOldTask()
-{
-    QThreadPool *threadPool = QThreadPool::globalInstance();
-    if (!threadPool)
-        return;
-
-    for (ReadPipeDataTask *task : m_tasks) {
-        if (!threadPool->tryTake(task)){
-            if (task)
-                task->stopRunning();
-        }
+        task->run();
     }
 }
 
@@ -259,15 +235,9 @@ void WaylandCopyClient::taskDataReady(qint64 offer, const QString &mimeType, con
     m_mimeData->setData(mimeType, data);
     if (m_curMimeTypes.isEmpty()) {
         m_curOffer = 0;
-        m_tasks.clear();
 
         Q_EMIT dataChanged();
     }
-}
-
-void WaylandCopyClient::onDataChanged()
-{
-    sendOffer();
 }
 
 const QMimeData* WaylandCopyClient::mimeData()
@@ -281,9 +251,13 @@ void WaylandCopyClient::setMimeData(QMimeData *mimeData)
         m_mimeData->deleteLater();
 
     m_mimeData = mimeData;
-    sendOffer();
 
     Q_EMIT dataChanged();
+}
+
+void WaylandCopyClient::onDataChanged()
+{
+    sendOffer();
 }
 
 void WaylandCopyClient::sendOffer()
@@ -293,8 +267,10 @@ void WaylandCopyClient::sendOffer()
         return;
 
     // 新增接口
-    m_dataControlDevice->setCachedSelection(0, m_copyControlSource);
-    connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
+    m_dataControlDevice->setSelection(0, m_copyControlSource);
+    if (m_mimeData->formats().isEmpty()) {
+        return;
+    }
     for (const QString &format : m_mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
         if (ApplicationXQtImageLiteral == format) {
@@ -307,6 +283,7 @@ void WaylandCopyClient::sendOffer()
         m_copyControlSource->offer(format);
     }
 
+    connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
     m_connectionThreadObject->flush();
 }
 
