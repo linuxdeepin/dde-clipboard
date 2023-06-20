@@ -73,7 +73,6 @@ void ListView::keyPressEvent(QKeyEvent *event)
 
 void ListView::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() << Q_FUNC_INFO;
     const QModelIndex index = indexAt(event->pos());
     if (index.isValid()) {
         setCurrentIndex(index);
