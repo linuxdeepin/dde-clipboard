@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <KWayland/Client/datacontroldevicemanager.h>
-#include <KWayland/Client/datacontroldevice.h>
-#include <KWayland/Client/datacontrolsource.h>
-#include <KWayland/Client/datacontroloffer.h>
+#include <DWayland/Client/datacontroldevicemanager.h>
+#include <DWayland/Client/datacontroldevice.h>
+#include <DWayland/Client/datacontrolsource.h>
+#include <DWayland/Client/datacontroloffer.h>
 
 int main(int argc, char *argv[])
 {

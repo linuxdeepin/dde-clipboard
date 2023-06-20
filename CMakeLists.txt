@@ -9,14 +9,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
-
-# 增加安全编译参数
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-all")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-protector-all")
-set(CMAKE_EXE_LINKER_FLAGS  "-z relro -z now -z noexecstack -pie")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -fsanitize=address -O0")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fsanitize=address -O0")
 endif()
@@ -25,11 +20,11 @@ if (DEFINED ENABLE_MIEEE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mieee")
 endif()
 
+include(GNUInstallDirs)
 # Install settings
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX /usr)
 endif ()
-include(GNUInstallDirs)
 
 if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
@@ -41,23 +36,22 @@ endif ()
 
 # Find the library
 find_package(PkgConfig REQUIRED)
-find_package(DtkWidget REQUIRED)
-find_package(DtkCore REQUIRED)
-find_package(Qt5 COMPONENTS Core Widgets DBus Test REQUIRED)
+find_package(Dtk COMPONENTS Widget Core REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets DBus Test REQUIRED)
 
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 find_package(DWayland REQUIRED)
-find_package(KF5Wayland REQUIRED)
+#find_package(KF5Wayland REQUIRED)
 
-pkg_check_modules(GIO REQUIRED gio-qt)
+pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-qt)
 
 try_compile(USE_DEEPIN_KF5_WAYLAND
               ${CMAKE_CURRENT_BINARY_DIR}/try_compile
             SOURCES
               ${CMAKE_CURRENT_SOURCE_DIR}/tests/kf5_wayland_test.cc
             LINK_LIBRARIES
-              KF5::WaylandClient
+              DWaylandClient
 )
 
 message(STATUS "USE_DEEPIN_KF5_WAYLAND ${USE_DEEPIN_KF5_WAYLAND}")
@@ -66,6 +60,7 @@ if(USE_DEEPIN_KF5_WAYLAND)
   add_definitions(-DUSE_DEEPIN_KF5_WAYLAND)
 endif()
 
+find_package(DtkTools REQUIRED)
 function(generation_dbus_adaptor xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -a ${class_file} -c ${class_name} ${xml}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -73,7 +68,7 @@ endfunction(generation_dbus_adaptor)
 
 set(DBUS_INTERFACE ${PROJECT_SOURCE_DIR}/dbus/interface)
 function(generation_dbus_interface xml class_name class_file)
-    execute_process(COMMAND qdbusxml2cpp-fix -c ${class_name} -p ${class_file} ${xml}
+    execute_process(COMMAND ${DTK_XML2CPP} -c ${class_name} -p ${class_file} ${xml}
         WORKING_DIRECTORY ${DBUS_INTERFACE})
 endfunction(generation_dbus_interface)
 
@@ -137,20 +132,15 @@ add_executable(${BIN_NAME}
     ${DBUS_INTERFACES}
     ${DBUS_TYPES}
 )
-target_include_directories(${BIN_NAME} PUBLIC
-    ${DtkWidget_INCLUDE_DIRS}
-    ${GIO_INCLUDE_DIRS}
-    ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
-)
 
 target_link_libraries(${BIN_NAME} PRIVATE
-    ${DtkWidget_LIBRARIES}
-    ${GIO_LIBRARIES}
+    Dtk::Widget
+    Dtk::Core
+    PkgConfig::GIO
     Qt5::Core
     Qt5::Widgets
+    Qt5::GuiPrivate
+    Qt5::Gui
     Qt5::DBus
 )
 
@@ -185,18 +175,11 @@ add_executable(${BIN_NAME}
     ${dde-clipboard-daemon_SCRS}
 )
 
-target_include_directories(${BIN_NAME} PUBLIC
-  ${Qt5Widget_INCLUDE_DIRS}
-  ${Qt5Core_INCLUDE_DIRS}
-  ${DtkCore_INCLUDE_DIRS}
-  KF5::WaylandClient
-)
-
 target_link_libraries(${BIN_NAME} PRIVATE
-  ${Qt5DBus_LIBRARIES}
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
-  ${DtkCore_LIBRARIES}
+  Qt5::Gui
+  Qt5::DBus
+  Qt5::Widgets
+  Dtk::Core
   DWaylandClient
 )
 
@@ -234,27 +217,14 @@ add_executable(${UT_BIN_NAME}
 # 用于测试覆盖率的编译条件
 target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
 
-target_include_directories(${UT_BIN_NAME} PUBLIC
-    ${DtkWidget_INCLUDE_DIRS}
-    ${DtkCore_INCLUDE_DIRS}
-    ${GIO_INCLUDE_DIRS}
-    ${DFrameworkDBus_INCLUDE_DIRS}
-    ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
-    Qt5::Test
-)
-
 target_link_libraries(${UT_BIN_NAME} PRIVATE
-    ${DtkWidget_LIBRARIES}
-    ${DtkCore_INCLUDE_DIRS}
-    ${GIO_LIBRARIES}
-    ${DFrameworkDBus_LIBRARIES}
+    Dtk::Widget
+    PkgConfig::GIO
     Qt5::Core
     Qt5::Widgets
     Qt5::DBus
     Qt5::Test
+    Qt5::GuiPrivate
     -lpthread
     -lgcov
     -lgtest

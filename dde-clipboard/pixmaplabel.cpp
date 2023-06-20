@@ -14,7 +14,7 @@
 #include <QVBoxLayout>
 #include <QFontMetrics>
 
-#include <QtGui/private/qtextengine_p.h>
+#include <private/qtextengine_p.h>
 
 PixmapLabel::PixmapLabel(const QList<QPixmap> &list, QWidget *parent)
     : DLabel(parent)
