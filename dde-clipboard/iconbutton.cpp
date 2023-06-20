@@ -78,13 +78,12 @@ void IconButton::paintEvent(QPaintEvent *event)
 
 QSize IconButton::sizeHint() const
 {
-    qDebug() << Q_FUNC_INFO;
-    return QSize(fontMetrics().width(m_text) + 20, fontMetrics().height() + 10);
+    return QSize(fontMetrics().horizontalAdvance(m_text) + 20, fontMetrics().height() + 10);
 }
 
 void IconButton::resizeEvent(QResizeEvent *event)
 {
-    resize(QSize(fontMetrics().width(m_text) + 20, fontMetrics().height() + 10));
+    resize(QSize(fontMetrics().horizontalAdvance(m_text) + 20, fontMetrics().height() + 10));
     DWidget::resizeEvent(event);
 }
 

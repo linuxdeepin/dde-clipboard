@@ -218,8 +218,11 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
     //draw lines
     if (!m_text.isEmpty()) {
-        int lineNum = 4;
-        int lineHeight = (height() - TextContentTopMargin) / 4;
+        //drawText
+        QString t = elideText(m_text.simplified(), size(), QTextOption::WrapAnywhere, font(), Qt::ElideMiddle, 0);
+        QStringList labelTexts = t.split("\n");
+        int lineNum = labelTexts.length() > 4 ? 4 : labelTexts.length();
+        int lineHeight = (height() - TextContentTopMargin) / lineNum;
         for (int i  = 0 ; i < lineNum; ++i) {
             QPoint start(0, (i + 1)*lineHeight + TextContentTopMargin);
             QPoint end(width(), (i + 1)*lineHeight + TextContentTopMargin);
@@ -227,11 +230,7 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             painter.drawLine(start, end);
         }
 
-        //drawText
-        QString t = elideText(m_text.simplified(), size(), QTextOption::WrapAnywhere, font(), Qt::ElideMiddle, 0);
-        QStringList labelTexts = t.split("\n");
-
-        static const int maxLineCount = 4;
+        int maxLineCount = labelTexts.length() > 4 ? 4 : labelTexts.length();
         int textIndex = 0;
         int lineFrom = 0;
         for (int rectIndex = 0; textIndex < labelTexts.length(); rectIndex++, textIndex++) {
