@@ -167,7 +167,7 @@ void WaylandCopyClient::init()
     m_connectionThreadObject->moveToThread(m_connectionThread);
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
-    connect(this, &WaylandCopyClient::dataChanged, this, &WaylandCopyClient::onDataChanged);
+    connect(this, &WaylandCopyClient::dataCopied, this, &WaylandCopyClient::onDataCopied);
 }
 
 void WaylandCopyClient::setupRegistry(Registry *registry)
@@ -245,6 +245,7 @@ const QMimeData* WaylandCopyClient::mimeData()
     return m_mimeData;
 }
 
+// NOTE: copy entrance
 void WaylandCopyClient::setMimeData(QMimeData *mimeData)
 {
     if (m_mimeData)
@@ -252,10 +253,11 @@ void WaylandCopyClient::setMimeData(QMimeData *mimeData)
 
     m_mimeData = mimeData;
 
+    Q_EMIT dataCopied();
     Q_EMIT dataChanged();
 }
 
-void WaylandCopyClient::onDataChanged()
+void WaylandCopyClient::onDataCopied()
 {
     sendOffer();
 }
