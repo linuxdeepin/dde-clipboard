@@ -58,12 +58,15 @@ private:
     void sendOffer();
 
 Q_SIGNALS:
+    // when new source in , send dataChanged
     void dataChanged();
+    // when data is copied, send dataCopied,
+    void dataCopied();
 
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
     void onDataOffered(DataControlOfferV1 *offer);
-    void onDataChanged();
+    void onDataCopied();
 
 private:
     void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
