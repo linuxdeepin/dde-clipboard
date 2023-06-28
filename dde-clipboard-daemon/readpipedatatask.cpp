@@ -11,22 +11,24 @@
 #include <DWayland/Client/connection_thread.h>
 #include <DWayland/Client/datacontroloffer.h>
 
+#include <QtConcurrent>
+
 #include <unistd.h>
 
-ReadPipeDataTask::ReadPipeDataTask(ConnectionThread *connectionThread, DataControlOfferV1 *offerV1, QString mimeType, QObject *parent)
-        : QObject(parent)
-        , m_stopRunning(false)
-        , m_mimeType(mimeType)
-        , m_pOffer(offerV1)
-        , m_pConnectionThread(connectionThread)
+#include <mutex>
+
+std::mutex PIPELINE_GUARD;
+
+constexpr int BYTE_MAX = 1024 * 4;
+
+ReadPipeDataTask::ReadPipeDataTask(ConnectionThread *connectionThread, DataControlOfferV1 *offerV1, const QString &mimeType, QObject *parent)
+    : QObject(parent)
+    , m_mimeType(mimeType)
+    , m_pipeIsForcedClosed(false)
+    , m_pOffer(offerV1)
+    , m_pConnectionThread(connectionThread)
 {
 
-}
-
-void ReadPipeDataTask::stopRunning()
-{
-    QMutexLocker locker(&m_mutexLock);
-    m_stopRunning = true;
 }
 
 void ReadPipeDataTask::run()
@@ -48,20 +50,35 @@ void ReadPipeDataTask::run()
     m_pConnectionThread->roundtrip();
     close(pipeFds[1]);
 
-    QByteArray data;
-    readData(pipeFds[0], data);
+    // force to close the piepline
+    connect(this, &ReadPipeDataTask::forceClosePipeLine, this, [pipeFds, this] {
+        std::lock_guard<std::mutex> guard(PIPELINE_GUARD);
+        m_pipeIsForcedClosed = true;
+        close(pipeFds[0]);
+    });
 
-    Q_EMIT dataReady((qint64)m_pOffer, m_mimeType, data);
+    QtConcurrent::run([this, pipeFds] {
+        QByteArray data;
+        readData(pipeFds[0], data);
+        std::lock_guard<std::mutex> guard(PIPELINE_GUARD);
+        this->deleteLater();
+        if (m_pipeIsForcedClosed) {
+            qDebug() << "pipeline is block here;" << "mimetype is: " << m_mimeType;
+            return ;
+        }
 
-    close(pipeFds[0]);
-    m_stopRunning = false;
+        Q_EMIT dataReady((qint64)m_pOffer, m_mimeType, data);
+
+        close(pipeFds[0]);
+    });
 }
 
 bool ReadPipeDataTask::readData(int fd, QByteArray &data)
 {
     QFile readPipe;
-    if (!readPipe.open(fd, QIODevice::ReadOnly))
+    if (!readPipe.open(fd, QIODevice::ReadOnly)) {
         return false;
+    }
 
     if (!readPipe.isReadable()) {
         qWarning() << "Pipe is not readable";
@@ -69,23 +86,13 @@ bool ReadPipeDataTask::readData(int fd, QByteArray &data)
         return false;
     }
 
-    int retCount = 0;
+    int retCount = BYTE_MAX;
     do {
-        m_mutexLock.lock();
-        bool needStopRunning = m_stopRunning;
-        m_mutexLock.unlock();
-
-        if (needStopRunning) {
-            data.clear();
-            readPipe.close();
-            return false;
-        }
-
-        QByteArray bytes = readPipe.read(1024 * 4);
+        QByteArray bytes = readPipe.read(BYTE_MAX);
         retCount = bytes.count();
         if (!bytes.isEmpty())
             data.append(bytes);
-    }while(retCount);
+    } while (retCount == BYTE_MAX);
 
     readPipe.close();
 
