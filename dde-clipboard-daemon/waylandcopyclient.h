@@ -62,6 +62,8 @@ Q_SIGNALS:
     void dataChanged();
     // when data is copied, send dataCopied,
     void dataCopied();
+    // when a new dataOffer request in ,then send it
+    void dataOfferedNew();
 
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;

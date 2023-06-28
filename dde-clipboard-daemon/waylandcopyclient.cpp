@@ -194,10 +194,11 @@ void WaylandCopyClient::setupRegistry(Registry *registry)
 
 void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offer)
 {
-    if (!offer)
+    if (!offer || !offer->isValid())
         return;
 
     QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
+
     if (mimeTypeList.isEmpty())
         return;
 
@@ -209,6 +210,8 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
         m_mimeData = new DMimeData();
     m_mimeData->clear();
 
+    // try to stop the previous pipeline
+    Q_EMIT dataOfferedNew();
     execTask(mimeTypeList, offer);
 }
 
@@ -217,7 +220,7 @@ void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV
 {
     for (const QString &mimeType : mimeTypes) {
         ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
-
+        connect(this, &WaylandCopyClient::dataOfferedNew, task, &ReadPipeDataTask::forceClosePipeLine);
         connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
 
         task->run();
