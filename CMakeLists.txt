@@ -42,23 +42,8 @@ find_package(Qt5 COMPONENTS Core Gui Widgets DBus Test Concurrent REQUIRED)
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 find_package(DWayland REQUIRED)
-#find_package(KF5Wayland REQUIRED)
 
 pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-qt)
-
-try_compile(USE_DEEPIN_KF5_WAYLAND
-              ${CMAKE_CURRENT_BINARY_DIR}/try_compile
-            SOURCES
-              ${CMAKE_CURRENT_SOURCE_DIR}/tests/kf5_wayland_test.cc
-            LINK_LIBRARIES
-              DWaylandClient
-)
-
-message(STATUS "USE_DEEPIN_KF5_WAYLAND ${USE_DEEPIN_KF5_WAYLAND}")
-
-if(USE_DEEPIN_KF5_WAYLAND)
-  add_definitions(-DUSE_DEEPIN_KF5_WAYLAND)
-endif()
 
 find_package(DtkTools REQUIRED)
 function(generation_dbus_adaptor xml class_name class_file option)
