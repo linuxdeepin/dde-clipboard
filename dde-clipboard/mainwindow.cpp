@@ -25,11 +25,16 @@
 
 #define MONITOR_SERVICE "org.deepin.dde.XEventMonitor1"
 
+const QString AppearanceService = QStringLiteral("org.deepin.dde.Appearance1");
+const QString AppearancePath = QStringLiteral("/org/deepin/dde/Appearance1");
+const QString AppearanceInterface = QStringLiteral("org.deepin.dde.Appearance1");
+
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::sessionBus(), this))
     , m_daemonDockInter(new DBusDaemonDock("org.deepin.dde.daemon.Dock1", "/org/deepin/dde/daemon/Dock1", QDBusConnection::sessionBus(), this))
     , m_dockInter(new DBusDockInterface)
+    , m_appearanceInter(new DDBusInterface(AppearanceService, AppearancePath, AppearanceInterface, QDBusConnection::sessionBus(), this))
     , m_regionMonitor(nullptr)
     , m_content(new DWidget(parent))
     , m_listview(new ListView(this))
@@ -54,6 +59,11 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
 
+}
+
+double MainWindow::opacity()
+{
+    return qvariant_cast<double>(m_appearanceInter->property("Opacity"));
 }
 
 void MainWindow::Toggle()
@@ -209,6 +219,7 @@ void MainWindow::initUI()
     layout->setMargin(0);
     layout->addWidget(m_content);
 
+    setMaskAlpha(static_cast<int>(this->opacity() * 255));
     setFocusPolicy(Qt::NoFocus);
 }
 
@@ -261,6 +272,10 @@ void MainWindow::initConnect()
         if (MONITOR_SERVICE != service)
             return;
         disconnect(m_regionMonitor);
+    });
+
+    connect(this, &MainWindow::OpacityChanged, this, [this](double alpha) {
+        setMaskAlpha(static_cast<int>(alpha * 255));
     });
 }
 

@@ -17,11 +17,13 @@
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
 #include <DRegionMonitor>
+#include <DDBusInterface>
 
 #include "monitor_interface.h"
 #include "dock_interface.h"
 #include "display_interface.h"
 
+DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 
@@ -42,9 +44,16 @@ class MainWindow : public DBlurEffectWidget
     Q_OBJECT
     Q_PROPERTY(int width READ getWidth WRITE setFixedWidth)
     Q_PROPERTY(int x READ getX WRITE setX)
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+    Q_PROPERTY(double Opacity READ opacity NOTIFY OpacityChanged)
+    double opacity();
+
+signals:
+    void OpacityChanged(double value) const;
 
 public Q_SLOTS:
     /*!
@@ -129,6 +138,7 @@ private:
     DBusDisplay *m_displayInter;
     DBusDaemonDock *m_daemonDockInter;
     DBusDockInterface *m_dockInter;
+    DDBusInterface *m_appearanceInter;
     DRegionMonitor *m_regionMonitor;
 
     DWidget *m_content;
