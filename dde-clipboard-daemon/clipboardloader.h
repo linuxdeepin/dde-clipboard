@@ -46,9 +46,7 @@ private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
     QPixmap m_lastPix;
-#ifdef USE_DEEPIN_KF5_WAYLAND
     WaylandCopyClient *m_waylandCopyClient;
-#endif
 
     static QString m_pixPath;
 };

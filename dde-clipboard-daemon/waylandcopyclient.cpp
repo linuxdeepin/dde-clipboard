@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef USE_DEEPIN_KF5_WAYLAND
 #include "waylandcopyclient.h"
 #include "readpipedatatask.h"
 
@@ -316,5 +315,3 @@ QStringList WaylandCopyClient::filterMimeType(const QStringList &mimeTypeList)
 
     return tmpList;
 }
-
-#endif

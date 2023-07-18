@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef USE_DEEPIN_KF5_WAYLAND
 #ifndef COPYCLIENT_H
 #define COPYCLIENT_H
 
@@ -89,4 +88,3 @@ private:
 };
 
 #endif // COPYCLIENT_H
-#endif
