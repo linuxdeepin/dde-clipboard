@@ -20,11 +20,12 @@ if (DEFINED ENABLE_MIEEE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mieee")
 endif()
 
-include(GNUInstallDirs)
 # Install settings
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX /usr)
 endif ()
+
+include(GNUInstallDirs)
 
 if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
@@ -44,6 +45,10 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 find_package(DWayland REQUIRED)
 
 pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-qt)
+
+if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
+    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
+endif()
 
 find_package(DtkTools REQUIRED)
 function(generation_dbus_adaptor xml class_name class_file option)
@@ -129,24 +134,37 @@ target_link_libraries(${BIN_NAME} PRIVATE
     Qt5::DBus
 )
 
+macro(install_symlink filepath wantsdir)
+    file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/link/${wantsdir}/)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${SYSTEMD_USER_UNIT_DIR}/${filepath} ${PROJECT_BINARY_DIR}/link/${wantsdir}/${filepath})
+    install(FILES ${PROJECT_BINARY_DIR}/link/${wantsdir}/${filepath} DESTINATION ${SYSTEMD_USER_UNIT_DIR}/${wantsdir}/)
+endmacro(install_symlink)
+
 ## qm files
 file(GLOB QM_FILES "translations/*.qm")
-install(FILES ${QM_FILES} DESTINATION share/${BIN_NAME}/translations)
+install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/${BIN_NAME}/translations)
 
-## desktop file
-file(GLOB DESKTOP_FILE "misc/dde-clipboard.desktop")
-install(FILES ${DESKTOP_FILE} DESTINATION share/applications)
+configure_file(
+    misc/dde-clipboard.service.in
+    dde-clipboard.service
+    @ONLY
+)
 
-## autostart
-set(AUTOSTART_FILE ${DESKTOP_FILE})
-install(FILES ${AUTOSTART_FILE} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/xdg/autostart)
+configure_file(
+    misc/org.deepin.dde.Clipboard1.service.in
+    org.deepin.dde.Clipboard1.service
+    @ONLY
+)
 
 ## dbus service
-file(GLOB SERVICE_FILE "misc/org.deepin.dde.Clipboard1.service")
-install(FILES ${SERVICE_FILE} DESTINATION share/dbus-1/services)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.Clipboard1.service DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
+
+install_symlink(dde-clipboard.service dde-session-initialized.target.wants)
 
 ## bin
-install(TARGETS ${BIN_NAME} DESTINATION bin)
+install(TARGETS ${BIN_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #----------------------------dde-clipboard-daemon------------------------------
 set(BIN_NAME dde-clipboard-daemon)
@@ -169,20 +187,33 @@ target_link_libraries(${BIN_NAME} PRIVATE
   DWaylandClient
 )
 
-if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
-    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
-endif()
+install(TARGETS ${BIN_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(TARGETS ${BIN_NAME} DESTINATION bin)
-install(FILES misc/dde-clipboard-daemon.service
-    DESTINATION ${SYSTEMD_USER_UNIT_DIR}
+configure_file(
+    misc/org.deepin.dde.ClipboardLoader1.service.in
+    org.deepin.dde.ClipboardLoader1.service
+    @ONLY
 )
-install(FILES misc/dde-clipboard-daemon.desktop
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/
+
+configure_file(
+    misc/org.deepin.dde.daemon.Clipboard1.service.in
+    org.deepin.dde.daemon.Clipboard1.service
+    @ONLY
 )
-install(FILES misc/dde-clipboard-daemon.desktop
-    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/xdg/autostart/
+configure_file(
+    misc/dde-clipboard-daemon.service.in
+    dde-clipboard-daemon.service
+    @ONLY
 )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.ClipboardLoader1.service
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.daemon.Clipboard1.service
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard-daemon.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
 
 #----------------------------ut-dde-clipboard------------------------------
 set(UT_BIN_NAME ut-dde-clipboard)
