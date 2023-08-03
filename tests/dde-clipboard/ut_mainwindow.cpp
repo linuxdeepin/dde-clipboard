@@ -60,7 +60,4 @@ TEST_F(TstMainWindow, animation_Test)
     window->Toggle();
     QTest::qWait(AnimationTime * 3 / 2 + 10);
     ASSERT_TRUE(!visible);
-
-    // 服务器上没有loader进程，所以不做校验
-    window->startLoader();
 }

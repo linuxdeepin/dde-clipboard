@@ -72,8 +72,6 @@ public Q_SLOTS:
      */
     void hideAni();
 
-    void startLoader();
-
     void Show();
     void Hide();
 
