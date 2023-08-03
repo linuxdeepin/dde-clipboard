@@ -121,14 +121,6 @@ void MainWindow::hideAni()
     QTimer::singleShot(m_aniGroup->duration(), this, [ = ] {setVisible(false);});
 }
 
-void MainWindow::startLoader()
-{
-    QProcess process;
-    process.startDetached("dde-clipboardloader", QStringList());
-    process.waitForStarted();
-    process.waitForFinished();
-}
-
 void MainWindow::Show()
 {
     if (m_aniGroup->state() == QAbstractAnimation::Running)
