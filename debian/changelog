@@ -1,3 +1,13 @@
+dde-clipboard (1:6.0.5) unstable; urgency=medium
+
+  * fix cannot used on wayland
+  * fix sytemd file, and make it starts after dde-session
+  * fix cannot follow the opacity property in dde-appearance
+  * when data is text, the height of the itemwidget is dynamic
+  * fix when zoom is not 1x, the icon is blurry
+
+ -- chenhongtao <chenhongtao@deepin.org>  Thu, 03 Aug 2023 17:53:05 +0800
+
 dde-clipboard (1:6.0.4) unstable; urgency=medium
 
   * chore: Desktop文件中OnlyShowIn使用错误
