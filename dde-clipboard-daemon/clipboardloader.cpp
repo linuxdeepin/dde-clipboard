@@ -9,8 +9,9 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QDir>
+#include <QStandardPaths>
 
-const QString PixCacheDir = "/.clipboard-pix";  // 图片缓存目录名
+const QString PixCacheDir = QStringLiteral("/clipboard-pix");  // 图片缓存目录名
 const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
 const int X11_PROTOCOL = 0;                     // x11协议
 const int WAYLAND_PROTOCOL = 1;                 // wayland协议
@@ -99,8 +100,7 @@ ClipboardLoader::ClipboardLoader(QObject *parent)
             this->doWork(X11_PROTOCOL);
         });
     }
-
-    QDir dir(QDir::homePath() + PixCacheDir);
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + PixCacheDir);
     if (dir.exists() && dir.removeRecursively()) {
         qDebug() << "ClipboardLoader startup, remove old cache, path:" << dir.path();
     }
@@ -268,7 +268,7 @@ bool ClipboardLoader::initPixPath()
     }
 
     QDir dir;
-    m_pixPath = QDir::homePath() + PixCacheDir;
+    m_pixPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + PixCacheDir;
     if (dir.exists(m_pixPath)) {
         qDebug() << "dir exists:" << m_pixPath;
         return true;
