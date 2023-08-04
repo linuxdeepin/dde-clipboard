@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "waylandcopyclient.h"
-#include "readpipedatatask.h"
 
 #include <QEventLoop>
 #include <QMimeData>
@@ -22,6 +21,11 @@
 #include <DWayland/Client/datacontroloffer.h>
 
 #include <unistd.h>
+#include <mutex>
+
+static std::mutex PIPELINE_GUARD;
+
+constexpr int BYTE_MAX = 1024 * 4;
 
 static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
 
@@ -140,6 +144,7 @@ WaylandCopyClient::WaylandCopyClient(QObject *parent)
     , m_mimeData(new DMimeData())
     , m_seat(nullptr)
     , m_curOffer(0)
+    , m_pipeIsForcedClosed(false)
 {
 
 }
@@ -167,6 +172,7 @@ void WaylandCopyClient::init()
     m_connectionThread->start();
     m_connectionThreadObject->initConnection();
     connect(this, &WaylandCopyClient::dataCopied, this, &WaylandCopyClient::onDataCopied);
+    connect(this, &WaylandCopyClient::dataReady, this, &WaylandCopyClient::taskDataReady);
 }
 
 void WaylandCopyClient::setupRegistry(Registry *registry)
@@ -217,13 +223,89 @@ void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offe
 // NOTE: no thread, this should be block
 void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer)
 {
+    m_pipeIsForcedClosed = false;
     for (const QString &mimeType : mimeTypes) {
-        ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
-        connect(this, &WaylandCopyClient::dataOfferedNew, task, &ReadPipeDataTask::forceClosePipeLine);
-        connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
-
-        task->run();
+        onDataOfferedTask(offer, mimeType);
     }
+}
+
+void WaylandCopyClient::onDataOfferedTask(DataControlOfferV1 *offer, const QString &mimeType)
+{
+    if (!m_connectionThreadObject || !offer || mimeType.isEmpty()) {
+        return;
+    }
+    int pipeFds[2];
+
+    if (pipe(pipeFds) != 0) {
+        qWarning() << "Create pipe failed.";
+
+        // 避免返回数据量少
+        Q_EMIT dataReady((qint64)offer, mimeType, QByteArray());
+        return;
+    }
+
+    // 根据mime类取数据，写入pipe中
+    offer->receive(mimeType, pipeFds[1]);
+    m_connectionThreadObject->roundtrip();
+    close(pipeFds[1]);
+
+    // force to close the piepline
+    connect(this, &WaylandCopyClient::dataOfferedNew, this, [pipeFds, this] {
+        std::lock_guard<std::mutex> guard(PIPELINE_GUARD);
+        m_pipeIsForcedClosed = true;
+        close(pipeFds[0]);
+    });
+
+    qint64 offerId = (qint64)offer;
+
+    // FIXME: in QtConcurrent run , when signal is emit, sometimes it cannot be recepted
+    // So sometimes copy will not succcessed
+    QtConcurrent::run([this, pipeFds, mimeType, offerId] {
+        QByteArray data;
+        bool is_successed = readData(pipeFds[0], data);
+        std::lock_guard<std::mutex> guard(PIPELINE_GUARD);
+        if (m_pipeIsForcedClosed) {
+            qDebug() << "pipeline is block here;" << "mimetype is: " << mimeType;
+            m_pipeIsForcedClosed = false;
+            return;
+        }
+
+        if (!is_successed) {
+            qDebug() << "Cannot open pipeline";
+            return;
+        }
+
+        Q_EMIT dataReady(offerId, mimeType, data);
+        m_pipeIsForcedClosed = false;
+        close(pipeFds[0]);
+    });
+
+}
+
+bool WaylandCopyClient::readData(int fd, QByteArray &data)
+{
+    QFile readPipe;
+    if (!readPipe.open(fd, QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    if (!readPipe.isReadable()) {
+        qWarning() << "Pipe is not readable";
+        readPipe.close();
+        return false;
+    }
+
+    int retCount = BYTE_MAX;
+    do {
+        QByteArray bytes = readPipe.read(BYTE_MAX);
+        retCount = bytes.count();
+        if (!bytes.isEmpty())
+            data.append(bytes);
+    } while (retCount == BYTE_MAX);
+
+    readPipe.close();
+
+    return true;
 }
 
 void WaylandCopyClient::taskDataReady(qint64 offer, const QString &mimeType, const QByteArray &data)

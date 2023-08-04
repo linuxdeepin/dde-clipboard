@@ -63,6 +63,7 @@ Q_SIGNALS:
     void dataCopied();
     // when a new dataOffer request in ,then send it
     void dataOfferedNew();
+    void dataReady(qint64, const QString &, const QByteArray &);
 
 protected slots:
     void onSendDataRequest(const QString &mimeType, qint32 fd) const;
@@ -72,6 +73,9 @@ protected slots:
 private:
     void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
     void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
+
+    void onDataOfferedTask(DataControlOfferV1 *offer, const QString &mimeType);
+    bool readData(int fd, QByteArray &data);
 
 private:
     QThread *m_connectionThread;
@@ -85,6 +89,7 @@ private:
 
     qint64 m_curOffer;
     QStringList m_curMimeTypes;
+    bool m_pipeIsForcedClosed;
 };
 
 #endif // COPYCLIENT_H
