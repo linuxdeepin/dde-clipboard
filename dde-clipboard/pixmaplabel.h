@@ -4,6 +4,9 @@
 
 #ifndef PIXMAPLABEL_H
 #define PIXMAPLABEL_H
+#include "itemdata.h"
+
+#include <QPointer>
 #include <DLabel>
 
 #include <QTextOption>
@@ -18,16 +21,14 @@ class QTextLayout;
 class PixmapLabel : public DLabel
 {
 public:
-    PixmapLabel(const QList<QPixmap> &list, QWidget *parent = nullptr);
-    explicit PixmapLabel(QWidget *parent = nullptr);
+    explicit PixmapLabel(QPointer<ItemData> data, QWidget *parent = nullptr);
 
     /*!
      * \~chinese \name text
      * \~chinese \brief 获取剪切板中的文字
      * \~chinese \return 返回剪切板中的文字
      */
-    const QString &text() {return m_text;}
-    void setText(const QString &text);
+    void setText(bool);
 
     inline const QList<QPixmap> pixmapList() { return m_pixmapList; }
     void setPixmapList(const QList<QPixmap> &list);
@@ -35,19 +36,10 @@ public:
     virtual QSize minimumSizeHint() const override;
     virtual QSize sizeHint() const override;
 
-    QString elideText(const QString &text, const QSizeF &size,
-                      QTextOption::WrapMode wordWrap,
-                      const QFont &font,
-                      Qt::TextElideMode mode,
-                      qreal lineHeight,
-                      int flags = 0);
-
-    void elideText(QTextLayout *layout, const QSizeF &size,
-                   QTextOption::WrapMode wordWrap,
-                   Qt::TextElideMode mode, qreal lineHeight,
-                   int flags = 0, QStringList *lines = 0);
 private:
-    QString m_text;
+    bool m_istext;
+
+    QPointer<ItemData> m_data;
     QList<QPixmap> m_pixmapList;
 
 private:

@@ -50,7 +50,7 @@ ItemWidget::ItemWidget(QPointer<ItemData> data, QWidget *parent)
     , m_nameLabel(new DLabel(this))
     , m_timeLabel(new DLabel(this))
     , m_closeButton(new IconButton(this))
-    , m_contentLabel(new PixmapLabel(this))
+    , m_contentLabel(new PixmapLabel(data,this))
     , m_statusLabel(new DLabel(this))
     , m_refreshTimer(new QTimer(this))
 {
@@ -68,12 +68,15 @@ const QString &ItemWidget::text()
     return m_data->text();
 }
 
-void ItemWidget::setText(const QString &text, const QString &length)
+void ItemWidget::setTextShown(const QString &length)
 {
     QFont font = m_contentLabel->font();
+
     font.setItalic(true);
+
     m_contentLabel->setFont(font);
-    m_contentLabel->setText(text);
+
+    m_contentLabel->setText(true);
 
     m_statusLabel->setText(length);
 }
@@ -290,7 +293,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
     setCreateTime(data->time());
     switch (data->type()) {
     case Text: {
-        setText(data->text(), data->subTitle());
+        setTextShown(data->subTitle());
     }
     break;
     case Image: {

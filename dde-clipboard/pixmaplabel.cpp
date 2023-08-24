@@ -14,31 +14,19 @@
 #include <QVBoxLayout>
 #include <QFontMetrics>
 
-#include <private/qtextengine_p.h>
-
-PixmapLabel::PixmapLabel(const QList<QPixmap> &list, QWidget *parent)
+PixmapLabel::PixmapLabel(QPointer<ItemData> data,QWidget *parent)
     : DLabel(parent)
-    , m_pixmapList(list)
-{
-
-}
-
-PixmapLabel::PixmapLabel(QWidget *parent)
-    : DLabel(parent)
+    , m_data(data)
+    , m_istext(false)
 {
 
 }
 
 /*!
- * \~chinese \name setText
- * \~chinese \brief 设置剪切板中的文字
- * \~chinese \param text 剪切板中需要显示的文字
  */
-void PixmapLabel::setText(const QString &text)
+void PixmapLabel::setText(bool is_text)
 {
-    m_text = text.left(1024);//减少elideText计算消耗
-
-    update();
+    m_istext = is_text; // it label is text
 }
 
 /*!
@@ -49,8 +37,6 @@ void PixmapLabel::setText(const QString &text)
 void PixmapLabel::setPixmapList(const QList<QPixmap> &list)
 {
     m_pixmapList = list;
-
-    update();
 }
 
 /*!
@@ -71,65 +57,6 @@ QSize PixmapLabel::sizeHint() const
     return QSize(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight);
 }
 
-void PixmapLabel::elideText(QTextLayout *layout, const QSizeF &size, QTextOption::WrapMode wordWrap,
-                            Qt::TextElideMode mode, qreal lineHeight, int flags, QStringList *lines)
-{
-    qreal height = 0;
-    QPointF offset(0, 0);
-
-    QString text = layout->engine()->hasFormats() ? layout->engine()->block.text() : layout->text();
-    QTextOption &text_option = *const_cast<QTextOption *>(&layout->textOption());
-
-    text_option.setWrapMode(wordWrap);
-
-    if (flags & Qt::AlignRight)
-        text_option.setAlignment(Qt::AlignRight);
-    else if (flags & Qt::AlignHCenter)
-        text_option.setAlignment(Qt::AlignHCenter);
-
-    // dont paint
-    layout->engine()->ignoreBidi = true;
-    layout->beginLayout();
-
-    QTextLine line = layout->createLine();
-
-    while (line.isValid()) {
-        height += lineHeight;
-
-        if (height + lineHeight > size.height()) {
-            const QString &end_str = layout->engine()->elidedText(mode, qRound(size.width()), flags, line.textStart());
-
-            layout->endLayout();
-            layout->setText(end_str);
-
-            if (layout->engine()->block.docHandle()) {
-                const_cast<QTextDocument *>(layout->engine()->block.document())->setPlainText(end_str);
-            }
-
-            text_option.setWrapMode(QTextOption::NoWrap);
-            layout->beginLayout();
-            line = layout->createLine();
-            line.setLineWidth(size.width() - 1);
-            text = end_str;
-        } else {
-            line.setLineWidth(size.width());
-        }
-
-        line.setPosition(offset);
-        offset.setY(offset.y() + lineHeight);
-
-        if (lines) {
-            lines->append(text.mid(line.textStart(), line.textLength()));
-        }
-
-        if (height + lineHeight > size.height())
-            break;
-
-        line = layout->createLine();
-    }
-
-    layout->endLayout();
-}
 
 QPair<QString, int> PixmapLabel::getNextValidString(const QStringList &list, int from)
 {
@@ -143,33 +70,6 @@ QPair<QString, int> PixmapLabel::getNextValidString(const QStringList &list, int
     }
 
     return QPair<QString, int>("", list.size() - 1);
-}
-
-/*!
- * \~chinese \name elideText
- * \~chinese \brief 将文本转换为一定的格式返回
- * \~chinese \param text 文本信息
- * \~chinese \param size 显示文字窗口的大小
- * \~chinese \param wordWrap 控制换行符出现的位置
- * \~chinese \param mode 控制省略文本中省略号“…”的位置
- * \~chinese \param font 字体大小
- * \~chinese \param lineHeight 字符的行高
- * \~chinese \param flags 控制字体的对齐方式
- * \~chinese \return 转换好格式的文本
- */
-QString PixmapLabel::elideText(const QString &text, const QSizeF &size,
-                               QTextOption::WrapMode wordWrap, const QFont &font,
-                               Qt::TextElideMode mode, qreal lineHeight, int flags)
-{
-    QTextLayout textLayout(text);
-
-    textLayout.setFont(font);
-
-    QStringList lines;
-
-    elideText(&textLayout, size, wordWrap, mode, lineHeight, flags, &lines);
-
-    return lines.join('\n');
 }
 
 void PixmapLabel::paintEvent(QPaintEvent *event)
@@ -217,10 +117,9 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
     }
 
     //draw lines
-    if (!m_text.isEmpty()) {
+    if (m_istext) {
         //drawText
-        QString t = elideText(m_text.simplified(), size(), QTextOption::WrapAnywhere, font(), Qt::ElideMiddle, 0);
-        QStringList labelTexts = t.split("\n");
+        QStringList labelTexts = m_data->get_text();
         int lineNum = labelTexts.length() > 4 ? 4 : labelTexts.length();
         int lineHeight = (height() - TextContentTopMargin) / lineNum;
         for (int i  = 0 ; i < lineNum; ++i) {
