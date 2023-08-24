@@ -100,7 +100,7 @@ TEST_F(TstItemWidget, propertyTest)
     ItemWidget w(m_imageData);
 
     QString text = "abcdefghijklmnopqrstuvwxyz";
-    w.setText(text, QString::number(text.length()));
+    w.setTextShown(QString::number(text.length()));
 
     w.setAlpha(120);
     ASSERT_EQ(w.unHoverAlpha(), 120);

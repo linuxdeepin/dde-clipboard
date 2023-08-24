@@ -33,7 +33,7 @@ public:
      * \~chinese \brief 设置剪切块属性的接口
      */
     const QString& text();
-    void setText(const QString &text, const QString &length);
+    void setTextShown(const QString &length);
 
     void setThumnail(const QPixmap &pixmap/*未经处理的原图*/);
     void setThumnail(const FileIconData &data);

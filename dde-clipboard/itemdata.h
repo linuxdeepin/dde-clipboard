@@ -12,7 +12,7 @@
 #include <QPixmap>
 #include <QUrl>
 #include <QDBusArgument>
-
+#include <QTextLayout>
 #include "constants.h"
 #include "dbus/iteminfo.h"
 
@@ -34,7 +34,12 @@ public:
     const QList<QUrl> &urls();                  // 文件链接
     const QDateTime &time();                    // 复制时间
     const QString &text();                      // 内容预览
+    QStringList get_text() const {
+        return m_text_list;
+    };
+    QSize sizeHint(int height);
 
+    int itemHeight(int fontHeight);
     inline bool dataEnabled() { return m_enable; }
     void setDataEnabled(bool enable) { m_enable = enable; }
 
@@ -68,12 +73,25 @@ Q_SIGNALS:
     void reborn(ItemData *data);
 
 private:
+    QStringList elideText(const QString &text, const QSizeF &size,
+                          QTextOption::WrapMode wordWrap,
+                          const QFont &font,
+                          Qt::TextElideMode mode,
+                          qreal lineHeight,
+                          int flags = 0);
+
+    void elideText(QTextLayout *layout, const QSizeF &size,
+                   QTextOption::WrapMode wordWrap,
+                   Qt::TextElideMode mode, qreal lineHeight,
+                   int flags = 0, QStringList *lines = 0);
+private:
     QMap<QString, QByteArray> m_formatMap;
     DataType m_type = Unknown;
     QList<QUrl> m_urls;
     QVariant m_variantImage;
     QSize m_pixSize;
     QString m_text;
+    QStringList m_text_list;
     bool m_enable;
     QDateTime m_createTime;
     QList<FileIconData> m_iconDataList;

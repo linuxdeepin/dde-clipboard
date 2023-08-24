@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "itemdata.h"
+#include "constants.h"
 
 #include <QDebug>
 #include <QApplication>
 #include <QWidget>
 #include <QDataStream>
+
+#include <private/qtextengine_p.h>
 
 #include <QLabel>
 
@@ -95,6 +98,7 @@ ItemData::ItemData(const QByteArray &buf)
     m_enable = true;
     m_iconDataList = info.m_iconDataList;
     m_formatMap = info.m_formatMap;
+    m_text_list = elideText(m_text, QSizeF(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight), QTextOption::WrapAnywhere, QApplication::font(), Qt::ElideMiddle, 0);
 }
 
 QString ItemData::title()
@@ -179,6 +183,24 @@ const QList<FileIconData> &ItemData::IconDataList()
     return m_iconDataList;
 }
 
+QSize ItemData::sizeHint(int fontHeight)
+{
+    if (m_type == Text) {
+        return QSize(ItemWidth, itemHeight(fontHeight) + ItemMargin);
+    }
+
+    return QSize(ItemWidth, ItemHeight + ItemMargin);
+}
+
+int ItemData::itemHeight(int fontHeight)
+{
+    if (m_type == Text) {
+        auto length = m_text_list.length() > 4 ? 4 : m_text_list.length();
+        return length * fontHeight + ItemTitleHeight + ItemStatusBarHeight + TextContentTopMargin;
+    }
+    return ItemHeight;
+}
+
 /*!
  * \~chinese \name remove
  * \~chinese \brief 将当前剪切块数据移除,调用此函数会发出ItemData::destroy的信号
@@ -201,3 +223,79 @@ const QSize &ItemData::pixSize() const
 {
     return m_pixSize;
 }
+
+QStringList ItemData::elideText(const QString &text, const QSizeF &size,
+                               QTextOption::WrapMode wordWrap, const QFont &font,
+                               Qt::TextElideMode mode, qreal lineHeight, int flags)
+{
+    QTextLayout textLayout(text);
+
+    textLayout.setFont(font);
+
+    QStringList lines;
+
+    elideText(&textLayout, size, wordWrap, mode, lineHeight, flags, &lines);
+
+    return lines;
+}
+
+void ItemData::elideText(QTextLayout *layout, const QSizeF &size, QTextOption::WrapMode wordWrap,
+                            Qt::TextElideMode mode, qreal lineHeight, int flags, QStringList *lines)
+{
+    qreal height = 0;
+    QPointF offset(0, 0);
+
+    QString text = layout->engine()->hasFormats() ? layout->engine()->block.text() : layout->text();
+    QTextOption &text_option = *const_cast<QTextOption *>(&layout->textOption());
+
+    text_option.setWrapMode(wordWrap);
+
+    if (flags & Qt::AlignRight)
+        text_option.setAlignment(Qt::AlignRight);
+    else if (flags & Qt::AlignHCenter)
+        text_option.setAlignment(Qt::AlignHCenter);
+
+    // dont paint
+    layout->engine()->ignoreBidi = true;
+    layout->beginLayout();
+
+    QTextLine line = layout->createLine();
+
+    while (line.isValid()) {
+        height += lineHeight;
+
+        if (height + lineHeight > size.height()) {
+            const QString &end_str = layout->engine()->elidedText(mode, qRound(size.width()), flags, line.textStart());
+
+            layout->endLayout();
+            layout->setText(end_str);
+
+            if (layout->engine()->block.docHandle()) {
+                const_cast<QTextDocument *>(layout->engine()->block.document())->setPlainText(end_str);
+            }
+
+            text_option.setWrapMode(QTextOption::NoWrap);
+            layout->beginLayout();
+            line = layout->createLine();
+            line.setLineWidth(size.width() - 1);
+            text = end_str;
+        } else {
+            line.setLineWidth(size.width());
+        }
+
+        line.setPosition(offset);
+        offset.setY(offset.y() + lineHeight);
+
+        if (lines) {
+            lines->append(text.mid(line.textStart(), line.textLength()));
+        }
+
+        if (height + lineHeight > size.height())
+            break;
+
+        line = layout->createLine();
+    }
+
+    layout->endLayout();
+}
+
