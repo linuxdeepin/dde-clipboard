@@ -52,6 +52,9 @@ public:
     Q_PROPERTY(double Opacity READ opacity NOTIFY OpacityChanged)
     double opacity();
 
+    void setAlwaysShow(bool alwaysShow) {
+        m_alwaysShow = alwaysShow;
+    }
 signals:
     void OpacityChanged(double value) const;
 
@@ -154,6 +157,8 @@ private:
     DWindowManagerHelper *m_wmHelper;
 
     bool m_hasComposite = false;
+
+    bool m_alwaysShow = false;
 };
 
 #endif // MAINWINDOW_H

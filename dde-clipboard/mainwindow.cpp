@@ -111,6 +111,9 @@ void MainWindow::showAni()
 
 void MainWindow::hideAni()
 {
+    if (m_alwaysShow) {
+        return;
+    }
     if (!m_hasComposite) {
         hide();
         return;
@@ -133,6 +136,9 @@ void MainWindow::Show()
 
 void MainWindow::Hide()
 {
+    if (m_alwaysShow) {
+        return;
+    }
     if (m_aniGroup->state() == QAbstractAnimation::Running)
         return;
 
