@@ -27,6 +27,18 @@ int main(int argc, char *argv[])
     app->setApplicationName("dde-clipboard");
     app->setApplicationDisplayName("DDE Clipboard");
     app->setApplicationVersion("1.0");
+
+    QCommandLineOption alwaysShowOption("always-show" , "show and will never hide");
+
+    QCommandLineParser parser;
+ 
+    parser.setApplicationDescription("DDE Clipboard");
+    parser.addVersionOption();
+    parser.addHelpOption();
+    parser.addOption(alwaysShowOption);
+
+    parser.process(*app);
+
     app->loadTranslator();
 
     if (!DGuiApplicationHelper::setSingleInstance(QString("dde-clipboard_%1").arg(getuid()))) {
@@ -36,10 +48,16 @@ int main(int argc, char *argv[])
 
     DLogManager::registerConsoleAppender();
     DLogManager::registerFileAppender();
+    DLogManager::registerJournalAppender();
 
     QDBusConnection connection = QDBusConnection::sessionBus();
 
     MainWindow w;
+
+    bool alwaysShow = parser.isSet(alwaysShowOption);
+    if (alwaysShow) {
+        w.setAlwaysShow(true);
+    }
 
     QDBusInterface interface("org.deepin.dde.ClipboardLoader1", "/org/deepin/dde/ClipboardLoader1",
                                  "org.deepin.dde.ClipboardLoader1",
@@ -53,9 +71,9 @@ int main(int argc, char *argv[])
 
     connection.registerObject(DBusClipBoardPath, &w);
 
-#ifdef QT_DEBUG
-    w.showAni();
-#endif
+    if (alwaysShow) {
+        w.showAni();
+    }
 
     return app->exec();
 }
