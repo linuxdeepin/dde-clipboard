@@ -215,6 +215,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.daemon.Clipboard1.servi
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard-daemon.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
 
+install_symlink(dde-clipboard-daemon.service dde-session-initialized.target.wants)
+
 #----------------------------ut-dde-clipboard------------------------------
 set(UT_BIN_NAME ut-dde-clipboard)
 
