@@ -1,3 +1,10 @@
+dde-clipboard (1:6.0.6) unstable; urgency=medium
+
+  * chore: move elideText logic to itemdata
+  * chore: add a commandline option
+
+ -- chenhongtao <chenhongtao@deepin.org>  Thu, 31 Aug 2023 11:43:05 +0800
+
 dde-clipboard (1:6.0.5) unstable; urgency=medium
 
   * fix cannot used on wayland
