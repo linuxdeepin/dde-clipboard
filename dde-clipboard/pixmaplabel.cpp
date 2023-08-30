@@ -145,10 +145,10 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             QPair<QString, int> pair = getNextValidString(labelTexts, lineFrom);
             lineFrom = pair.second;
             QString str = pair.first.trimmed();
-            if (lineFrom == maxLineCount) {
+            if (lineFrom == maxLineCount && maxLineCount == 4) {
                 str.replace(str.size() - 3, 3, "...");
             }
-            if(rectIndex==(maxLineCount-1)){
+            if (rectIndex == (maxLineCount-1) && maxLineCount == 4) {
                 QString lastStr = pair.first.trimmed();
                 pair = getNextValidString(labelTexts, lineFrom);
                 lineFrom = pair.second;
