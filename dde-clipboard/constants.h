@@ -16,23 +16,23 @@
 #define MAX(a,b) ((a) > (b) ? (a):(b))
 #define MIN(a,b) ((a) < (b) ? (a):(b))
 
-const static int WindowWidth = 300;
-const static int WindowMargin = 10;             //边距
-const static int WindowTitleHeight = 56;
-const static int ItemTitleHeight = 36;          //Item标题栏高度
-const static int ItemStatusBarHeight = 30;      //Item状态栏高度
-const static int ItemWidth = WindowWidth - 2 * WindowMargin;
-const static int ItemHeight = 200;
-const static int ItemMargin = 10;
-const static int PixmapWidth = 180;             //图像最大显示宽度
-const static int PixmapHeight = 100;            //图像最大显示高度
-const static int FileIconWidth = PixmapWidth;
-const static int FileIconHeight = PixmapHeight;
-const static int PixmapxStep = 15;
-const static int PixmapyStep = 5;
-const static int ContentMargin = 21;
-const static int TextContentTopMargin = 20;
-const static int AnimationTime = 300;           //ms
+constexpr static int WindowWidth = 300;
+constexpr static int WindowMargin = 10;             //边距
+constexpr static int WindowTitleHeight = 56;
+constexpr static int ItemTitleHeight = 36;          //Item标题栏高度
+constexpr static int ItemStatusBarHeight = 30;      //Item状态栏高度
+constexpr static int ItemWidth = WindowWidth - 2 * WindowMargin;
+constexpr static int ItemHeight = 200;
+constexpr static int ItemMargin = 10;
+constexpr static int PixmapWidth = 180;             //图像最大显示宽度
+constexpr static int PixmapHeight = 100;            //图像最大显示高度
+constexpr static int FileIconWidth = PixmapWidth;
+constexpr static int FileIconHeight = PixmapHeight;
+constexpr static int PixmapxStep = 15;
+constexpr static int PixmapyStep = 5;
+constexpr static int ContentMargin = 21;
+constexpr static int TextContentTopMargin = 20;
+constexpr static int AnimationTime = 300;           //ms
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
 static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";
