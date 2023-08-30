@@ -10,13 +10,14 @@
 #include <QWidget>
 #include <QDataStream>
 
-#include <private/qtextengine_p.h>
-
 #include <QLabel>
+#include <QFontMetrics>
 
 static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
 static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
 static inline QString applicationXQtImageLiteral() { return QStringLiteral("application/x-qt-image"); }
+
+static constexpr int RESERVED_WIDTH_FOR_TEXT = ItemWidth - ContentMargin * 2;
 
 ItemInfo Buf2Info(const QByteArray &buf)
 {
@@ -98,7 +99,26 @@ ItemData::ItemData(const QByteArray &buf)
     m_enable = true;
     m_iconDataList = info.m_iconDataList;
     m_formatMap = info.m_formatMap;
-    m_text_list = elideText(m_text, QSizeF(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight), QTextOption::WrapAnywhere, QApplication::font(), Qt::ElideMiddle, 0);
+    QString textBefore = m_text.replace("\n"," ");
+    QFont font = QApplication::font();
+    font.setItalic(true);
+    QFontMetrics fontMetrics(font);
+    while (!textBefore.isEmpty()) {
+        int index = 0;
+        while (true) {
+            if (fontMetrics.horizontalAdvance(textBefore.left(index + 1)) > RESERVED_WIDTH_FOR_TEXT) {
+                m_text_list.push_back(textBefore.left(index));
+                textBefore.remove(0, index);
+                break;
+            }
+            index += 1;
+            if (index == textBefore.length()) {
+                m_text_list.push_back(textBefore);
+                textBefore.clear();
+                break;
+            }
+        }
+    }
 }
 
 QString ItemData::title()
@@ -223,79 +243,3 @@ const QSize &ItemData::pixSize() const
 {
     return m_pixSize;
 }
-
-QStringList ItemData::elideText(const QString &text, const QSizeF &size,
-                               QTextOption::WrapMode wordWrap, const QFont &font,
-                               Qt::TextElideMode mode, qreal lineHeight, int flags)
-{
-    QTextLayout textLayout(text);
-
-    textLayout.setFont(font);
-
-    QStringList lines;
-
-    elideText(&textLayout, size, wordWrap, mode, lineHeight, flags, &lines);
-
-    return lines;
-}
-
-void ItemData::elideText(QTextLayout *layout, const QSizeF &size, QTextOption::WrapMode wordWrap,
-                            Qt::TextElideMode mode, qreal lineHeight, int flags, QStringList *lines)
-{
-    qreal height = 0;
-    QPointF offset(0, 0);
-
-    QString text = layout->engine()->hasFormats() ? layout->engine()->block.text() : layout->text();
-    QTextOption &text_option = *const_cast<QTextOption *>(&layout->textOption());
-
-    text_option.setWrapMode(wordWrap);
-
-    if (flags & Qt::AlignRight)
-        text_option.setAlignment(Qt::AlignRight);
-    else if (flags & Qt::AlignHCenter)
-        text_option.setAlignment(Qt::AlignHCenter);
-
-    // dont paint
-    layout->engine()->ignoreBidi = true;
-    layout->beginLayout();
-
-    QTextLine line = layout->createLine();
-
-    while (line.isValid()) {
-        height += lineHeight;
-
-        if (height + lineHeight > size.height()) {
-            const QString &end_str = layout->engine()->elidedText(mode, qRound(size.width()), flags, line.textStart());
-
-            layout->endLayout();
-            layout->setText(end_str);
-
-            if (layout->engine()->block.docHandle()) {
-                const_cast<QTextDocument *>(layout->engine()->block.document())->setPlainText(end_str);
-            }
-
-            text_option.setWrapMode(QTextOption::NoWrap);
-            layout->beginLayout();
-            line = layout->createLine();
-            line.setLineWidth(size.width() - 1);
-            text = end_str;
-        } else {
-            line.setLineWidth(size.width());
-        }
-
-        line.setPosition(offset);
-        offset.setY(offset.y() + lineHeight);
-
-        if (lines) {
-            lines->append(text.mid(line.textStart(), line.textLength()));
-        }
-
-        if (height + lineHeight > size.height())
-            break;
-
-        line = layout->createLine();
-    }
-
-    layout->endLayout();
-}
-

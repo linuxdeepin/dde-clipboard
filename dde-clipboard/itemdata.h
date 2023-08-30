@@ -73,18 +73,6 @@ Q_SIGNALS:
     void reborn(ItemData *data);
 
 private:
-    QStringList elideText(const QString &text, const QSizeF &size,
-                          QTextOption::WrapMode wordWrap,
-                          const QFont &font,
-                          Qt::TextElideMode mode,
-                          qreal lineHeight,
-                          int flags = 0);
-
-    void elideText(QTextLayout *layout, const QSizeF &size,
-                   QTextOption::WrapMode wordWrap,
-                   Qt::TextElideMode mode, qreal lineHeight,
-                   int flags = 0, QStringList *lines = 0);
-private:
     QMap<QString, QByteArray> m_formatMap;
     DataType m_type = Unknown;
     QList<QUrl> m_urls;
