@@ -29,7 +29,7 @@ Copyright: UnionTech Software Technology Co., Ltd.
 License: CC-BY-4.0
 
 # Project file
-Files: *.pro *.qrc *.pri *CMakeLists.txt *.cmake *.desktop *.service *.in
+Files: *.pro *.qrc *.pri *CMakeLists.txt *.cmake *.desktop *.service *.in .clang-format
 Copyright: None
 License: CC0-1.0
 
