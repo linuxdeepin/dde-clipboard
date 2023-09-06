@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.7) unstable; urgency=medium
+
+  * fix: when line is min than 4, it elided
+
+ -- chenhongtao <chenhongtao@deepin.org>  Wed, 06 Sep 2023 15:00:50 +0800
+
 dde-clipboard (1:6.0.6) unstable; urgency=medium
 
   * chore: move elideText logic to itemdata
