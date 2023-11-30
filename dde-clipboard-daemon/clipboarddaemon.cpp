@@ -4,10 +4,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "clipboarddaemon.h"
+
 #include "clipboardloader.h"
 
-#include <QDBusError>
 #include <QDBusConnection>
+#include <QDBusError>
 
 ClipboardDaemon::ClipboardDaemon(QObject *parent)
     : QObject(parent)
@@ -18,15 +19,7 @@ ClipboardDaemon::ClipboardDaemon(QObject *parent)
     }
 
     ClipboardLoader *clipboardLoader = new ClipboardLoader(this);
-    connection.registerObject("/org/deepin/dde/ClipboardLoader1", clipboardLoader,
+    connection.registerObject("/org/deepin/dde/ClipboardLoader1",
+                              clipboardLoader,
                               QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
-
-    // 剪切板管理和提供UI数据的功能合并，WaylandCopyClient只实例化一次
-#if 0
-    // 实例化wayland 剪切板管理器
-    if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
-        WaylandCopyClient *waylandClipboardManager = new WaylandCopyClient(this);
-        waylandClipboardManager->init(true);
-    }
-#endif
 }

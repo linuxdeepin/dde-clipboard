@@ -5,34 +5,34 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <QSize>
-#include <QPixmap>
+#include <QBitmap>
+#include <QIcon>
 #include <QPainter>
 #include <QPalette>
-#include <QBitmap>
+#include <QPixmap>
+#include <QSize>
 #include <QTimer>
-#include <QIcon>
 
-#define MAX(a,b) ((a) > (b) ? (a):(b))
-#define MIN(a,b) ((a) < (b) ? (a):(b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-const static int WindowWidth = 300;
-const static int WindowMargin = 10;             //边距
-const static int WindowTitleHeight = 56;
-const static int ItemTitleHeight = 36;          //Item标题栏高度
-const static int ItemStatusBarHeight = 30;      //Item状态栏高度
-const static int ItemWidth = WindowWidth - 2 * WindowMargin;
-const static int ItemHeight = 200;
-const static int ItemMargin = 10;
-const static int PixmapWidth = 180;             //图像最大显示宽度
-const static int PixmapHeight = 100;            //图像最大显示高度
-const static int FileIconWidth = PixmapWidth;
-const static int FileIconHeight = PixmapHeight;
-const static int PixmapxStep = 15;
-const static int PixmapyStep = 5;
-const static int ContentMargin = 21;
-const static int TextContentTopMargin = 20;
-const static int AnimationTime = 300;           //ms
+constexpr static int WindowWidth = 300;
+constexpr static int WindowMargin = 10; // 边距
+constexpr static int WindowTitleHeight = 56;
+constexpr static int ItemTitleHeight = 36;     // Item标题栏高度
+constexpr static int ItemStatusBarHeight = 30; // Item状态栏高度
+constexpr static int ItemWidth = WindowWidth - 2 * WindowMargin;
+constexpr static int ItemHeight = 200;
+constexpr static int ItemMargin = 10;
+constexpr static int PixmapWidth = 180;  // 图像最大显示宽度
+constexpr static int PixmapHeight = 100; // 图像最大显示高度
+constexpr static int FileIconWidth = PixmapWidth;
+constexpr static int FileIconHeight = PixmapHeight;
+constexpr static int PixmapxStep = 15;
+constexpr static int PixmapyStep = 5;
+constexpr static int ContentMargin = 21;
+constexpr static int TextContentTopMargin = 20;
+constexpr static int AnimationTime = 300; // ms
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
 static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";
@@ -43,12 +43,13 @@ static const QString TextPlainLiteral QStringLiteral("text/plain");
 static const QString ApplicationXColorLiteral QStringLiteral("application/x-color");
 static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
 
-typedef struct {
+typedef struct
+{
     QStringList cornerIconList;
     QIcon fileIcon;
 } FileIconData;
 
-namespace  Globals {
+namespace Globals {
 /*!
  * \~chinese \name GetScale
  * \~chinese \brief 获取缩放的比例
@@ -98,16 +99,9 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
 
     int radius = 10;
     int borderWidth = 10;
-//    if (pix.width() > pix.height()) {
-//        radius = int(8 * 1.0 / PixmapWidth * pix.width());
-//        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
-//    } else {
-//        radius = int(8 * 1.0 / PixmapHeight * pix.height());
-//        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
-//    }
 
     QPixmap pixmap = pix;
-    //绘制边框
+    // 绘制边框
     QPainter pixPainter(&pixmap);
     pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     borderColor.setAlpha(60);
@@ -115,7 +109,7 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
     pixPainter.setBrush(Qt::transparent);
     pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
 
-    //设置圆角
+    // 设置圆角
     QSize size(pixmap.size());
     QBitmap mask(size);
     QPainter painter(&mask);
@@ -124,10 +118,10 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
     painter.setBrush(Qt::color1);
     painter.drawRoundedRect(mask.rect(), radius, radius);
 
-    //遮罩
+    // 遮罩
     QPixmap image = pixmap;
     image.setMask(mask);
     return image;
 }
-} ;
+};     // namespace Globals
 #endif // CONSTANTS_H

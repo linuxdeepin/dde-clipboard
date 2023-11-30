@@ -2,89 +2,89 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef COPYCLIENT_H
-#define COPYCLIENT_H
+#pragma once
 
-#include <QMutex>
+#include "qwayland-wlr-data-control-unstable-v1.h"
+
+#include <wayland-client-core.h>
+
+#include <QByteArray>
 #include <QMimeData>
-#include <QPointer>
-#include <QMimeType>
+#include <QObject>
+#include <QScopedPointer>
+#include <QtWaylandClient/QWaylandClientExtensionTemplate>
+#include <QtWaylandClient/private/qwaylandintegration_p.h>
 
-namespace KWayland
-{
-namespace Client
-{
-class ConnectionThread;
-class EventQueue;
-class Registry;
-class Seat;
-class DataControlDeviceV1;
-class DataControlDeviceManager;
-class DataControlSourceV1;
-class DataControlOfferV1;
-} //Client
-} //KWayland
+class ZDataControlDeviceV1;
+class ZDataControlOfferV1;
 
-class ReadPipeDataTask;
-
-using namespace KWayland::Client;
-
-class DMimeData : public QMimeData
+class ZWaylandDataControlManager
+    : public QWaylandClientExtensionTemplate<ZWaylandDataControlManager>,
+      public QtWayland::zwlr_data_control_manager_v1
 {
     Q_OBJECT
 public:
-    DMimeData();
-    ~DMimeData();
-    virtual QVariant retrieveData(const QString &mimeType,
-                                      QVariant::Type preferredType) const;
-};
+    explicit ZWaylandDataControlManager(QObject *parent = nullptr);
 
-class WaylandCopyClient : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit WaylandCopyClient(QObject *parent = nullptr);
-    virtual ~WaylandCopyClient();
-
-    void init();
-    const QMimeData *mimeData();
+    void initBase();
     void setMimeData(QMimeData *mimeData);
 
-private:
-    void setupRegistry(Registry *registry);
-    QStringList filterMimeType(const QStringList &mimeTypeList);
-    void sendOffer();
-
-Q_SIGNALS:
-    // when new source in , send dataChanged
-    void dataChanged();
-    // when data is copied, send dataCopied,
-    void dataCopied();
-    // when a new dataOffer request in ,then send it
-    void dataOfferedNew();
-
-protected slots:
-    void onSendDataRequest(const QString &mimeType, qint32 fd) const;
-    void onDataOffered(DataControlOfferV1 *offer);
-    void onDataCopied();
+signals:
+    void clipboardChanged(const QMimeData *data);
 
 private:
-    void execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer);
-    void taskDataReady(qint64, const QString &mimeType, const QByteArray &data);
-
-private:
-    QThread *m_connectionThread;
-    ConnectionThread *m_connectionThreadObject;
-    EventQueue *m_eventQueue;
-    DataControlDeviceManager *m_dataControlDeviceManager;
-    DataControlDeviceV1 *m_dataControlDevice;
-    DataControlSourceV1 *m_copyControlSource;
-    QPointer<QMimeData> m_mimeData;
-    Seat *m_seat;
-
-    qint64 m_curOffer;
-    QStringList m_curMimeTypes;
+    ZDataControlDeviceV1 *m_device;
 };
 
-#endif // COPYCLIENT_H
+class ZDataControlDeviceV1 : public QObject, public QtWayland::zwlr_data_control_device_v1
+{
+    Q_OBJECT
+
+public:
+    explicit ZDataControlDeviceV1(::zwlr_data_control_device_v1 *device, QObject *parent = nullptr);
+
+signals:
+    void clipboardChanged(const QMimeData *data);
+
+protected:
+    void zwlr_data_control_device_v1_selection(struct ::zwlr_data_control_offer_v1 *id) override;
+    void
+    zwlr_data_control_device_v1_primary_selection(struct ::zwlr_data_control_offer_v1 *id) override;
+    void zwlr_data_control_device_v1_data_offer(struct ::zwlr_data_control_offer_v1 *id) override;
+
+    bool readData(int fd, QByteArray &data);
+
+private:
+    QScopedPointer<ZDataControlOfferV1> m_dataoffer;
+    QMimeData *m_data;
+};
+
+class ZDataControlOfferV1 : public QObject, public QtWayland::zwlr_data_control_offer_v1
+{
+    Q_OBJECT
+    friend ZDataControlDeviceV1;
+
+public:
+    explicit ZDataControlOfferV1(::zwlr_data_control_offer_v1 *device, QObject *parent = nullptr);
+
+protected:
+    void zwlr_data_control_offer_v1_offer(const QString &mime_type) override;
+
+private:
+    QStringList m_mimetypes;
+};
+
+class ZDataControlResourceV1 : public QObject, public QtWayland::zwlr_data_control_source_v1
+{
+    Q_OBJECT
+public:
+    ZDataControlResourceV1(::zwlr_data_control_source_v1 *resource,
+                           QMimeData *data,
+                           QObject *parent = nullptr);
+
+protected:
+    void zwlr_data_control_source_v1_send(const QString &mime_type, int32_t fd) override;
+
+private:
+    QMimeData *m_mimeData;
+};

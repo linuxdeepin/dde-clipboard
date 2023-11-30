@@ -1,0 +1,22 @@
+set(dbus_types
+   ${CMAKE_CURRENT_LIST_DIR}/brightnessmap.h
+   ${CMAKE_CURRENT_LIST_DIR}/brightnessmap.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/dockrect.h
+   ${CMAKE_CURRENT_LIST_DIR}/dockrect.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/reflectlist.h
+   ${CMAKE_CURRENT_LIST_DIR}/reflectlist.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/resolution.h
+   ${CMAKE_CURRENT_LIST_DIR}/resolution.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/resolutionlist.h
+   ${CMAKE_CURRENT_LIST_DIR}/resolutionlist.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/rotationlist.h
+   ${CMAKE_CURRENT_LIST_DIR}/rotationlist.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/screenrect.h
+   ${CMAKE_CURRENT_LIST_DIR}/screenrect.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreeninfolist.h
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreeninfolist.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreeninfolist_v2.h
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreeninfolist_v2.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreenmap.h
+   ${CMAKE_CURRENT_LIST_DIR}/touchscreenmap.cpp
+)
