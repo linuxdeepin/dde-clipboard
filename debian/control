@@ -11,11 +11,12 @@ Build-Depends: debhelper (>= 8.0.0),
  libdtkcore5-bin,
  qtbase5-private-dev,
  libgio-qt-dev,
- libdframeworkdbus-dev,
  libgtest-dev,
- extra-cmake-modules,
- libdwayland-dev,
- libkf5wayland-dev,
+ qt6-base-dev,
+ qt6-wayland-dev,
+ qt6-wayland-dev-tools,
+ qt6-base-private-dev,
+ qt6-wayland-private-dev,
  systemd
 Standards-Version: 3.9.5
 Homepage: https://github.com/linuxdeepin/dde-clipboard

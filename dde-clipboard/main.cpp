@@ -4,7 +4,7 @@
 
 #include "mainwindow.h"
 #include "constants.h"
-#include "clipboard_adaptor.h"
+#include "clipboard1adaptor.h"
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     QCommandLineOption alwaysShowOption("always-show" , "show and will never hide");
 
     QCommandLineParser parser;
- 
+
     parser.setApplicationDescription("DDE Clipboard");
     parser.addVersionOption();
     parser.addHelpOption();
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
                                  "org.deepin.dde.ClipboardLoader1",
                                  QDBusConnection::sessionBus());
 
-    ClipboardAdaptor adapt(&w);
+    Clipboard1Adaptor adapt(&w);
     if (!connection.registerService(DBusClipBoardService)) {
         qDebug() << "error:" << connection.lastError().message();
         exit(-1);

@@ -15,4 +15,4 @@ public:
     explicit ClipboardDaemon(QObject *parent = nullptr);
 };
 
-#endif //CLIPBOARD_DAEMON_H
+#endif // CLIPBOARD_DAEMON_H
