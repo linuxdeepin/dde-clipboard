@@ -29,7 +29,7 @@ Copyright: UnionTech Software Technology Co., Ltd.
 License: CC-BY-4.0
 
 # Project file
-Files: *.pro *.qrc *.pri *CMakeLists.txt *.cmake *.desktop *.service *.in .clang-format
+Files: *.pro *.qrc *.pri *CMakeLists.txt *.cmake *.desktop *.service *.in .clang-format .editorconfig
 Copyright: None
 License: CC0-1.0
 
@@ -43,12 +43,12 @@ Files: dde-clipboard/dbus/* dbus/*.xml dde-clipboard/org.deepin.dde.Clipboard1.x
 Copyright: The Qt Company Ltd.
 License: CC0-1.0
 
-# xml 
-Files: dde-clipboard/com.deepin.dde.Clipboard.xml
-Copyright: UnionTech Software Technology Co., Ltd.
+# wayland
+Files: misc/wlr-data-control-unstable-v1.xml
+Copyright: wlroots developer.
 License: GPL-3.0-or-later
 
-# test file 
+# test file
 Files: tests/dde-clipboard/qrc/*.buf tests/dde-clipboard/ut_img.cpp tests/dde-clipboard-daemon/plugin/dde-clipboard-loader/ut_qrc.cpp
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
