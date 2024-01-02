@@ -5,10 +5,10 @@
 #ifndef CLIPBOARDLOADER_H
 #define CLIPBOARDLOADER_H
 
-#include "constants.h"
-#include "waylandcopyclient.h"
 #include "iteminfo.h"
+#include "waylandcopyclient.h"
 
+#include <QMimeData>
 #include <QObject>
 #include <QClipboard>
 #include <QDBusMetaType>
@@ -37,16 +37,16 @@ public Q_SLOTS:
     void dataReborned(const QByteArray &buf);
 
 private Q_SLOTS:
-    void doWork(int protocolType);
+    void doWork(const QMimeData *data);
 
 Q_SIGNALS:
     void dataComing(const QByteArray &buf);
 
 private:
     QClipboard *m_board;
+    ZWaylandDataControlManager *m_waylandboard;
     QByteArray m_lastTimeStamp;
     QPixmap m_lastPix;
-    WaylandCopyClient *m_waylandCopyClient;
 
     static QString m_pixPath;
 };

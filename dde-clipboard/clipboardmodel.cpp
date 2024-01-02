@@ -5,18 +5,20 @@
 #include "clipboardmodel.h"
 
 #include <QApplication>
-#include <QPointer>
-#include <QDebug>
-#include <QDir>
+#include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusReply>
-#include <QDBusConnection>
+#include <QDebug>
+#include <QDir>
+#include <QPointer>
 
-ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListModel(parent)
+ClipboardModel::ClipboardModel(ListView *list, QObject *parent)
+    : QAbstractListModel(parent)
     , m_list(list)
     , m_loaderInter(new ClipboardLoader("org.deepin.dde.ClipboardLoader1",
                                         "/org/deepin/dde/ClipboardLoader1",
-                                        QDBusConnection::sessionBus(), this))
+                                        QDBusConnection::sessionBus(),
+                                        this))
 {
     checkDbusConnect();
 }
@@ -58,7 +60,8 @@ QVariant ClipboardModel::data(const QModelIndex &index, int role) const
 Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
 {
     if (index.isValid()) {
-        if (m_list != nullptr) m_list->openPersistentEditor(index);
+        if (m_list != nullptr)
+            m_list->openPersistentEditor(index);
         return QAbstractListModel::flags(index) | Qt::ItemIsEditable;
     }
     return QAbstractListModel::flags(index);
@@ -67,12 +70,14 @@ Qt::ItemFlags ClipboardModel::flags(const QModelIndex &index) const
 void ClipboardModel::destroy(ItemData *data)
 {
     int row = m_data.indexOf(data);
-    if (row == -1) return;
+    if (row == -1)
+        return;
 
     m_list->startAni(row);
 
-    QTimer::singleShot(AnimationTime, this, [ = ] {
-        if (m_data.indexOf(data) == -1) return;
+    QTimer::singleShot(AnimationTime, this, [=] {
+        if (m_data.indexOf(data) == -1)
+            return;
         beginRemoveRows(QModelIndex(), row, row);
         auto item = m_data.takeAt(m_data.indexOf(data));
         endRemoveRows();
@@ -97,17 +102,11 @@ void ClipboardModel::reborn(ItemData *data)
     QByteArray buf;
     QDataStream stream(&buf, QIODevice::WriteOnly);
     QByteArray iconBuf;
-    stream << data->formatMap()
-           << data->type()
-           << data->urls()
-           << data->imageData().isValid();
+    stream << data->formatMap() << data->type() << data->urls() << data->imageData().isValid();
     if (data->imageData().isValid()) {
         stream << data->imageData();
     }
-    stream  << data->dataEnabled()
-            << data->text()
-            << data->time()
-            << iconBuf;
+    stream << data->dataEnabled() << data->text() << data->time() << iconBuf;
 
     m_loaderInter->dataReborned(buf);
 
@@ -124,9 +123,8 @@ void ClipboardModel::checkDbusConnect()
     QTimer *timer = new QTimer(this);
     timer->setInterval(1000);
 
-    connect(timer, &QTimer::timeout, this, [ = ] {
-        if (m_loaderInter->isValid())
-        {
+    connect(timer, &QTimer::timeout, this, [=] {
+        if (m_loaderInter->isValid()) {
             connect(m_loaderInter, &ClipboardLoader::dataComing, this, &ClipboardModel::dataComing);
             timer->stop();
         }

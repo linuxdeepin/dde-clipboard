@@ -214,7 +214,7 @@ void MainWindow::initUI()
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_content);
 
     setMaskAlpha(static_cast<int>(this->opacity() * 255));

@@ -31,9 +31,6 @@
 
 #include <DFontSizeManager>
 
-#include "dgiofile.h"
-#include "dgiofileinfo.h"
-
 #include <cmath>
 
 #define HoverAlpha 200
@@ -207,29 +204,29 @@ void ItemWidget::onRefreshTime()
 
 void ItemWidget::onClose()
 {
-    if (m_destroy == false) {
-        QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
-
-        QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);
-        geoAni->setStartValue(geometry());
-        geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
-        geoAni->setDuration(AnimationTime);
-
-        QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "opacity", group);
-        opacityAni->setStartValue(1.0);
-        opacityAni->setEndValue(0.0);
-        opacityAni->setDuration(AnimationTime);
-
-        group->addAnimation(geoAni);
-        group->addAnimation(opacityAni);
-
-        m_data->remove();
-
-        group->start(QAbstractAnimation::DeleteWhenStopped);
-        m_destroy = true;
-    } else {
+    if (m_destroy) {
         return;
     }
+
+    QParallelAnimationGroup *group = new QParallelAnimationGroup(this);
+
+    QPropertyAnimation *geoAni = new QPropertyAnimation(this, "geometry", group);
+    geoAni->setStartValue(geometry());
+    geoAni->setEndValue(QRect(geometry().center(), geometry().center()));
+    geoAni->setDuration(AnimationTime);
+
+    QPropertyAnimation *opacityAni = new QPropertyAnimation(this, "opacity", group);
+    opacityAni->setStartValue(1.0);
+    opacityAni->setEndValue(0.0);
+    opacityAni->setDuration(AnimationTime);
+
+    group->addAnimation(geoAni);
+    group->addAnimation(opacityAni);
+
+    m_data->remove();
+
+    group->start(QAbstractAnimation::DeleteWhenStopped);
+    m_destroy = true;
 }
 
 void ItemWidget::initUI()
@@ -247,7 +244,8 @@ void ItemWidget::initUI()
     titleWidget->setFixedHeight(ItemTitleHeight);
 
     QFont font = DFontSizeManager::instance()->t4();
-    font.setWeight(75);
+
+    font.setWeight(QFont::Weight::Bold);
     m_nameLabel->setFont(font);
     m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
@@ -261,7 +259,7 @@ void ItemWidget::initUI()
     //布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(0);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(titleWidget, 0, Qt::AlignTop);
 
     QHBoxLayout *layout = new QHBoxLayout;
@@ -486,9 +484,6 @@ QPixmap ItemWidget::getIconPixmap(const QIcon &icon, const QSize &size, qreal pi
     //             而且，在有些QIconEngine的实现中，会去调用另一个QIcon::pixmap，导致 pixmapSize 在这种嵌套调用中越来越大
     //             最终会获取到一个是期望大小几倍的图片，由于图片太大，会很快将 QPixmapCache 塞满，导致后面再调用QIcon::pixmap
     //             读取新的图片时无法缓存，非常影响图片绘制性能。此处在获取图片前禁用 Qt::AA_UseHighDpiPixmaps，自行处理图片大小问题
-    bool useHighDpiPixmaps = qApp->testAttribute(Qt::AA_UseHighDpiPixmaps);
-    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, false);
-
     QSize icon_size = icon.actualSize(size, mode, state);
 
     if (icon_size.width() > size.width() || icon_size.height() > size.height())
@@ -497,8 +492,6 @@ QPixmap ItemWidget::getIconPixmap(const QIcon &icon, const QSize &size, qreal pi
     QSize pixmapSize = icon_size * pixelRatio;
     QPixmap px = icon.pixmap(pixmapSize, mode, state);
 
-    // restore the value
-    qApp->setAttribute(Qt::AA_UseHighDpiPixmaps, useHighDpiPixmaps);
 
     if (px.width() > icon_size.width() * pixelRatio) {
         px.setDevicePixelRatio(px.width() * 1.0 / qreal(icon_size.width()));
@@ -514,31 +507,13 @@ QPixmap ItemWidget::getIconPixmap(const QIcon &icon, const QSize &size, qreal pi
 QPixmap ItemWidget::GetFileIcon(QString path)
 {
     QFileInfo info(path);
-    QIcon icon;
+    QMimeDatabase db;
+    QMimeType mime = db.mimeTypeForFile(path);
+    QIcon icon = QIcon::fromTheme(mime.iconName());
 
     if (!QFileInfo::exists(path)) {
-        QMimeDatabase db;
-        QMimeType mime = db.mimeTypeForFile(path);
-        return QIcon::fromTheme(mime.genericIconName()).pixmap(FileIconWidth, FileIconWidth);
+        return icon.pixmap(FileIconWidth, FileIconWidth);
     }
-    QScopedPointer<DGioFile> file(DGioFile::createFromPath(info.absoluteFilePath()));
-    QExplicitlySharedDataPointer<DGioFileInfo> fileinfo = file->createFileInfo();
-    if (!fileinfo) {
-        return QPixmap();
-    }
-
-    QStringList icons = fileinfo->themedIconNames();
-    if (!icons.isEmpty()) {
-        icon =  QIcon::fromTheme(icons.first()).pixmap(FileIconWidth, FileIconWidth);
-    } else {
-        QString iconStr(fileinfo->iconString());
-        if (iconStr.startsWith('/')) {
-            icon = QIcon(iconStr);
-        } else {
-            icon = QIcon::fromTheme(iconStr);
-        }
-    }
-
     //get additional icons
     QPixmap pix = icon.pixmap(FileIconWidth, FileIconWidth);
     QList<QRectF> cornerGeometryList = getCornerGeometryList(pix.rect(), pix.size() / 4);
