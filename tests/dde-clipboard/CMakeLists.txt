@@ -1,8 +1,8 @@
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt5 COMPONENTS Gui Widgets DBus Test Concurrent REQUIRED)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui Widgets DBus Test Concurrent REQUIRED)
 
-find_package(Dtk COMPONENTS Widget Core REQUIRED)
-find_package(DtkTools REQUIRED)
+find_package(Dtk6 COMPONENTS Widget Core REQUIRED)
+find_package(Dtk6Tools REQUIRED)
 find_package(Threads REQUIRED)
 pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-qt)
 
@@ -62,13 +62,13 @@ add_executable(ut-dde-clipboard
 target_compile_options(ut-dde-clipboard PRIVATE -fprofile-arcs -ftest-coverage)
 
 target_link_libraries(ut-dde-clipboard PRIVATE
-    Dtk::Widget
+    Dtk6::Widget
     PkgConfig::GIO
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
-    Qt5::Test
-    Qt5::GuiPrivate
+    Qt::Core
+    Qt::Widgets
+    Qt::DBus
+    Qt::Test
+    Qt::GuiPrivate
     GTest::gtest
     Threads::Threads
     -lgcov

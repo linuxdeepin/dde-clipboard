@@ -1,12 +1,10 @@
 set(BIN_NAME dde-clipboard)
 
-find_package(QT NAMES Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt5 COMPONENTS Gui Widgets DBus Test Concurrent REQUIRED)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 COMPONENTS Gui Widgets DBus Test Concurrent REQUIRED)
 
-find_package(Dtk COMPONENTS Widget Core REQUIRED)
-find_package(DtkTools)
-
-pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-qt)
+find_package(Dtk6 COMPONENTS Widget Core REQUIRED)
+find_package(Dtk6Tools)
 
 file(GLOB_RECURSE Clipboard_SCRS
     "*.h"
@@ -47,14 +45,14 @@ add_executable(dde-clipboard
 )
 
 target_link_libraries(dde-clipboard PRIVATE
-    Dtk::Widget
-    Dtk::Core
-    PkgConfig::GIO
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::GuiPrivate
-    Qt5::Gui
-    Qt5::DBus
+    Dtk6::Widget
+    Dtk6::Core
+    #PkgConfig::GIO
+    Qt::Core
+    Qt::Widgets
+    Qt::GuiPrivate
+    Qt::Gui
+    Qt::DBus
 )
 
 install(TARGETS dde-clipboard DESTINATION ${CMAKE_INSTALL_BINDIR})

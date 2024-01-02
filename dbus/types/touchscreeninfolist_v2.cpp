@@ -25,7 +25,14 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, TouchscreenInfo_V2 &in
 
 bool TouchscreenInfo_V2::operator==(const TouchscreenInfo_V2 &info)
 {
-    return id == info.id && name == info.name && deviceNode == info.deviceNode && serialNumber == info.serialNumber && UUID == info.UUID;
+    return id == info.id && name == info.name && deviceNode == info.deviceNode
+            && serialNumber == info.serialNumber && UUID == info.UUID;
+}
+
+bool TouchscreenInfo_V2::operator==(const TouchscreenInfo_V2 &info) const
+{
+    return id == info.id && name == info.name && deviceNode == info.deviceNode
+            && serialNumber == info.serialNumber && UUID == info.UUID;
 }
 
 void registerTouchscreenInfoV2MetaType()

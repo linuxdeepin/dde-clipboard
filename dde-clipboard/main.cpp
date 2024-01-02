@@ -21,14 +21,14 @@ int main(int argc, char *argv[])
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::ColorCompositing, true);
 
     DApplication *app = DApplication::globalApplication(argc, argv);
-    DApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
     app->setOrganizationName("deepin");
     app->setApplicationName("dde-clipboard");
     app->setApplicationDisplayName("DDE Clipboard");
     app->setApplicationVersion("1.0");
 
-    QCommandLineOption alwaysShowOption("always-show" , "show and will never hide");
+    QStringList names = {"always-show"};
+    QCommandLineOption alwaysShowOption(names, "show and will never hide");
 
     QCommandLineParser parser;
 

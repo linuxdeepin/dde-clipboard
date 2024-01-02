@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "dockrect.h"
+
 #include <QDebug>
 
 DockRect::DockRect()
@@ -11,15 +12,11 @@ DockRect::DockRect()
     , w(0)
     , h(0)
 {
-
 }
 
 QDebug operator<<(QDebug debug, const DockRect &rect)
 {
-    debug << QString("DockRect(%1, %2, %3, %4)").arg(rect.x)
-                                                .arg(rect.y)
-                                                .arg(rect.w)
-                                                .arg(rect.h);
+    debug << QString("DockRect(%1, %2, %3, %4)").arg(rect.x).arg(rect.y).arg(rect.w).arg(rect.h);
 
     return debug;
 }
@@ -51,4 +48,16 @@ void registerDockRectMetaType()
 {
     qRegisterMetaType<DockRect>("DockRect");
     qDBusRegisterMetaType<DockRect>();
+}
+
+bool operator==(const DockRect &infoa, const DockRect &rect)
+{
+    bool re = infoa.x == rect.x && infoa.y == rect.y && infoa.h == rect.h && infoa.w == rect.w;
+    return re;
+}
+
+bool operator!=(const DockRect &infoa, const DockRect &rect)
+{
+    bool re = infoa.x == rect.x && infoa.y == rect.y && infoa.h == rect.h && infoa.w == rect.w;
+    return !re;
 }

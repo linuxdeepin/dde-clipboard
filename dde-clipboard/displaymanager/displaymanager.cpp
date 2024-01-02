@@ -48,12 +48,6 @@ void DisplayManager::screenCountChanged()
 
     // 创建关联
     for (auto s : to_add_list) {
-        s->setOrientationUpdateMask(Qt::PrimaryOrientation
-                                    | Qt::LandscapeOrientation
-                                    | Qt::PortraitOrientation
-                                    | Qt::InvertedLandscapeOrientation
-                                    | Qt::InvertedPortraitOrientation);
-
         connect(s, &QScreen::geometryChanged, this, &DisplayManager::screenInfoChanged);
         connect(s, &QScreen::availableGeometryChanged, this, &DisplayManager::screenInfoChanged);
         connect(s, &QScreen::physicalSizeChanged, this, &DisplayManager::screenInfoChanged);

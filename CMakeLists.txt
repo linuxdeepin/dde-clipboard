@@ -42,7 +42,12 @@ macro(install_symlink filepath wantsdir)
 endmacro(install_symlink)
 
 ## qm files
-file(GLOB QM_FILES "translations/*.qm")
+find_package(Qt6LinguistTools REQUIRED)
+
+file(GLOB TS_FILES "translations/*.ts")
+
+qt6_add_translation(QM_FILES ${TS_FILES})
+
 install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/${BIN_NAME}/translations)
 
 configure_file(
