@@ -155,6 +155,8 @@ private:
     QRect m_rect;
 
     DWindowManagerHelper *m_wmHelper;
+    
+    QTimer *m_trickTimer;
 
     bool m_hasComposite = false;
 
