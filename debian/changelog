@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.8) unstable; urgency=medium
+
+  * fix: Dock cannot hide clipboard in non special effects mode(issue: https://github.com/linuxdeepin/developer-center/issues/8309)
+
+ -- Zhang kun <zhangkun2@uniontech.com>  Mon, 29 Apr 2024 15:49:23 +0800
+
 dde-clipboard (1:6.0.7) unstable; urgency=medium
 
   * fix: when line is min than 4, it elided
