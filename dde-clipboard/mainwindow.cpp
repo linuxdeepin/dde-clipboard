@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
+    , m_trickTimer(new QTimer)
 {
     initUI();
     initAni();
@@ -94,6 +95,11 @@ void MainWindow::geometryChanged()
 
 void MainWindow::showAni()
 {
+    if (m_trickTimer->isActive()) {
+        return;
+    }
+    m_trickTimer->start();
+
     if (!m_hasComposite) {
         move(m_rect.x() + WindowMargin, m_rect.y());
         setFixedWidth(m_rect.width());
@@ -111,6 +117,11 @@ void MainWindow::showAni()
 
 void MainWindow::hideAni()
 {
+    if (m_trickTimer->isActive()) {
+        return;
+    }
+    m_trickTimer->start();
+
     if (m_alwaysShow) {
         return;
     }
@@ -165,7 +176,7 @@ void MainWindow::registerMonitor()
     }
     m_regionMonitor = new DRegionMonitor(this);
     m_regionMonitor->registerRegion(QRegion(QRect()));
-    connect(m_regionMonitor, &DRegionMonitor::buttonPress, this, [ = ](const QPoint &p, const int flag) {
+    connect(m_regionMonitor, &DRegionMonitor::buttonRelease, this, [ = ](const QPoint &p, const int flag) {
         Q_UNUSED(flag);
         if (!geometry().contains(p))
             if (!isHidden()) {
@@ -219,6 +230,9 @@ void MainWindow::initUI()
 
     setMaskAlpha(static_cast<int>(this->opacity() * 255));
     setFocusPolicy(Qt::NoFocus);
+    
+    m_trickTimer->setInterval(300);
+    m_trickTimer->setSingleShot(true);
 }
 
 void MainWindow::initAni()
