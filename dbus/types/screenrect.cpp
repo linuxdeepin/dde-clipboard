@@ -6,20 +6,16 @@
 #include "screenrect.h"
 
 ScreenRect::ScreenRect()
-    : x(0),
-      y(0),
-      w(0),
-      h(0)
+    : x(0)
+    , y(0)
+    , w(0)
+    , h(0)
 {
-
 }
 
 QDebug operator<<(QDebug debug, const ScreenRect &rect)
 {
-    debug << QString("ScreenRect(%1, %2, %3, %4)").arg(rect.x)
-                                                    .arg(rect.y)
-                                                    .arg(rect.w)
-                                                    .arg(rect.h);
+    debug << QString("ScreenRect(%1, %2, %3, %4)").arg(rect.x).arg(rect.y).arg(rect.w).arg(rect.h);
 
     return debug;
 }
@@ -36,6 +32,18 @@ QDBusArgument &operator<<(QDBusArgument &arg, const ScreenRect &rect)
     arg.endStructure();
 
     return arg;
+}
+
+bool operator==(const ScreenRect &infoa, const ScreenRect &rect)
+{
+    bool re = infoa.x == rect.x && infoa.y == rect.y && infoa.h == rect.h && infoa.w == rect.w;
+    return re;
+}
+
+bool operator!=(const ScreenRect &infoa, const ScreenRect &rect)
+{
+    bool re = infoa.x == rect.x && infoa.y == rect.y && infoa.h == rect.h && infoa.w == rect.w;
+    return !re;
 }
 
 const QDBusArgument &operator>>(const QDBusArgument &arg, ScreenRect &rect)

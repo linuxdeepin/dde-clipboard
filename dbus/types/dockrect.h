@@ -17,6 +17,8 @@ public:
     friend QDebug operator<<(QDebug debug, const DockRect &rect);
     friend const QDBusArgument &operator>>(const QDBusArgument &arg, DockRect &rect);
     friend QDBusArgument &operator<<(QDBusArgument &arg, const DockRect &rect);
+    friend bool operator==(const DockRect &a, const DockRect &b);
+    friend bool operator!=(const DockRect &a, const DockRect &b);
 
 private:
     int x;

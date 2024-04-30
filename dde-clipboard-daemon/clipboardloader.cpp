@@ -7,14 +7,14 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QMimeData>
 #include <QDir>
+#include <QMimeData>
 #include <QStandardPaths>
 
-const QString PixCacheDir = QStringLiteral("/clipboard-pix");  // 图片缓存目录名
-const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
-const int X11_PROTOCOL = 0;                     // x11协议
-const int WAYLAND_PROTOCOL = 1;                 // wayland协议
+using namespace Qt::StringLiterals;
+
+const QString PixCacheDir = "/clipboard-pix"_L1;     // 图片缓存目录名
+constexpr int MAX_BETYARRAY_SIZE = 10 * 1024 * 1024; // 最大支持的文本大小
 
 QByteArray Info2Buf(const ItemInfo &info)
 {
@@ -26,19 +26,12 @@ QByteArray Info2Buf(const ItemInfo &info)
     }
 
     QDataStream stream(&buf, QIODevice::WriteOnly);
-    stream.setVersion(QDataStream::Qt_5_11);
-    stream << info.m_formatMap
-           << info.m_type
-           << info.m_urls
-           << info.m_hasImage;
+    stream << info.m_formatMap << info.m_type << info.m_urls << info.m_hasImage;
     if (info.m_hasImage) {
         stream << info.m_variantImage;
         stream << info.m_pixSize;
     }
-    stream  << info.m_enable
-            << info.m_text
-            << info.m_createTime
-            << iconBuf;
+    stream << info.m_enable << info.m_text << info.m_createTime << iconBuf;
 
     return buf;
 }
@@ -50,26 +43,19 @@ ItemInfo Buf2Info(const QByteArray &buf)
     ItemInfo info;
 
     QDataStream stream(&tempBuf, QIODevice::ReadOnly);
-    stream.setVersion(QDataStream::Qt_5_11);
     int type;
     QByteArray iconBuf;
-    stream >> info.m_formatMap
-           >> type
-           >> info.m_urls
-           >> info.m_hasImage;
+    stream >> info.m_formatMap >> type >> info.m_urls >> info.m_hasImage;
     if (info.m_hasImage) {
         stream >> info.m_variantImage;
         stream >> info.m_pixSize;
     }
 
-    stream >> info.m_enable
-           >> info.m_text
-           >> info.m_createTime
-           >> iconBuf;
+    stream >> info.m_enable >> info.m_text >> info.m_createTime >> iconBuf;
 
     QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
     stream2.setVersion(QDataStream::Qt_5_11);
-    for (int i = 0 ; i < info.m_urls.size(); ++i) {
+    for (int i = 0; i < info.m_urls.size(); ++i) {
         FileIconData data;
         stream2 >> data.cornerIconList >> data.fileIcon;
         info.m_iconDataList.push_back(data);
@@ -85,19 +71,19 @@ QString ClipboardLoader::m_pixPath;
 ClipboardLoader::ClipboardLoader(QObject *parent)
     : QObject(parent)
     , m_board(nullptr)
-    , m_waylandCopyClient(nullptr)
 {
     if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
-        m_waylandCopyClient = new WaylandCopyClient(this);
-        m_waylandCopyClient->init();
-
-        connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
-            this->doWork(WAYLAND_PROTOCOL);
-        });
+        m_waylandboard = new ZWaylandDataControlManager(this);
+        connect(m_waylandboard,
+                &ZWaylandDataControlManager::clipboardChanged,
+                this,
+                &ClipboardLoader::doWork);
     } else {
         m_board = qApp->clipboard();
         connect(m_board, &QClipboard::dataChanged, this, [this] {
-            this->doWork(X11_PROTOCOL);
+            const QMimeData *mimeData =
+                    m_board->mimeData();
+            this->doWork(mimeData);
         });
     }
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + PixCacheDir);
@@ -127,14 +113,15 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
         break;
     }
 
-    if (m_board)
+    if (m_waylandboard) {
+        m_waylandboard->setMimeData(mimeData);
+        doWork(mimeData);
+    } else if (m_board) {
         m_board->setMimeData(mimeData);
-
-    if (m_waylandCopyClient)
-        m_waylandCopyClient->setMimeData(mimeData);
+    }
 }
 
-void ClipboardLoader::doWork(int protocolType)
+void ClipboardLoader::doWork(const QMimeData *mimeData)
 {
     ItemInfo info;
     info.m_variantImage = 0;
@@ -143,34 +130,15 @@ void ClipboardLoader::doWork(int protocolType)
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
     // or externally by the system clipboard changing.`
-    const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
+
     if (!mimeData || mimeData->formats().isEmpty())
         return;
 
-    // 适配厂商云桌面粘贴问题
-    if (mimeData->formats().contains("uos/remote-copy")) {
-        qDebug() << "FROM_SHENXINFU_CLIPBOARD_MANAGER";
-        return;
-    }
-
-    // 转移系统剪贴板所有权时造成的两次内容变化不需要显示，以下为与系统约定好的标识
-    if (mimeData->data("FROM_DEEPIN_CLIPBOARD_MANAGER") == "1") {
-        qDebug() << "FROM_DEEPIN_CLIPBOARD_MANAGER";
-        return;
-    }
-
-    // 过滤重复数据
     QByteArray currTimeStamp = mimeData->data("TIMESTAMP");
-    if (currTimeStamp == m_lastTimeStamp
-            && m_lastTimeStamp != QByteArray::fromHex("00000000")// FIXME:TIM截图的时间戳不变，这里特殊处理
-            && !currTimeStamp.isEmpty()) {// FIXME:连续双击两次图像，会异常到这里
-        qDebug() << "TIMESTAMP:" << currTimeStamp << m_lastTimeStamp;
-        return;
-    }
 
-    //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
+    // 图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
     if (mimeData->hasImage()) {
-        const QPixmap &srcPix = qvariant_cast<QPixmap>(mimeData->imageData()) ;
+        const QPixmap &srcPix = qvariant_cast<QPixmap>(mimeData->imageData());
         if (srcPix.isNull())
             return;
 
@@ -186,7 +154,8 @@ void ClipboardLoader::doWork(int protocolType)
 
         // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
         // wayland下时间戳可能为空
-        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage() && !qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
+        if (currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage()
+            && !qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
             qDebug() << "system repeat image";
             return;
         }
@@ -199,7 +168,7 @@ void ClipboardLoader::doWork(int protocolType)
         if (info.m_urls.isEmpty())
             return;
 
-        //文件类型吧整个formats信息都拿出来，里面包含了文件的图标，以及文件的url数据等。
+        // 文件类型吧整个formats信息都拿出来，里面包含了文件的图标，以及文件的url数据等。
         for (const QString &format : mimeData->formats()) {
             const QByteArray &data = mimeData->data(format);
             if (!data.isEmpty())
@@ -215,7 +184,8 @@ void ClipboardLoader::doWork(int protocolType)
         } else if (mimeData->hasHtml()) {
             info.m_text = mimeData->html();
         } else {
-            return;
+            info.m_text = mimeData->text();
+            // NOTE: wezterm only set utf-8
         }
 
         const QByteArray &textByteArray = info.m_text.toUtf8();
@@ -247,13 +217,12 @@ bool ClipboardLoader::cachePixmap(const QPixmap &srcPix, ItemInfo &info)
             return false;
         }
         QDataStream stream(&cacheFile);
-        stream.setVersion(QDataStream::Qt_5_11);
         stream << srcPix;
         cacheFile.close();
 
-        info.m_variantImage = srcPix.width() * PixmapHeight > srcPix.height() * PixmapWidth ?
-                              srcPix.scaledToWidth(PixmapWidth, Qt::SmoothTransformation) :
-                              srcPix.scaledToHeight(PixmapHeight, Qt::SmoothTransformation);
+        info.m_variantImage = srcPix.width() * PixmapHeight > srcPix.height() * PixmapWidth
+                ? srcPix.scaledToWidth(PixmapWidth, Qt::SmoothTransformation)
+                : srcPix.scaledToHeight(PixmapHeight, Qt::SmoothTransformation);
 
         info.m_urls.push_back(QUrl(pixFileName));
         return true;
@@ -286,7 +255,7 @@ bool ClipboardLoader::initPixPath()
 
 void ClipboardLoader::setImageData(const ItemInfo &info, QMimeData *&mimeData)
 {
-    //正常处理的图片会有一个缓存url
+    // 正常处理的图片会有一个缓存url
     if (info.m_urls.size() != 1) {
         qDebug() << "url size error, size:" << info.m_urls.size();
         mimeData->setImageData(info.m_variantImage);
@@ -303,7 +272,6 @@ void ClipboardLoader::setImageData(const ItemInfo &info, QMimeData *&mimeData)
 
     QPixmap pix;
     QDataStream stream(&cacheFile);
-    stream.setVersion(QDataStream::Qt_5_11);
     stream >> pix;
     cacheFile.close();
     if (pix.isNull()) {

@@ -3,25 +3,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "waylandcopyclient.h"
-#include "readpipedatatask.h"
 
-#include <QEventLoop>
-#include <QMimeData>
+#include <private/qwaylandnativeinterface_p.h>
+#include <qguiapplication_platform.h>
+#include <qnativeinterface.h>
+
+#include <QBuffer>
+#include <QDebug>
+#include <QFile>
+#include <QGuiApplication>
 #include <QImageReader>
-#include <QtConcurrent>
 #include <QImageWriter>
-#include <QMutexLocker>
-
-#include <DWayland/Client/connection_thread.h>
-#include <DWayland/Client/event_queue.h>
-#include <DWayland/Client/registry.h>
-#include <DWayland/Client/seat.h>
-#include <DWayland/Client/datacontroldevice.h>
-#include <DWayland/Client/datacontroldevicemanager.h>
-#include <DWayland/Client/datacontrolsource.h>
-#include <DWayland/Client/datacontroloffer.h>
+#include <QTimer>
 
 #include <unistd.h>
+
+constexpr int BYTE_MAX = 1024 * 4;
+
+static ::wl_display *DISPLAY = NULL;
 
 static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
 
@@ -81,237 +80,175 @@ static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
     return content;
 }
 
-DMimeData::DMimeData()
+static void display_flush()
 {
 
-}
-
-DMimeData::~DMimeData()
-{
-
-}
-
-QVariant DMimeData::retrieveData(const QString &mimeType, QVariant::Type preferredType) const
-{
-    QVariant data = QMimeData::retrieveData(mimeType,preferredType);
-    if (mimeType == QLatin1String("application/x-qt-image")) {
-        if (data.isNull() || (data.userType() == QMetaType::QByteArray && data.toByteArray().isEmpty())) {
-            // try to find an image
-            QStringList imageFormats = imageReadMimeFormats();
-            for (int i = 0; i < imageFormats.size(); ++i) {
-                data = QMimeData::retrieveData(imageFormats.at(i), preferredType);
-                if (data.isNull() || (data.userType() == QMetaType::QByteArray && data.toByteArray().isEmpty()))
-                    continue;
-                break;
-            }
-        }
-        int typeId = static_cast<int>(preferredType);
-        // we wanted some image type, but all we got was a byte array. Convert it to an image.
-        if (data.userType() == QMetaType::QByteArray
-            && (typeId == QMetaType::QImage || typeId == QMetaType::QPixmap || typeId == QMetaType::QBitmap))
-            data = QImage::fromData(data.toByteArray());
-    } else if (mimeType == QLatin1String("application/x-color") && data.userType() == QMetaType::QByteArray) {
-        QColor c;
-        QByteArray ba = data.toByteArray();
-        if (ba.size() == 8) {
-            ushort * colBuf = (ushort *)ba.data();
-            c.setRgbF(qreal(colBuf[0]) / qreal(0xFFFF),
-                      qreal(colBuf[1]) / qreal(0xFFFF),
-                      qreal(colBuf[2]) / qreal(0xFFFF),
-                      qreal(colBuf[3]) / qreal(0xFFFF));
-            data = c;
-        } else {
-            qWarning() << "Qt: Invalid color format";
-        }
-    } else {
-        data = QMimeData::retrieveData(mimeType, preferredType);
+    if (DISPLAY == NULL) {
+        QtWaylandClient::QWaylandNativeInterface *app =
+                static_cast<QtWaylandClient::QWaylandNativeInterface *>(
+                        QGuiApplication::platformNativeInterface());
+        DISPLAY = app->display();
     }
-    return data;
+    wl_display_flush(DISPLAY);
 }
 
-WaylandCopyClient::WaylandCopyClient(QObject *parent)
-    : QObject(parent)
-    , m_connectionThread(new QThread(this))
-    , m_connectionThreadObject(new ConnectionThread())
-    , m_eventQueue(nullptr)
-    , m_dataControlDeviceManager(nullptr)
-    , m_dataControlDevice(nullptr)
-    , m_copyControlSource(nullptr)
-    , m_mimeData(new DMimeData())
-    , m_seat(nullptr)
-    , m_curOffer(0)
+ZWaylandDataControlManager::ZWaylandDataControlManager(QObject *parent)
+    : QWaylandClientExtensionTemplate<ZWaylandDataControlManager>(2)
+    , QtWayland::zwlr_data_control_manager_v1()
 {
-
+    QTimer::singleShot(0, this, &ZWaylandDataControlManager::initBase);
 }
 
-WaylandCopyClient::~WaylandCopyClient()
+void ZWaylandDataControlManager::initBase()
 {
-    m_connectionThread->quit();
-    m_connectionThread->wait();
-    m_connectionThreadObject->deleteLater();
+    QtWaylandClient::QWaylandNativeInterface *app =
+            static_cast<QtWaylandClient::QWaylandNativeInterface *>(
+                    QGuiApplication::platformNativeInterface());
 
-    if (m_mimeData)
-        m_mimeData->deleteLater();
+    auto seat = app->seat();
+    auto data_device = get_data_device(seat);
+    m_device = new ZDataControlDeviceV1(data_device, this);
+    connect(m_device,
+            &ZDataControlDeviceV1::clipboardChanged,
+            this,
+            &ZWaylandDataControlManager::clipboardChanged);
 }
 
-void WaylandCopyClient::init()
+void ZWaylandDataControlManager::setMimeData(QMimeData *mimeData)
 {
-    connect(m_connectionThreadObject, &ConnectionThread::connected, this, [this] {
-        m_eventQueue = new EventQueue(this);
-        m_eventQueue->setup(m_connectionThreadObject);
-
-        Registry *registry = new Registry(this);
-        setupRegistry(registry);
-    }, Qt::QueuedConnection );
-    m_connectionThreadObject->moveToThread(m_connectionThread);
-    m_connectionThread->start();
-    m_connectionThreadObject->initConnection();
-    connect(this, &WaylandCopyClient::dataCopied, this, &WaylandCopyClient::onDataCopied);
-}
-
-void WaylandCopyClient::setupRegistry(Registry *registry)
-{
-    connect(registry, &Registry::seatAnnounced, this, [this, registry] (quint32 name, quint32 version) {
-        m_seat = registry->createSeat(name, version, this);
-    });
-
-    connect(registry, &Registry::dataControlDeviceManagerAnnounced, this, [this, registry] (quint32 name, quint32 version) {
-        m_dataControlDeviceManager = registry->createDataControlDeviceManager(name, version, this);
-        m_dataControlDevice = m_dataControlDeviceManager->getDataDevice(m_seat, this);
-
-        connect(m_dataControlDevice, &DataControlDeviceV1::selectionCleared, this, [this] {
-                m_copyControlSource = nullptr;
-        });
-
-        connect(m_dataControlDevice, &DataControlDeviceV1::dataOffered, this, &WaylandCopyClient::onDataOffered);
-    });
-
-    registry->setEventQueue(m_eventQueue);
-    registry->create(m_connectionThreadObject);
-    registry->setup();
-}
-
-void WaylandCopyClient::onDataOffered(KWayland::Client::DataControlOfferV1* offer)
-{
-    if (!offer || !offer->isValid())
-        return;
-
-    QList<QString> mimeTypeList = filterMimeType(offer->offeredMimeTypes());
-
-    if (mimeTypeList.isEmpty())
-        return;
-
-    m_curMimeTypes = mimeTypeList;
-
-    m_curOffer = qint64(offer);
-
-    if (!m_mimeData)
-        m_mimeData = new DMimeData();
-    m_mimeData->clear();
-
-    // try to stop the previous pipeline
-    Q_EMIT dataOfferedNew();
-    execTask(mimeTypeList, offer);
-}
-
-// NOTE: no thread, this should be block
-void WaylandCopyClient::execTask(const QStringList &mimeTypes, DataControlOfferV1 *offer)
-{
-    for (const QString &mimeType : mimeTypes) {
-        ReadPipeDataTask *task = new ReadPipeDataTask(m_connectionThreadObject, offer, mimeType, this);
-        connect(this, &WaylandCopyClient::dataOfferedNew, task, &ReadPipeDataTask::forceClosePipeLine);
-        connect(task, &ReadPipeDataTask::dataReady, this, &WaylandCopyClient::taskDataReady);
-
-        task->run();
-    }
-}
-
-void WaylandCopyClient::taskDataReady(qint64 offer, const QString &mimeType, const QByteArray &data)
-{
-    if (offer != m_curOffer) {
+    if (m_device == NULL) {
         return;
     }
-
-    m_curMimeTypes.removeOne(mimeType);
-
-    m_mimeData->setData(mimeType, data);
-    if (m_curMimeTypes.isEmpty()) {
-        m_curOffer = 0;
-
-        Q_EMIT dataChanged();
-    }
-}
-
-const QMimeData* WaylandCopyClient::mimeData()
-{
-    return m_mimeData;
-}
-
-// NOTE: copy entrance
-void WaylandCopyClient::setMimeData(QMimeData *mimeData)
-{
-    if (m_mimeData)
-        m_mimeData->deleteLater();
-
-    m_mimeData = mimeData;
-
-    Q_EMIT dataCopied();
-    Q_EMIT dataChanged();
-}
-
-void WaylandCopyClient::onDataCopied()
-{
-    sendOffer();
-}
-
-void WaylandCopyClient::sendOffer()
-{
-    m_copyControlSource = m_dataControlDeviceManager->createDataSource(this);
-    if (!m_copyControlSource)
-        return;
-
-    // 新增接口
-    m_dataControlDevice->setSelection(0, m_copyControlSource);
-    if (m_mimeData->formats().isEmpty()) {
+    if (mimeData->formats().isEmpty()) {
         return;
     }
-    for (const QString &format : m_mimeData->formats()) {
+    auto source = create_data_source();
+    auto resouce = new ZDataControlResourceV1(source, mimeData, this);
+    m_device->set_selection(source);
+    for (const QString &format : mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
         if (ApplicationXQtImageLiteral == format) {
             QStringList imageFormats = imageReadMimeFormats();
             for (int i = 0; i < imageFormats.size(); ++i) {
-                m_copyControlSource->offer(imageFormats.at(i));
+                resouce->offer(imageFormats.at(i));
             }
             continue;
         }
-        m_copyControlSource->offer(format);
+        resouce->offer(format);
     }
 
-    connect(m_copyControlSource, &DataControlSourceV1::sendDataRequested, this, &WaylandCopyClient::onSendDataRequest);
-    m_connectionThreadObject->flush();
+    display_flush();
 }
 
-void WaylandCopyClient::onSendDataRequest(const QString &mimeType, qint32 fd) const
+ZDataControlResourceV1::ZDataControlResourceV1(::zwlr_data_control_source_v1 *resource,
+                                               QMimeData *data,
+                                               QObject *parent)
+
+    : QObject(parent)
+    , QtWayland::zwlr_data_control_source_v1(resource)
+    , m_mimeData(data)
+{
+}
+
+void ZDataControlResourceV1::zwlr_data_control_source_v1_send(const QString &mime_type, int32_t fd)
 {
     QFile f;
     if (f.open(fd, QFile::WriteOnly, QFile::AutoCloseHandle)) {
-        const QByteArray &ba = getByteArray(m_mimeData, mimeType);
+        const QByteArray &ba = getByteArray(m_mimeData, mime_type);
         f.write(ba);
         f.close();
     }
+    this->destroy();
+    deleteLater();
+    m_mimeData->deleteLater();
 }
 
-QStringList WaylandCopyClient::filterMimeType(const QStringList &mimeTypeList)
+ZDataControlDeviceV1::ZDataControlDeviceV1(::zwlr_data_control_device_v1 *device, QObject *parent)
+    : QObject(parent)
+    , QtWayland::zwlr_data_control_device_v1(device)
+    , m_data(new QMimeData)
 {
-    QStringList tmpList;
-    for (const QString &mimeType : mimeTypeList) {
-        // 根据窗管的要求，不读取纯大写、和不含'/'的字段，因为源窗口可能没有写入这些字段的数据，导致获取数据的线程一直等待。
-        if ((mimeType.contains("/") && mimeType.toUpper() != mimeType)
-            || mimeType == "FROM_DEEPIN_CLIPBOARD_MANAGER"
-            || mimeType == "TIMESTAMP") {
-            tmpList.append(mimeType);
+}
+
+ZDataControlOfferV1::ZDataControlOfferV1(::zwlr_data_control_offer_v1 *offer, QObject *parent)
+    : QObject(parent)
+    , QtWayland::zwlr_data_control_offer_v1(offer)
+{
+}
+
+void ZDataControlOfferV1::zwlr_data_control_offer_v1_offer(const QString &mime_type)
+{
+    m_mimetypes.push_back(mime_type);
+}
+
+void ZDataControlDeviceV1::zwlr_data_control_device_v1_selection(
+        struct ::zwlr_data_control_offer_v1 *id)
+{
+    if (id == NULL) {
+        return;
+    }
+    if (m_dataoffer->m_mimetypes.isEmpty()) {
+        return;
+    }
+    m_data->clear();
+    for (auto &mime_type : m_dataoffer->m_mimetypes) {
+        int pipeFds[2];
+        if (pipe(pipeFds) != 0) {
+            return;
+        }
+        auto [read, write] = pipeFds;
+        m_dataoffer->receive(mime_type, write);
+
+        close(write);
+
+        // NOTE: need to flush finish the pipe
+        display_flush();
+
+        QByteArray data;
+        if (readData(read, data)) {
+            m_data->setData(mime_type, data);
         }
     }
+    Q_EMIT clipboardChanged(m_data);
+}
 
-    return tmpList;
+bool ZDataControlDeviceV1::readData(int fd, QByteArray &data)
+{
+    QFile readPipe;
+    if (!readPipe.open(fd, QIODevice::ReadOnly)) {
+        return false;
+    }
+
+    if (!readPipe.isReadable()) {
+        qWarning() << "Pipe is not readable";
+        readPipe.close();
+        return false;
+    }
+
+    int retCount = BYTE_MAX;
+    do {
+        QByteArray bytes = readPipe.read(BYTE_MAX);
+        retCount = bytes.length();
+        if (!bytes.isEmpty())
+            data.append(bytes);
+    } while (retCount == BYTE_MAX);
+
+    readPipe.close();
+
+    return true;
+}
+
+void ZDataControlDeviceV1::zwlr_data_control_device_v1_primary_selection(
+        [[maybe_unused]] struct ::zwlr_data_control_offer_v1 *id)
+{
+}
+
+void ZDataControlDeviceV1::zwlr_data_control_device_v1_data_offer(
+        struct ::zwlr_data_control_offer_v1 *id)
+{
+    if (!m_dataoffer.isNull()) {
+        m_dataoffer->destroy();
+    }
+
+    m_dataoffer.reset(new ZDataControlOfferV1(id, this));
 }

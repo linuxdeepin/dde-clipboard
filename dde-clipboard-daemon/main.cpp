@@ -3,15 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <QApplication>
-#include <QDBusError>
-#include <QDBusConnection>
-
-#include <DLog>
-
 #include "clipboarddaemon.h"
 
-DCORE_USE_NAMESPACE
+#include <QApplication>
+#include <QDBusConnection>
+#include <QDBusError>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
@@ -19,18 +16,19 @@ int main(int argc, char *argv[])
     a.setOrganizationName("deepin");
     a.setApplicationName("dde-clipboard-daemon");
 
-    DLogManager::registerConsoleAppender();
-    DLogManager::registerFileAppender();
-
     const QString interface = "org.deepin.dde.daemon.Clipboard1";
     const QString path = "/org/deepin/dde/daemon/Clipboard1";
     if (!QDBusConnection::sessionBus().registerService(interface)) {
-        qWarning() << "DBus register failed, error message:" << QDBusConnection::sessionBus().lastError().message();
+        qWarning() << "DBus register failed, error message:"
+                   << QDBusConnection::sessionBus().lastError().message();
         exit(-1);
     }
 
     ClipboardDaemon daemon;
-    QDBusConnection::sessionBus().registerObject(path, &daemon, QDBusConnection::ExportAllSlots | QDBusConnection::ExportAllSignals);
+    QDBusConnection::sessionBus().registerObject(path,
+                                                 &daemon,
+                                                 QDBusConnection::ExportAllSlots
+                                                         | QDBusConnection::ExportAllSignals);
     qDebug() << "Everything is ok!";
 
     return a.exec();
