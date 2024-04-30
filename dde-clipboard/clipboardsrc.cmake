@@ -1,0 +1,35 @@
+include(${CMAKE_CURRENT_LIST_DIR}/../dbus/types/types.cmake)
+set(dbus_clipboard
+    ${CMAKE_CURRENT_LIST_DIR}/dbus/dbusdockinterface.h
+    ${CMAKE_CURRENT_LIST_DIR}/dbus/dbusdockinterface.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/dbus/clipboardloaderinterface.h
+    ${CMAKE_CURRENT_LIST_DIR}/dbus/clipboardloaderinterface.cpp
+)
+
+set(dbus_displayManager
+    ${CMAKE_CURRENT_LIST_DIR}/displaymanager/displaymanager.h
+    ${CMAKE_CURRENT_LIST_DIR}/displaymanager/displaymanager.cpp
+)
+
+set(Clipboard_SCRS_PRE
+    ${dbus_types}
+    ${dbus_clipboard}
+    ${dbus_displayManager}
+    ${CMAKE_CURRENT_LIST_DIR}/clipboardmodel.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/clipboardmodel.h
+    ${CMAKE_CURRENT_LIST_DIR}/iconbutton.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/iconbutton.h
+    ${CMAKE_CURRENT_LIST_DIR}/itemdata.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/itemdata.h
+    ${CMAKE_CURRENT_LIST_DIR}/itemdelegate.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/itemdelegate.h
+    ${CMAKE_CURRENT_LIST_DIR}/itemwidget.h
+    ${CMAKE_CURRENT_LIST_DIR}/itemwidget.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/listview.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/listview.h
+    ${CMAKE_CURRENT_LIST_DIR}/mainwindow.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/mainwindow.h
+    ${CMAKE_CURRENT_LIST_DIR}/pixmaplabel.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/pixmaplabel.h
+    ${CMAKE_CURRENT_LIST_DIR}/refreshtimer.h
+)
