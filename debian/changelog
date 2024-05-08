@@ -1,3 +1,10 @@
+dde-clipboard (1:6.0.9) unstable; urgency=medium
+
+  * release 1:6.0.9
+  * fix #8415
+
+ -- Mike Chen <chenke@deepin.org>  Wed, 08 May 2024 14:45:01 +0800
+
 dde-clipboard (1:6.0.8) unstable; urgency=medium
 
   * fix: Dock cannot hide clipboard in non special effects mode(issue: https://github.com/linuxdeepin/developer-center/issues/8309)
