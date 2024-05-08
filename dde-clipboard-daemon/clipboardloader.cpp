@@ -10,6 +10,8 @@
 #include <QMimeData>
 #include <QDir>
 #include <QStandardPaths>
+#include <QImageReader>
+#include <QImageWriter>
 
 const QString PixCacheDir = QStringLiteral("/clipboard-pix");  // 图片缓存目录名
 const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
@@ -240,22 +242,28 @@ void ClipboardLoader::doWork(int protocolType)
 bool ClipboardLoader::cachePixmap(const QPixmap &srcPix, ItemInfo &info)
 {
     if (initPixPath()) {
-        QString pixFileName = m_pixPath + QString("/%1").arg(QDateTime::currentMSecsSinceEpoch());
-        QFile cacheFile(pixFileName);
-        if (!cacheFile.open(QIODevice::WriteOnly)) {
-            qDebug() << "open file failed, file name:" << pixFileName;
-            return false;
+        QString pixFileName = m_pixPath + QString("/%1.png").arg(QDateTime::currentMSecsSinceEpoch());
+        QImageWriter writer(pixFileName);
+        if (!writer.canWrite() || !writer.write(srcPix.toImage())) {
+            QFile cacheFile(pixFileName);
+            if (!cacheFile.open(QIODevice::WriteOnly)) {
+                qDebug() << "open file failed, file name:" << pixFileName;
+                return false;
+            }
+            QDataStream stream(&cacheFile);
+            stream.setVersion(QDataStream::Qt_5_11);
+            stream << srcPix;
+            cacheFile.close();
         }
-        QDataStream stream(&cacheFile);
-        stream.setVersion(QDataStream::Qt_5_11);
-        stream << srcPix;
-        cacheFile.close();
 
         info.m_variantImage = srcPix.width() * PixmapHeight > srcPix.height() * PixmapWidth ?
                               srcPix.scaledToWidth(PixmapWidth, Qt::SmoothTransformation) :
                               srcPix.scaledToHeight(PixmapHeight, Qt::SmoothTransformation);
 
-        info.m_urls.push_back(QUrl(pixFileName));
+        // "text/uri-list":"file:///${XDG_CACHE_HOME}/deepin/dde-clipboard-daemon/clipboard-pix/xxx"
+        info.m_formatMap.insert(TextUriListLiteral, QUrl::fromLocalFile(pixFileName).toEncoded());
+
+        info.m_urls.push_back(QUrl::fromLocalFile(pixFileName));
         return true;
     }
     return false;
@@ -294,18 +302,25 @@ void ClipboardLoader::setImageData(const ItemInfo &info, QMimeData *&mimeData)
     }
 
     const QString &fileName = info.m_urls.front().path();
-    QFile cacheFile(fileName);
-    if (!cacheFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "open pixmap cache file failed, file name:" << fileName;
-        mimeData->setImageData(info.m_variantImage);
-        return;
+    QPixmap pix;
+    QImageReader reader(fileName);
+    if (reader.canRead())
+        pix = QPixmap::fromImageReader(&reader);
+
+    if (!pix.isNull()) {
+        QFile cacheFile(fileName);
+        if (!cacheFile.open(QIODevice::ReadOnly)) {
+            qDebug() << "open pixmap cache file failed, file name:" << fileName;
+            mimeData->setImageData(info.m_variantImage);
+            return;
+        }
+
+        QDataStream stream(&cacheFile);
+        stream.setVersion(QDataStream::Qt_5_11);
+        stream >> pix;
+        cacheFile.close();
     }
 
-    QPixmap pix;
-    QDataStream stream(&cacheFile);
-    stream.setVersion(QDataStream::Qt_5_11);
-    stream >> pix;
-    cacheFile.close();
     if (pix.isNull()) {
         qDebug() << "read pixmap cache file failed, file name:" << fileName;
         mimeData->setImageData(info.m_variantImage);
