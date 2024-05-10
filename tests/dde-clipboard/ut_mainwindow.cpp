@@ -39,7 +39,7 @@ TEST_F(TstMainWindow, coverage_Test)
     w->Hide();
     QTest::qWait(AnimationTime * 3 / 2 + 10);
 
-    w->geometryChanged();
+    w->primaryGeometryChanged(QRect());
     QTest::qWait(1);
 
     delete w;

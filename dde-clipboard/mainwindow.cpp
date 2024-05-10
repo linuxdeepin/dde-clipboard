@@ -31,7 +31,6 @@ const QString AppearanceInterface = QStringLiteral("org.deepin.dde.Appearance1")
 
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
-    , m_displayInter(new DBusDisplay("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::sessionBus(), this))
     , m_daemonDockInter(new DBusDaemonDock("org.deepin.dde.daemon.Dock1", "/org/deepin/dde/daemon/Dock1", QDBusConnection::sessionBus(), this))
     , m_dockInter(new DBusDockInterface)
     , m_appearanceInter(new DDBusInterface(AppearanceService, AppearancePath, AppearanceInterface, QDBusConnection::sessionBus(), this))
@@ -43,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_xAni(new QPropertyAnimation(this))
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
+    , m_screen(qApp->primaryScreen())
     , m_wmHelper(DWindowManagerHelper::instance())
     , m_trickTimer(new QTimer)
 {
@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     initAni();
     initConnect();
 
-    geometryChanged();
+    primaryGeometryChanged(m_screen ? m_screen->availableGeometry() : QRect());
     CompositeChanged();
     registerMonitor();
 
@@ -79,9 +79,9 @@ void MainWindow::Toggle()
     }
 }
 
-void MainWindow::geometryChanged()
+void MainWindow::primaryGeometryChanged(const QRect &rect)
 {
-    adjustPosition();
+    adjustPosition(rect);
 
     setX(WindowMargin);
 
@@ -253,9 +253,6 @@ void MainWindow::initAni()
 
 void MainWindow::initConnect()
 {
-    connect(DisplayManager::instance(), &DisplayManager::screenInfoChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
-    connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
-
     connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
         m_clearButton->setVisible(m_model->data().size() != 0);
     });
@@ -264,7 +261,16 @@ void MainWindow::initConnect()
         hideAni();
     });
 
-    connect(m_dockInter, &DBusDockInterface::geometryChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+    connect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::primaryGeometryChanged);
+    connect(qApp, &QGuiApplication::primaryScreenChanged, this, [ = ](QScreen *screen) {
+        disconnect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::primaryGeometryChanged);
+        m_screen = screen;
+
+        if (screen) {
+            primaryGeometryChanged(screen->availableGeometry());
+            connect(screen, &QScreen::availableGeometryChanged, this, &MainWindow::primaryGeometryChanged);
+        }
+    });
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
 
@@ -291,31 +297,17 @@ void MainWindow::initConnect()
     });
 }
 
-void MainWindow::adjustPosition()
+void MainWindow::adjustPosition(const QRect &rect1)
 {
+    QRect rect = rect1;
+
     // 屏幕尺寸
-    QRect rect = getDisplayScreen();
     rect.setWidth(WindowWidth);
     rect.setHeight(int(std::round(qreal(rect.height()))));
 
     QRect dockRect = m_dockInter->geometry();
     dockRect.setWidth(int(std::round(qreal(dockRect.width()))));
     dockRect.setHeight(int(std::round(qreal(dockRect.height()))));
-
-    // 初始化剪切板位置
-    switch (m_daemonDockInter->position()) {
-    case DOCK_TOP:
-        rect.moveTop(rect.top() + dockRect.height());
-        rect.setHeight(rect.height() - dockRect.height());
-        break;
-    case DOCK_BOTTOM:
-        rect.setHeight(rect.height() - dockRect.height());
-        break;
-    case DOCK_LEFT:
-        rect.moveLeft(rect.left() + dockRect.width());
-        break;
-    default:;
-    }
 
     // 左上下部分预留的间隙
     rect -= QMargins(0, WindowMargin, 0, WindowMargin);
@@ -341,21 +333,6 @@ void MainWindow::adjustPosition()
     m_rect = rect;
     setFixedSize(rect.size());
     m_content->setFixedSize(rect.size());
-}
-
-QRect MainWindow::getDisplayScreen()
-{
-    QPoint dockCenterPoint = QRect(m_dockInter->geometry()).center() / qApp->devicePixelRatio();
-
-    for (auto s : qApp->screens()) {
-        QRect rect(s->geometry().x() / qApp->devicePixelRatio(),
-                   s->geometry().y() / qApp->devicePixelRatio(),
-                   s->geometry().width(), s->geometry().height());
-        if (rect.contains(dockCenterPoint)) {
-            return s->geometry();
-        }
-    }
-    return qApp->primaryScreen() ? qApp->primaryScreen()->geometry() : QRect();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
