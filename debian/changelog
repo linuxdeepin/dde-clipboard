@@ -1,3 +1,10 @@
+dde-clipboard (1:6.0.10) unstable; urgency=medium
+
+  * fix: when dock is set to always hide, the window size is incorrect
+    (linuxdeepin/developer-center#8501).
+
+ -- zsien <quezhiyong@deepin.org>  Fri, 10 May 2024 17:42:28 +0800
+
 dde-clipboard (1:6.0.9) unstable; urgency=medium
 
   * release 1:6.0.9
