@@ -18,6 +18,8 @@
 #include <DWindowManagerHelper>
 #include <DRegionMonitor>
 #include <DDBusInterface>
+#include <DPlatformWindowHandle>
+#include <DApplicationHelper>
 
 #include "monitor_interface.h"
 #include "dock_interface.h"
@@ -55,6 +57,10 @@ public:
     void setAlwaysShow(bool alwaysShow) {
         m_alwaysShow = alwaysShow;
     }
+
+protected:
+    void paintEvent(QPaintEvent *e) override;
+
 signals:
     void OpacityChanged(double value) const;
 
@@ -161,6 +167,10 @@ private:
     bool m_hasComposite = false;
 
     bool m_alwaysShow = false;
+
+    DGuiApplicationHelper::ColorType m_themeType;
+    int m_cornerRadius;
+    DPlatformWindowHandle *m_windowHandle;
 };
 
 #endif // MAINWINDOW_H

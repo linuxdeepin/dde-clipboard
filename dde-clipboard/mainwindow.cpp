@@ -29,6 +29,10 @@ const QString AppearanceService = QStringLiteral("org.deepin.dde.Appearance1");
 const QString AppearancePath = QStringLiteral("/org/deepin/dde/Appearance1");
 const QString AppearanceInterface = QStringLiteral("org.deepin.dde.Appearance1");
 
+static QColor outerBorderColor = QColor(0, 0, 0, static_cast<int>(0.15 * 255));
+static QColor innerBorderColor = QColor(255, 255, 255, static_cast<int>(0.2 * 255));
+#define ALPHA_OFFSET 10
+
 MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::sessionBus(), this))
@@ -45,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_aniGroup(new QSequentialAnimationGroup(this))
     , m_wmHelper(DWindowManagerHelper::instance())
     , m_trickTimer(new QTimer)
+    , m_windowHandle(new DPlatformWindowHandle(this, this))
 {
     initUI();
     initAni();
@@ -233,6 +238,10 @@ void MainWindow::initUI()
     
     m_trickTimer->setInterval(300);
     m_trickTimer->setSingleShot(true);
+
+    m_cornerRadius = m_windowHandle->windowRadius();
+    m_themeType= DGuiApplicationHelper::instance()->themeType();
+    m_windowHandle->setBorderWidth(1);
 }
 
 void MainWindow::initAni()
@@ -289,6 +298,39 @@ void MainWindow::initConnect()
     connect(this, &MainWindow::OpacityChanged, this, [this](double alpha) {
         setMaskAlpha(static_cast<int>(alpha * 255));
     });
+
+    auto setOuterBorderColor = [this]() {
+        auto outerBorderNewColor = outerBorderColor;
+        if (m_themeType == DGuiApplicationHelper::ColorType::DarkType) {
+            outerBorderNewColor.setAlpha(maskAlpha() + ALPHA_OFFSET * 2);
+        }
+
+        m_windowHandle->setBorderColor(outerBorderNewColor);
+    };
+
+    connect(this, &DBlurEffectWidget::maskAlphaChanged, [this, setOuterBorderColor]() {
+        setOuterBorderColor();
+        update();
+    });
+
+    connect(m_windowHandle, &DPlatformWindowHandle::windowRadiusChanged, this, [this](){
+        if (m_cornerRadius == m_windowHandle->windowRadius())
+            return;
+
+        m_cornerRadius = m_windowHandle->windowRadius();
+        update();
+    });
+
+    connect(DGuiApplicationHelper::instance(), &DGuiApplicationHelper::themeTypeChanged, this, [this, setOuterBorderColor](DGuiApplicationHelper::ColorType type){
+        if (!m_windowHandle || type == m_themeType)
+            return;
+
+        m_themeType = type;
+        setOuterBorderColor();
+        update();
+    });
+
+    setOuterBorderColor();
 }
 
 void MainWindow::adjustPosition()
@@ -363,4 +405,22 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     //禁止窗口被拖动
     Q_UNUSED(event);
     return;
+}
+
+void MainWindow::paintEvent(QPaintEvent *e)
+{
+    DBlurEffectWidget::paintEvent(e);
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPen pen;
+    pen.setWidth(1);
+
+    auto innerBorderNewColor = innerBorderColor;
+    if (m_themeType != DGuiApplicationHelper::DarkType) {
+        innerBorderNewColor.setAlpha(maskAlpha()+ ALPHA_OFFSET);
+    }
+
+    pen.setColor(innerBorderNewColor);
+    p.setPen(pen);
+    p.drawRoundedRect(rect(), m_cornerRadius, m_cornerRadius);
 }
