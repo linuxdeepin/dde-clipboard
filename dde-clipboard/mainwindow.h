@@ -84,6 +84,9 @@ public Q_SLOTS:
     void Show();
     void Hide();
 
+Q_SIGNALS: // SIGNALS
+    void clipboardVisibleChanged(bool visible);
+
 private Q_SLOTS:
     /*!
      * \~chinese \name geometryChanged
@@ -103,6 +106,8 @@ private Q_SLOTS:
     void CompositeChanged();
 
     void registerMonitor();
+
+    bool clipboardVisible() const { return isVisible(); }
 
 private:
     /*!
@@ -140,6 +145,8 @@ protected:
      * \~chinese \brief 重写mouseMoveEvent事件禁止窗口被移动
      */
     virtual void mouseMoveEvent(QMouseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
 private:
     DBusDisplay *m_displayInter;

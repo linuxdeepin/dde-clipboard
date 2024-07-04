@@ -7,5 +7,10 @@
     </method>
     <method name="Hide">
     </method>
+    <property name="clipboardVisible" access="read" type="b">
+    </property>
+    <signal name="clipboardVisibleChanged">
+        <arg type="b" name="visible"/>
+    </signal>
   </interface>
 </node>
