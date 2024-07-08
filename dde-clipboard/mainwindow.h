@@ -89,10 +89,10 @@ Q_SIGNALS: // SIGNALS
 
 private Q_SLOTS:
     /*!
-     * \~chinese \name geometryChanged
-     * \~chinese \brief 根据dock和屏幕的大小改变窗口的大小,根据dock的位置调整主窗口的位置
+     * \~chinese \name primaryGeometryChanged
+     * \~chinese \brief 屏幕的可用大小改变窗口的大小,根据dock的位置调整主窗口的位置
      */
-    void geometryChanged();
+    void primaryGeometryChanged(const QRect &rect);
     /*!
      * \~chinese \name setX
      * \~chinese \brief 设置主窗口X轴的起始坐标
@@ -129,13 +129,7 @@ private:
      * \~chinese \name adjustPosition
      * \~chinese \brief 调整剪切板位置
      */
-    void adjustPosition();
-    /*!
-     * \~chinese \name getDisplayScreen
-     * \~chinese \brief 获取显示屏幕的坐标
-     */
-    QRect getDisplayScreen();
-
+    void adjustPosition(const QRect &rect);
 
     int getWidth() const { return this->width(); }
     int getX() const { return this->pos().x(); }
@@ -149,7 +143,6 @@ protected:
     void hideEvent(QHideEvent *event) override;
 
 private:
-    DBusDisplay *m_displayInter;
     DBusDaemonDock *m_daemonDockInter;
     DBusDockInterface *m_dockInter;
     DDBusInterface *m_appearanceInter;
@@ -165,6 +158,7 @@ private:
     QPropertyAnimation *m_widthAni;
     QSequentialAnimationGroup *m_aniGroup;
 
+    QScreen *m_screen;
     QRect m_rect;
 
     DWindowManagerHelper *m_wmHelper;
