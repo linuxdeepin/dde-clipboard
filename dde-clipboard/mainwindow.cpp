@@ -424,3 +424,15 @@ void MainWindow::paintEvent(QPaintEvent *e)
     p.setPen(pen);
     p.drawRoundedRect(rect(), m_cornerRadius, m_cornerRadius);
 }
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    Q_EMIT clipboardVisibleChanged(true);
+    QWidget::showEvent(event);
+}
+
+void MainWindow::hideEvent(QHideEvent *event)
+{
+    Q_EMIT clipboardVisibleChanged(false);
+    QWidget::hideEvent(event);
+}
