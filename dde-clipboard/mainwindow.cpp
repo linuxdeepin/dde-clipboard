@@ -170,7 +170,8 @@ void MainWindow::setX(int x)
 
 void MainWindow::CompositeChanged()
 {
-    m_hasComposite = m_wmHelper->hasComposite();
+    // 屏蔽应用自己的动画，默认使用窗管窗口显示动画
+    m_hasComposite = false;
 }
 
 void MainWindow::registerMonitor()
