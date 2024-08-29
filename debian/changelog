@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.12) unstable; urgency=medium
+
+  * fix: window removes its own display animation (#170)(Issue: 9728)
+
+ -- Deepin Packages Builder <packages@deepin.org>  Thu, 29 Aug 2024 10:53:46 +0800
+
 dde-clipboard (1:6.0.11) unstable; urgency=medium
 
   * feat: add dbus window visible property and changed signal
