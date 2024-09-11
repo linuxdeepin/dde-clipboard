@@ -429,11 +429,11 @@ void MainWindow::paintEvent(QPaintEvent *e)
 void MainWindow::showEvent(QShowEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(true);
-    QWidget::showEvent(event);
+    DBlurEffectWidget::showEvent(event);
 }
 
 void MainWindow::hideEvent(QHideEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(false);
-    QWidget::hideEvent(event);
+    DBlurEffectWidget::hideEvent(event);
 }
