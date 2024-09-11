@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.13) unstable; urgency=medium
+
+  * fix: clipboard background transparent
+
+ -- xionglinlin <xionglinlin@uniontech.com>  Wed, 11 Sep 2024 15:30:56 +0800
+
 dde-clipboard (1:6.0.12) unstable; urgency=medium
 
   * fix: window removes its own display animation (#170)(Issue: 9728)
