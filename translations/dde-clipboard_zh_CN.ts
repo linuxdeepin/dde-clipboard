@@ -1,5 +1,26 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS language="zh_CN" version="2.1">
 <context>
+    <name>ClipboardItem</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="34"/>
+        <source>Clipboard</source>
+        <translation>剪贴板</translation>
+    </message>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="65"/>
+        <source>Open</source>
+        <translation>打开</translation>
+    </message>
+</context>
+<context>
+    <name>ClipboardPlugin</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="43"/>
+        <source>Clipboard</source>
+        <translation>剪贴板</translation>
+    </message>
+</context>
+<context>
     <name>ItemData</name>
     <message>
         <location filename="../itemdata.cpp" line="147"/>

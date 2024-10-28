@@ -39,6 +39,7 @@ endif ()
 find_package(PkgConfig REQUIRED)
 find_package(Dtk COMPONENTS Widget Core REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets DBus Test Concurrent REQUIRED)
+find_package(DdeTrayLoader REQUIRED)
 
 find_package(ECM REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
@@ -246,3 +247,38 @@ target_link_libraries(${UT_BIN_NAME} PRIVATE
     -lgcov
     -lgtest
 )
+
+#--------------------------dock-plugin---------------------------
+set(PLUGIN_NAME dock-clipboard-plugin)
+
+file(GLOB_RECURSE SRCS
+    "dock-clipboard-plugin/*.h"
+    "dock-clipboard-plugin/*.cpp"
+    "dock-clipboard-plugin/widget/*.h"
+    "dock-clipboard-plugin/widget/*.cpp"
+)
+
+add_definitions("${QT_DEFINITIONS} -DQT_PLUGIN")
+add_library(${PLUGIN_NAME} SHARED ${SRCS} dock-clipboard-plugin/resources/clipboard.qrc)
+target_include_directories(${PLUGIN_NAME} PUBLIC
+    ${DtkWidget_INCLUDE_DIRS}
+    ${DtkCore_INCLUDE_DIRS}
+    ${OBJECT_BINARY_DIR}
+    ${DDE_DOCK_INCLUDE_DIR}
+    ${QGSettings_INCLUDE_DIRS}
+    ${DFrameworkDBus_INCLUDE_DIRS}
+    dock-clipboard-plugin/widget/
+)
+target_link_libraries(${PLUGIN_NAME} PRIVATE
+    ${DtkWidget_LIBRARIES}
+    ${QGSettings_LIBRARIES}
+    ${DFrameworkDBus_LIBRARIES}
+    ${Qt5DBus_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5Svg_LIBRARIES}
+    ${DtkCore_LIBRARIES}
+)
+
+# 设置执行 make install 时哪个目标应该被 install 到哪个位置
+install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-dock/plugins)
+install(FILES "dock-clipboard-plugin/resources/clipboard.svg" DESTINATION share/dde-dock/icons/dcc-setting)
