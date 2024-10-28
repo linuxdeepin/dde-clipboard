@@ -8,7 +8,7 @@
 #include <QDateTime>
 #include <QUrl>
 
-#include "constants.h"
+#include "dde-clipboard/constants.h"
 
 enum DataType {
     Unknown,
