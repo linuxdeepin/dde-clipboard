@@ -1,3 +1,9 @@
+dde-clipboard (1:6.0.14) unstable; urgency=medium
+
+  * chore: add the dde-clipboard plugin 
+
+ -- Wang Fei <wangfei@deepin.org>  Wed, 11 Sep 2024 15:30:56 +0800
+
 dde-clipboard (1:6.0.13) unstable; urgency=medium
 
   * fix: clipboard background transparent
