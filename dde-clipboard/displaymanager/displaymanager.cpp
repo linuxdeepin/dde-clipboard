@@ -48,11 +48,7 @@ void DisplayManager::screenCountChanged()
 
     // 创建关联
     for (auto s : to_add_list) {
-        s->setOrientationUpdateMask(Qt::PrimaryOrientation
-                                    | Qt::LandscapeOrientation
-                                    | Qt::PortraitOrientation
-                                    | Qt::InvertedLandscapeOrientation
-                                    | Qt::InvertedPortraitOrientation);
+        // Orientation update mask is replaced by layer shell API
 
         connect(s, &QScreen::geometryChanged, this, &DisplayManager::screenInfoChanged);
         connect(s, &QScreen::availableGeometryChanged, this, &DisplayManager::screenInfoChanged);

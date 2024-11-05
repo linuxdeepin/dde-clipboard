@@ -19,11 +19,12 @@
 #include <DRegionMonitor>
 #include <DDBusInterface>
 #include <DPlatformWindowHandle>
-#include <DApplicationHelper>
+#include <DGuiApplicationHelper>
+#include <dde-shell/dlayershellwindow.h>
 
-#include "monitor_interface.h"
-#include "dock_interface.h"
-#include "display_interface.h"
+#include "Display1.h"
+#include "Monitor.h"
+#include "Dock1.h"
 
 DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
@@ -178,6 +179,8 @@ private:
     DGuiApplicationHelper::ColorType m_themeType;
     int m_cornerRadius;
     DPlatformWindowHandle *m_windowHandle;
+
+    bool m_isWayland;
 };
 
 #endif // MAINWINDOW_H

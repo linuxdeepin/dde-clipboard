@@ -16,8 +16,8 @@
 
 PixmapLabel::PixmapLabel(QPointer<ItemData> data,QWidget *parent)
     : DLabel(parent)
-    , m_data(data)
     , m_istext(false)
+    , m_data(data)
 {
 
 }

@@ -69,7 +69,8 @@ TEST_F(TstIconButton, paintTest)
     QTest::qWait(10);
 
     // 模拟enterEvent
-    QEvent enterE(QEvent::Enter);
+    QPoint pos = btn->pos();
+    QEnterEvent enterE{pos, pos, btn->mapToGlobal(pos)};
     qApp->sendEvent(btn, &enterE);
 
     // 模拟leaveEvent

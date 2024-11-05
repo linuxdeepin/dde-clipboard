@@ -247,7 +247,7 @@ void ItemWidget::initUI()
     titleWidget->setFixedHeight(ItemTitleHeight);
 
     QFont font = DFontSizeManager::instance()->t4();
-    font.setWeight(75);
+    font.setWeight(QFont::Thin);
     m_nameLabel->setFont(font);
     m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
@@ -261,7 +261,7 @@ void ItemWidget::initUI()
     //布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(0);
-    mainLayout->setMargin(0);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(titleWidget, 0, Qt::AlignTop);
 
     QHBoxLayout *layout = new QHBoxLayout;
@@ -676,7 +676,7 @@ void ItemWidget::paintEvent(QPaintEvent *event)
 void ItemWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
     onSelect();
-    return DWidget::mousePressEvent(event);
+    return DWidget::mouseDoubleClickEvent(event);
 }
 
 void ItemWidget::focusInEvent(QFocusEvent *event)

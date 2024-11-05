@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QDBusError>
 #include <QDBusConnection>
 
@@ -15,7 +15,7 @@ DCORE_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QGuiApplication a(argc, argv);
     a.setOrganizationName("deepin");
     a.setApplicationName("dde-clipboard-daemon");
 

@@ -28,6 +28,11 @@ bool TouchscreenInfo::operator==(const TouchscreenInfo &info)
     return id == info.id && name == info.name && deviceNode == info.deviceNode && serialNumber == info.serialNumber;
 }
 
+bool TouchscreenInfo::operator!=(const TouchscreenInfo &info)
+{
+    return !(*this == info);
+}
+
 void registerTouchscreenInfoMetaType()
 {
     qRegisterMetaType<TouchscreenInfo>("TouchscreenInfo");

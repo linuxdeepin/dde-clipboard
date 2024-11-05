@@ -39,8 +39,8 @@ Copyright: None
 License: CC0-1.0
 
 # xml2cpp
-Files: dde-clipboard/dbus/* dbus/*.xml dde-clipboard/org.deepin.dde.Clipboard1.xml dbus/interface/.gitignore
-Copyright: The Qt Company Ltd.
+Files: dde-clipboard/dbus/* dbus/*.xml dde-clipboard/org.deepin.dde.Clipboard1.xml dde-clipboard-daemon/protocol/wlr-data-control-unstable-v1.xml dbus/interface/.gitignore
+Copyright: UnionTech Software Technology Co., Ltd.
 License: CC0-1.0
 
 # xml 
@@ -50,5 +50,15 @@ License: GPL-3.0-or-later
 
 # test file 
 Files: tests/dde-clipboard/qrc/*.buf tests/dde-clipboard/ut_img.cpp tests/dde-clipboard-daemon/plugin/dde-clipboard-loader/ut_qrc.cpp
+Copyright: UnionTech Software Technology Co., Ltd.
+License: GPL-3.0-or-later
+
+# Plugin package metadata
+Files: dock-clipboard-plugin/clipboard.json
+Copyright: None
+License: CC0-1.0
+
+# Images
+Files: dock-clipboard-plugin/resources/**.svg
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later

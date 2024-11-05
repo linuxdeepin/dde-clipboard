@@ -5,7 +5,7 @@
 
 #include "clipboardloader.h"
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QClipboard>
 #include <QMimeData>
 #include <QDir>
@@ -87,13 +87,12 @@ QString ClipboardLoader::m_pixPath;
 ClipboardLoader::ClipboardLoader(QObject *parent)
     : QObject(parent)
     , m_board(nullptr)
-    , m_waylandCopyClient(nullptr)
+    , m_wlrClipboard(nullptr)
 {
-    if (qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
-        m_waylandCopyClient = new WaylandCopyClient(this);
-        m_waylandCopyClient->init();
+    if (QStringLiteral("wayland") == qGuiApp->platformName()) {
+        m_wlrClipboard = new WlrDataControlClipboardInterface(this);
 
-        connect(m_waylandCopyClient, &WaylandCopyClient::dataChanged, this, [this] {
+        connect(m_wlrClipboard, &WlrDataControlClipboardInterface::dataChanged, this, [this] {
             this->doWork(WAYLAND_PROTOCOL);
         });
     } else {
@@ -129,11 +128,13 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
         break;
     }
 
-    if (m_board)
+    if (m_board) {
         m_board->setMimeData(mimeData);
-
-    if (m_waylandCopyClient)
-        m_waylandCopyClient->setMimeData(mimeData);
+    } else if (m_wlrClipboard) {
+        m_wlrClipboard->setMimeData(mimeData);
+    } else {
+        Q_UNREACHABLE(); // Suppress memory leak warning
+    }
 }
 
 void ClipboardLoader::doWork(int protocolType)
@@ -145,7 +146,7 @@ void ClipboardLoader::doWork(int protocolType)
     // The pointer returned might become invalidated when the contents
     // of the clipboard changes; either by calling one of the setter functions
     // or externally by the system clipboard changing.`
-    const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_waylandCopyClient->mimeData() : m_board->mimeData();
+    const QMimeData *mimeData = protocolType == WAYLAND_PROTOCOL ? m_wlrClipboard->mimeData() : m_board->mimeData();
     if (!mimeData || mimeData->formats().isEmpty())
         return;
 
@@ -172,13 +173,15 @@ void ClipboardLoader::doWork(int protocolType)
 
     //图片类型的数据直接吧数据拿出来，不去调用mimeData->data()方法，会导致很卡
     if (mimeData->hasImage()) {
-        const QPixmap &srcPix = qvariant_cast<QPixmap>(mimeData->imageData()) ;
-        if (srcPix.isNull())
+        const auto &srcImage = qvariant_cast<QImage>(mimeData->imageData()) ;
+        if (srcImage.isNull()) {
+            qDebug() << "mimeData->imageData()" << mimeData->imageData() << "QImage is null.";
             return;
+        }
 
-        info.m_pixSize = srcPix.size();
-        if (!cachePixmap(srcPix, info)) {
-            info.m_variantImage = srcPix;
+        info.m_pixSize = srcImage.size();
+        if (!cachePixmap(srcImage, info)) {
+            info.m_variantImage = srcImage;
         }
 
         info.m_formatMap.insert(ApplicationXQtImageLiteral, info.m_variantImage.toByteArray());
@@ -188,11 +191,11 @@ void ClipboardLoader::doWork(int protocolType)
 
         // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
         // wayland下时间戳可能为空
-        if(currTimeStamp.isEmpty() && srcPix.toImage() == m_lastPix.toImage() && !qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland")) {
+        if(currTimeStamp.isEmpty() && srcImage == m_lastImage && (QStringLiteral("wayland") != qGuiApp->platformName())) {
             qDebug() << "system repeat image";
             return;
         }
-        m_lastPix = srcPix;
+        m_lastImage = srcImage;
 
         info.m_hasImage = true;
         info.m_type = Image;
@@ -239,12 +242,12 @@ void ClipboardLoader::doWork(int protocolType)
     Q_EMIT dataComing(buf);
 }
 
-bool ClipboardLoader::cachePixmap(const QPixmap &srcPix, ItemInfo &info)
+bool ClipboardLoader::cachePixmap(const QImage &srcPix, ItemInfo &info)
 {
     if (initPixPath()) {
         QString pixFileName = m_pixPath + QString("/%1.png").arg(QDateTime::currentMSecsSinceEpoch());
         QImageWriter writer(pixFileName);
-        if (!writer.canWrite() || !writer.write(srcPix.toImage())) {
+        if (!writer.canWrite() || !writer.write(srcPix)) {
             QFile cacheFile(pixFileName);
             if (!cacheFile.open(QIODevice::WriteOnly)) {
                 qDebug() << "open file failed, file name:" << pixFileName;
@@ -302,30 +305,12 @@ void ClipboardLoader::setImageData(const ItemInfo &info, QMimeData *&mimeData)
     }
 
     const QString &fileName = info.m_urls.front().path();
-    QPixmap pix;
-    QImageReader reader(fileName);
-    if (reader.canRead())
-        pix = QPixmap::fromImageReader(&reader);
-
-    if (!pix.isNull()) {
-        QFile cacheFile(fileName);
-        if (!cacheFile.open(QIODevice::ReadOnly)) {
-            qDebug() << "open pixmap cache file failed, file name:" << fileName;
-            mimeData->setImageData(info.m_variantImage);
-            return;
-        }
-
-        QDataStream stream(&cacheFile);
-        stream.setVersion(QDataStream::Qt_5_11);
-        stream >> pix;
-        cacheFile.close();
-    }
-
-    if (pix.isNull()) {
-        qDebug() << "read pixmap cache file failed, file name:" << fileName;
+    QImage cachedImage(fileName);
+    if (cachedImage.isNull()) {
+        qDebug() << "QImage failed to read cached image file" << fileName;
         mimeData->setImageData(info.m_variantImage);
         return;
     }
 
-    mimeData->setImageData(pix);
+    mimeData->setImageData(cachedImage);
 }

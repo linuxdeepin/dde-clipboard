@@ -39,7 +39,7 @@ void ClipboardItem::init()
 
     auto vLayout = new QVBoxLayout(this);
     vLayout->setSpacing(0);
-    vLayout->setMargin(0);
+    vLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->addWidget(m_icon, 0, Qt::AlignCenter);
 
     refreshIcon();
