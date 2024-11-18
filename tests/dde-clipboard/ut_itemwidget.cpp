@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QSignalSpy>
 #include <QTest>
+#include <QMouseEvent>
 
 class TstItemWidget : public testing::Test
 {
@@ -124,7 +125,8 @@ TEST_F(TstItemWidget, focus_Test)
 
     ItemWidget fileWidget(m_fileData);
     QEvent dbClickE(QEvent::MouseButtonDblClick);
-    qApp->sendEvent(&fileWidget, &dbClickE);
+    QMouseEvent dbClickE2(QEvent::MouseButtonDblClick, QPointF(), QPointF(), Qt::LeftButton, {Qt::LeftButton}, Qt::NoModifier);
+    qApp->sendEvent(&fileWidget, &dbClickE2);
 
     QSignalSpy closeFocusSpy(&w, &ItemWidget::closeHasFocus);
     QKeyEvent changeFocusEvent(QKeyEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "change focus");

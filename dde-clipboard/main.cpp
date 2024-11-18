@@ -4,7 +4,7 @@
 
 #include "mainwindow.h"
 #include "constants.h"
-#include "clipboard_adaptor.h"
+#include "clipboard1adaptor.h"
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::ColorCompositing, true);
 
     DApplication *app = DApplication::globalApplication(argc, argv);
-    DApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
     app->setOrganizationName("deepin");
     app->setApplicationName("dde-clipboard");
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
                                  "org.deepin.dde.ClipboardLoader1",
                                  QDBusConnection::sessionBus());
 
-    ClipboardAdaptor adapt(&w);
+    Clipboard1Adaptor adapt(&w);
     if (!connection.registerService(DBusClipBoardService)) {
         qDebug() << "error:" << connection.lastError().message();
         exit(-1);

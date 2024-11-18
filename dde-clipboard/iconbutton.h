@@ -62,7 +62,7 @@ protected:
      * \~chinese \brief 鼠标移动到控件上产生的事件,产生悬停的效果
      * \~chinese \param event 事件
      */
-    virtual void enterEvent(QEvent *event) override;
+    virtual void enterEvent(QEnterEvent *event) override;
     /*!
      * \~chinese \name leaveEvent
      * \~chinese \brief 鼠标移出控件产生的事件,消除悬停的效果

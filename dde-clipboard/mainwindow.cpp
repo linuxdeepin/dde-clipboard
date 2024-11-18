@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_wmHelper(DWindowManagerHelper::instance())
     , m_trickTimer(new QTimer)
     , m_windowHandle(new DPlatformWindowHandle(this, this))
+    , m_isWayland(qGuiApp->platformName() == QStringLiteral("wayland"))
 {
     initUI();
     initAni();
@@ -86,10 +87,23 @@ void MainWindow::Toggle()
 
 void MainWindow::geometryChanged()
 {
-    adjustPosition();
+    // Wayland layer-shell implementation
+    auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
+    QMargins margins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
+    auto dockGeometry = m_dockInter->geometry();
 
-    setX(WindowMargin);
+    switch (m_daemonDockInter->position()) {
+        case DOCK_TOP: margins.setTop(dockGeometry.height() + WindowMargin); break;
+        case DOCK_BOTTOM: margins.setBottom(dockGeometry.height() + WindowMargin); break;
+        case DOCK_LEFT: margins.setLeft(dockGeometry.width() + WindowMargin); break;
+        case DOCK_RIGHT: break;
+    }
 
+    layerShellWnd->setLeftMargin(margins.left());
+    layerShellWnd->setBottomMargin(margins.bottom());
+    layerShellWnd->setTopMargin(margins.top());
+
+    // FIXME: Legacy animation?
     //init animation by 'm_rect'
     m_xAni->setStartValue(WindowMargin);
     m_xAni->setEndValue(0);
@@ -107,13 +121,13 @@ void MainWindow::showAni()
 
     if (!m_hasComposite) {
         move(m_rect.x() + WindowMargin, m_rect.y());
-        setFixedWidth(m_rect.width());
+        // setFixedWidth(m_rect.width());
         show();
         return;
     }
 
     move(m_rect.x(), m_rect.y());
-    setFixedWidth(0);
+    // setFixedWidth(0); // FIXME: Remove legacy animation. This line is commented out because it interferes with layershell anchoring
 
     show();
     m_aniGroup->setDirection(QAbstractAnimation::Backward);
@@ -193,7 +207,7 @@ void MainWindow::registerMonitor()
 
 void MainWindow::initUI()
 {
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Tool  | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+    setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -231,7 +245,7 @@ void MainWindow::initUI()
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setSpacing(0);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_content);
 
     setMaskAlpha(static_cast<int>(this->opacity() * 255));
@@ -243,6 +257,21 @@ void MainWindow::initUI()
     m_cornerRadius = m_windowHandle->windowRadius();
     m_themeType= DGuiApplicationHelper::instance()->themeType();
     m_windowHandle->setBorderWidth(1);
+
+    // LayerShell-implemented anchoring
+    auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
+
+    layerShellWnd->setAnchors({ ds::DLayerShellWindow::AnchorLeft,
+                                ds::DLayerShellWindow::AnchorBottom,
+                                ds::DLayerShellWindow::AnchorTop });
+    layerShellWnd->setLayer(ds::DLayerShellWindow::LayerOverlay);
+    // FIXME: X11 layer shell emulation is broken.
+    // When exclusion zone is set to -1, the X11 emulation puts the window to the center.
+    // When exclusion zone is set to 0, DDE Dock will not occupy the space before clipboard (works like -1 in Wayland)
+    layerShellWnd->setExclusiveZone(m_isWayland ? -1 : 0);
+
+    // Initial size
+    setFixedWidth(WindowWidth);
 }
 
 void MainWindow::initAni()
@@ -274,7 +303,12 @@ void MainWindow::initConnect()
         hideAni();
     });
 
-    connect(m_dockInter, &DBusDockInterface::geometryChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+    // connect(m_dockInter, &DBusDockInterface::geometryChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
+
+    connect(m_daemonDockInter, &DBusDaemonDock::PositionChanged, [=](int i) {
+        Q_UNUSED(i);
+        geometryChanged();
+    });
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
 

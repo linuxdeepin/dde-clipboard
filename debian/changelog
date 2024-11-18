@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.0) unstable; urgency=medium
+
+  * refactor: port to Qt6, new Wayland implementation
+
+ -- Wu Haotian <wuhaotian@uniontech.com>  Wed, 06 Nov 2024 14:46:56 +0800
+
 dde-clipboard (1:6.0.14) unstable; urgency=medium
 
   * chore: add the dde-clipboard plugin 

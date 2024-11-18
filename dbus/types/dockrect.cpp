@@ -29,6 +29,16 @@ DockRect::operator QRect() const
     return QRect(x, y, w, h);
 }
 
+bool DockRect::operator==(const DockRect &rect)
+{
+    return (x == rect.x && y == rect.y && w == rect.w && h == rect.h);
+}
+
+bool DockRect::operator!=(const DockRect &rect)
+{
+    return !(*this == rect);
+}
+
 QDBusArgument &operator<<(QDBusArgument &arg, const DockRect &rect)
 {
     arg.beginStructure();

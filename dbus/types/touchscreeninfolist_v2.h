@@ -16,9 +16,12 @@ struct TouchscreenInfo_V2 {
     QString deviceNode;
     QString serialNumber;
     QString UUID;
-
-    bool operator ==(const TouchscreenInfo_V2& info);
 };
+
+inline bool operator==(const TouchscreenInfo_V2& lhs, const TouchscreenInfo_V2& rhs)
+    { return lhs.id == rhs.id && lhs.name == rhs.name && lhs.deviceNode == rhs.deviceNode && lhs.serialNumber == rhs.serialNumber && lhs.UUID == rhs.UUID; }
+inline bool operator!=(const TouchscreenInfo_V2& lhs, const TouchscreenInfo_V2& rhs)
+    { return !(lhs == rhs); }
 
 typedef QList<TouchscreenInfo_V2> TouchscreenInfoList_V2;
 

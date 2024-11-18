@@ -34,7 +34,7 @@ void SignalQuickPanel::initUI()
     DFontSizeManager::instance()->bind(m_description, DFontSizeManager::T10);
 
     auto layout = new QVBoxLayout;
-    layout->setMargin(8);
+    layout->setContentsMargins(8, 8, 8, 8);
     layout->setSpacing(0);
     layout->addStretch(1);
     layout->addWidget(m_icon, 0, Qt::AlignCenter);

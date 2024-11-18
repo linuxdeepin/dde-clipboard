@@ -6,7 +6,7 @@
 #define CLIPBOARDLOADER_H
 
 #include "constants.h"
-#include "waylandcopyclient.h"
+#include "wlrintegration/wlrdatacontrolclipboardinterface.h"
 #include "iteminfo.h"
 
 #include <QObject>
@@ -28,7 +28,7 @@ class ClipboardLoader : public QObject
 public:
     explicit ClipboardLoader(QObject *parent = nullptr);
 
-    bool cachePixmap(const QPixmap &srcPix, ItemInfo &info);
+    bool cachePixmap(const QImage &srcPix, ItemInfo &info);
     void setImageData(const ItemInfo &info, QMimeData *&mimeData);
 
     static bool initPixPath();
@@ -45,8 +45,8 @@ Q_SIGNALS:
 private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
-    QPixmap m_lastPix;
-    WaylandCopyClient *m_waylandCopyClient;
+    QImage m_lastImage;
+    WlrDataControlClipboardInterface *m_wlrClipboard;
 
     static QString m_pixPath;
 };

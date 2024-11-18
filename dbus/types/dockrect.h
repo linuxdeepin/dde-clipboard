@@ -18,6 +18,9 @@ public:
     friend const QDBusArgument &operator>>(const QDBusArgument &arg, DockRect &rect);
     friend QDBusArgument &operator<<(QDBusArgument &arg, const DockRect &rect);
 
+    bool operator==(const DockRect &rect);
+    bool operator!=(const DockRect &rect);
+
 private:
     int x;
     int y;

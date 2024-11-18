@@ -135,7 +135,7 @@ void IconButton::mousePressEvent(QMouseEvent *event)
         Q_EMIT clicked();
 }
 
-void IconButton::enterEvent(QEvent *event)
+void IconButton::enterEvent(QEnterEvent *event)
 {
     Q_UNUSED(event);
     m_hover = true;

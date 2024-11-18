@@ -29,6 +29,16 @@ ScreenRect::operator QRect() const
     return QRect(x, y, w, h);
 }
 
+bool ScreenRect::operator==(const ScreenRect &rect)
+{
+    return (x == rect.x && y == rect.y && w == rect.w && h == rect.h);
+}
+
+bool ScreenRect::operator!=(const ScreenRect &rect)
+{
+    return !(*this == rect);
+}
+
 QDBusArgument &operator<<(QDBusArgument &arg, const ScreenRect &rect)
 {
     arg.beginStructure();
