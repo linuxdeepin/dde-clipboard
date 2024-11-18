@@ -16,8 +16,9 @@ ClipboardPlugin::ClipboardPlugin(QObject *parent)
     , m_messageCallback(nullptr)
 {
     QTranslator *translator = new QTranslator(this);
-    translator->load(QString("/usr/share/dde-clipboard/translations/dde-clipboard_%1.qm").arg(QLocale::system().name()));
-    QCoreApplication::installTranslator(translator);
+    if (translator->load(QString("/usr/share/dde-clipboard/translations/dde-clipboard_%1.qm").arg(QLocale::system().name()))) {
+        QCoreApplication::installTranslator(translator);
+    }
 }
 
 ClipboardPlugin::~ClipboardPlugin()
@@ -63,7 +64,7 @@ void ClipboardPlugin::init(PluginProxyInterface *proxyInter)
     connect(m_quickPanelWidget, &QuickPanelWidget::requestHideApplet, this, [this] {
         m_proxyInter->requestSetAppletVisible(this, CLIPBOARD_KEY, false);
     });
-    QDBusConnection::sessionBus().connect("com.deepin.dde.Clipboard", "/com/deepin/dde/Clipboard", "com.deepin.dde.Clipboard", "clipboardVisibleChanged", this, SLOT(onClipboardVisibleChanged(bool)));
+    QDBusConnection::sessionBus().connect("org.deepin.dde.Clipboard1", "/org/deepin/dde/Clipboard1", "org.deepin.dde.Clipboard1", "clipboardVisibleChanged", this, SLOT(onClipboardVisibleChanged(bool)));
 }
 
 QWidget *ClipboardPlugin::itemWidget(const QString &itemKey)

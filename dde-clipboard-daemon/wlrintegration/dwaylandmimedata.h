@@ -11,8 +11,7 @@ class DWaylandMimeData : public QMimeData
     Q_OBJECT
 public:
     DWaylandMimeData();
-    virtual ~DWaylandMimeData() override;
-    virtual QStringList formats() const override;
-    virtual QVariant retrieveData(const QString &mimeType,
-                                  QMetaType preferredType) const override;
+    ~DWaylandMimeData() override;
+    QStringList formats() const override;
+    QVariant retrieveData(const QString &mimeType, QMetaType preferredType) const override;
 };

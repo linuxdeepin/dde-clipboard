@@ -7,12 +7,11 @@
 #include "qwayland-wlr-data-control-unstable-v1.h"
 #include "waylandclientextensiontemplate.h"
 
-class WlrDataControlManagerIntegration :
-    public WaylandClientExtensionTemplate<WlrDataControlManagerIntegration>,
-    public QtWayland::zwlr_data_control_manager_v1
+class WlrDataControlManagerIntegration : public WaylandClientExtensionTemplate<WlrDataControlManagerIntegration>,
+                                         public QtWayland::zwlr_data_control_manager_v1
 {
     Q_OBJECT
 public:
     WlrDataControlManagerIntegration();
-    virtual ~WlrDataControlManagerIntegration() override;
+    ~WlrDataControlManagerIntegration() override;
 };
