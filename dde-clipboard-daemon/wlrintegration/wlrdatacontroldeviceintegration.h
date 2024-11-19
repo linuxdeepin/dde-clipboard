@@ -10,21 +10,18 @@
 
 class WlrDataControlOfferIntegration;
 
-class WlrDataControlDeviceIntegration :
-    public QObject,
-    public QtWayland::zwlr_data_control_device_v1
+class WlrDataControlDeviceIntegration : public QObject, public QtWayland::zwlr_data_control_device_v1
 {
     Q_OBJECT
 public:
-    WlrDataControlDeviceIntegration(::zwlr_data_control_device_v1 *object);
-    virtual ~WlrDataControlDeviceIntegration() override;
+    explicit WlrDataControlDeviceIntegration(::zwlr_data_control_device_v1 *object);
+    ~WlrDataControlDeviceIntegration() override;
 
 protected:
-    virtual void zwlr_data_control_device_v1_data_offer(struct ::zwlr_data_control_offer_v1 *id) override;
-    virtual void zwlr_data_control_device_v1_selection(struct ::zwlr_data_control_offer_v1 *id) override;
-    virtual void zwlr_data_control_device_v1_finished() override;
-    virtual void zwlr_data_control_device_v1_primary_selection(struct ::zwlr_data_control_offer_v1 *id) override;
-
+    void zwlr_data_control_device_v1_data_offer(struct ::zwlr_data_control_offer_v1 *id) override;
+    void zwlr_data_control_device_v1_selection(struct ::zwlr_data_control_offer_v1 *id) override;
+    void zwlr_data_control_device_v1_finished() override;
+    void zwlr_data_control_device_v1_primary_selection(struct ::zwlr_data_control_offer_v1 *id) override;
 
 Q_SIGNALS:
     void newSelection(WlrDataControlOfferIntegration *offer);

@@ -8,7 +8,9 @@
 #include <QtConcurrent>
 #include <QSharedPointer>
 #include <QSemaphore>
+
 #include <memory>
+
 #include "wlrdatacontrolmanagerintegration.h"
 #include "wlrdatacontroldeviceintegration.h"
 #include "wlrdatacontrolsourceintegration.h"

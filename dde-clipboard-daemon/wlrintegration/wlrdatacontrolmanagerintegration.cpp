@@ -4,8 +4,8 @@
 
 #include "wlrdatacontrolmanagerintegration.h"
 
-WlrDataControlManagerIntegration::WlrDataControlManagerIntegration() :
-    WaylandClientExtensionTemplate<WlrDataControlManagerIntegration>(2)
+WlrDataControlManagerIntegration::WlrDataControlManagerIntegration()
+    : WaylandClientExtensionTemplate<WlrDataControlManagerIntegration>(2)
 {
 
 }

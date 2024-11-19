@@ -13,6 +13,9 @@
 #include "dbusdockinterface.h"
 #include "listview.h"
 #include "iconbutton.h"
+#include "display1interface.h"
+#include "display1monitorinterface.h"
+#include "dock1interface.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
@@ -21,10 +24,6 @@
 #include <DPlatformWindowHandle>
 #include <DGuiApplicationHelper>
 #include <dde-shell/dlayershellwindow.h>
-
-#include "Display1.h"
-#include "Monitor.h"
-#include "Dock1.h"
 
 DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE

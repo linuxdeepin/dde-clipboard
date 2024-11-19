@@ -5,11 +5,11 @@ set(BIN_NAME dde-clipboard)
 project(${BIN_NAME})
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
-set(QT_VERSION_MAJOR 6)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
@@ -32,10 +32,13 @@ if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
 endif ()
 
+set(QT_VERSION_MAJOR 6)
+set(DTK_VERSION_MAJOR 6)
+
 # Find the library
 find_package(PkgConfig REQUIRED)
-find_package(Dtk6 COMPONENTS Widget Core Tools REQUIRED)
-find_package(Qt6 COMPONENTS Core Gui Widgets DBus WaylandClient Test Concurrent LinguistTools REQUIRED)
+find_package(Dtk${DTK_VERSION_MAJOR} COMPONENTS Widget Core Tools REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets DBus WaylandClient Test Concurrent LinguistTools REQUIRED)
 find_package(DDEShell REQUIRED)
 find_package(DdeTrayLoader REQUIRED)
 
@@ -58,9 +61,9 @@ include_directories(
 #----------------------------dde-clipboard------------------------------
 
 qt_add_dbus_adaptor(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dde-clipboard/org.deepin.dde.Clipboard1.xml mainwindow.h MainWindow)
-dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.Monitor.xml Monitor)
-dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.xml Display1)
-dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.daemon.Dock1.xml Dock1)
+dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.Monitor.xml display1monitorinterface)
+dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.xml display1interface)
+dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.daemon.Dock1.xml dock1interface)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/dbus/interface
@@ -85,89 +88,33 @@ add_executable(${BIN_NAME}
 )
 
 target_link_libraries(${BIN_NAME} PRIVATE
-    Dtk6::Widget
-    Dtk6::Core
+    Dtk${DTK_VERSION_MAJOR}::Widget
+    Dtk${DTK_VERSION_MAJOR}::Core
     PkgConfig::GIO
-    Qt6::Core
-    Qt6::Widgets
-    Qt6::GuiPrivate
-    Qt6::Gui
-    Qt6::DBus
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::GuiPrivate
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::DBus
     Dde::Shell
 )
 
-# generate qm
-set(TRANSLATION_FILES
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_af.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_am_ET.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ar.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ast.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_az.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_bg.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_bn.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_bo.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ca.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_cs.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_da.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_de.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_el_GR.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_el.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_en_AU.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_en_GB.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_eo.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_es_419.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_es.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_et.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_fa.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_fi.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_fr.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_gl_ES.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_he.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_hi_IN.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_hi.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_hr.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_hu.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_hy.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_id.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_it.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ja.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_kab.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ko.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ku_IQ.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ku.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ky@Arab.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_lt.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_lv.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ml.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_mn.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ms.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_nb.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ne.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_nl.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_pa.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_pl.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_pt_BR.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_pt.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ro.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ru.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_si.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sk.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sl.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sq.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sr.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sv.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_sw.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ta.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_tr.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_ug.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_uk.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_vi.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_zh_CN.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_zh_HK.ts
-    ${PROJECT_SOURCE_DIR}/translations/dde-clipboard_zh_TW.ts
+# can use qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES xx xx) from Qt6.7
+set(TRANSLATION_LANGUAGES
+    af am_ET ar ast az bg bn bo ca cs da de el_GR el en_AU en_GB eo es_419 es
+    et fa fi fr gl_ES he hi_IN hi hr hu hy id it ja kab ko ku_IQ ku ky@Arab
+    lt lv ml mn ms nb ne nl pa pl pt_BR pt ro ru si sk sl sq sr sv sw ta tr
+    ug uk vi zh_CN zh_HK zh_TW
 )
 
+set(TRANSLATION_FILES "")
+list(APPEND TRANSLATION_FILES "${PROJECT_SOURCE_DIR}/translations/dde-clipboard.ts")
+
+foreach(LANG ${TRANSLATION_LANGUAGES})
+    list(APPEND TRANSLATION_FILES "${PROJECT_SOURCE_DIR}/translations/dde-clipboard_${LANG}.ts")
+endforeach()
+
+# can generate ts and qm file
 qt_add_translations(${BIN_NAME}
     TS_FILES ${TRANSLATION_FILES}
     SOURCES ${Clipboard_SCRS}
@@ -209,8 +156,8 @@ install(TARGETS ${BIN_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 set(BIN_NAME dde-clipboard-daemon)
 
 file(GLOB_RECURSE dde-clipboard-daemon_SCRS
-        "dde-clipboard-daemon/*.h"
-        "dde-clipboard-daemon/*.cpp"
+    "dde-clipboard-daemon/*.h"
+    "dde-clipboard-daemon/*.cpp"
 )
 
 add_executable(${BIN_NAME}
@@ -221,12 +168,12 @@ qt_generate_wayland_protocol_client_sources(${BIN_NAME} FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/dde-clipboard-daemon/protocol/wlr-data-control-unstable-v1.xml)
 
 target_link_libraries(${BIN_NAME} PRIVATE
-  Qt6::Gui
-  Qt6::DBus
-  Qt6::Concurrent
-  Qt6::WaylandClient
-  Qt6::WaylandClientPrivate
-  Dtk6::Core
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::DBus
+    Qt${QT_VERSION_MAJOR}::Concurrent
+    Qt${QT_VERSION_MAJOR}::WaylandClient
+    Qt${QT_VERSION_MAJOR}::WaylandClientPrivate
+    Dtk${DTK_VERSION_MAJOR}::Core
 )
 
 install(TARGETS ${BIN_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -277,13 +224,13 @@ add_executable(${UT_BIN_NAME}
 target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
 
 target_link_libraries(${UT_BIN_NAME} PRIVATE
-    Dtk6::Widget
+    Dtk${DTK_VERSION_MAJOR}::Widget
     PkgConfig::GIO
-    Qt6::Core
-    Qt6::Widgets
-    Qt6::DBus
-    Qt6::Test
-    Qt6::GuiPrivate
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::DBus
+    Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::GuiPrivate
     Dde::Shell
     -lpthread
     -lgcov
@@ -303,22 +250,17 @@ file(GLOB_RECURSE SRCS
 add_definitions("${QT_DEFINITIONS} -DQT_PLUGIN")
 add_library(${PLUGIN_NAME} SHARED ${SRCS} dock-clipboard-plugin/resources/clipboard.qrc)
 target_include_directories(${PLUGIN_NAME} PUBLIC
-    ${DtkWidget_INCLUDE_DIRS}
-    ${DtkCore_INCLUDE_DIRS}
+    Dtk${DTK_VERSION_MAJOR}::Widget
+    Qt${QT_VERSION_MAJOR}::Core
     ${OBJECT_BINARY_DIR}
     ${DDE_DOCK_INCLUDE_DIR}
-    ${QGSettings_INCLUDE_DIRS}
-    ${DFrameworkDBus_INCLUDE_DIRS}
     dock-clipboard-plugin/widget/
 )
 target_link_libraries(${PLUGIN_NAME} PRIVATE
-    ${DtkWidget_LIBRARIES}
-    ${QGSettings_LIBRARIES}
-    ${DFrameworkDBus_LIBRARIES}
-    ${Qt5DBus_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5Svg_LIBRARIES}
-    ${DtkCore_LIBRARIES}
+    Dtk${DTK_VERSION_MAJOR}::Widget
+    Dtk${DTK_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::DBus
+    Qt${QT_VERSION_MAJOR}::Widgets
 )
 
 # 设置执行 make install 时哪个目标应该被 install 到哪个位置

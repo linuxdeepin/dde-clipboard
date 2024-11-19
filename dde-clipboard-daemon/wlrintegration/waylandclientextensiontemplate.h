@@ -10,21 +10,22 @@
  * @brief Like QWaylandShellIntegrationTemplate but without shell specific pure virtual functions
  */
 template <typename T>
-class WaylandClientExtensionTemplate : public QWaylandClientExtension {
+class WaylandClientExtensionTemplate : public QWaylandClientExtension
+{
 public:
-    WaylandClientExtensionTemplate(const int ver) :
-        QWaylandClientExtension(ver) {}
+    explicit WaylandClientExtensionTemplate(const int ver)
+        : QWaylandClientExtension(ver) {}
 
     bool initialize() {
         QWaylandClientExtension::initialize();
         return isActive();
     }
 
-    virtual const wl_interface *extensionInterface() const override {
+    const wl_interface *extensionInterface() const override {
         return static_cast<const T *>(this)->interface();
     }
 
-    virtual void bind(wl_registry *registry, int id, int ver) override {
+    void bind(wl_registry *registry, int id, int ver) override {
         std::array<int, 3> versions = {
             QWaylandClientExtension::version(),
             T::interface()->version,

@@ -4,9 +4,9 @@
 
 #include "wlrdatacontrolofferintegration.h"
 
-WlrDataControlOfferIntegration::WlrDataControlOfferIntegration(::zwlr_data_control_offer_v1 *object) :
-    QObject(),
-    QtWayland::zwlr_data_control_offer_v1(object)
+WlrDataControlOfferIntegration::WlrDataControlOfferIntegration(::zwlr_data_control_offer_v1 *object)
+    : QObject()
+    , QtWayland::zwlr_data_control_offer_v1(object)
 {
 
 }

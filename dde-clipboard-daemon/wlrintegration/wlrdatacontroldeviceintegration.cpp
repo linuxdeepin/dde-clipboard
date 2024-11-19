@@ -7,10 +7,10 @@
 #include <QThread>
 #include <QMutexLocker>
 
-WlrDataControlDeviceIntegration::WlrDataControlDeviceIntegration(::zwlr_data_control_device_v1 *object) :
-    QObject(),
-    QtWayland::zwlr_data_control_device_v1(object),
-    m_offerObjectBuffer(nullptr)
+WlrDataControlDeviceIntegration::WlrDataControlDeviceIntegration(::zwlr_data_control_device_v1 *object)
+    : QObject()
+    , QtWayland::zwlr_data_control_device_v1(object)
+    , m_offerObjectBuffer(nullptr)
 {
 
 }

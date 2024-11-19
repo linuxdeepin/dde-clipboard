@@ -4,9 +4,9 @@
 
 #include "wlrdatacontrolsourceintegration.h"
 
-WlrDataControlSourceIntegration::WlrDataControlSourceIntegration(::zwlr_data_control_source_v1 *object) :
-    QObject(),
-    QtWayland::zwlr_data_control_source_v1(object)
+WlrDataControlSourceIntegration::WlrDataControlSourceIntegration(::zwlr_data_control_source_v1 *object)
+    : QObject()
+    , QtWayland::zwlr_data_control_source_v1(object)
 {
 
 }

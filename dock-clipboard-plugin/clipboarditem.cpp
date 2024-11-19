@@ -6,7 +6,6 @@
 #include "constants.h"
 #include "clipboardcontroller.h"
 
-#include <DDBusSender>
 #include <DGuiApplicationHelper>
 
 #include <QDBusConnection>
