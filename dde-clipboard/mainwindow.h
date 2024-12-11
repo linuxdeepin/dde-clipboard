@@ -147,6 +147,7 @@ protected:
     virtual void mouseMoveEvent(QMouseEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
+    bool event(QEvent *event) override;
 
 private:
     DBusDisplay *m_displayInter;
