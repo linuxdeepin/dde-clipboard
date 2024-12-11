@@ -269,7 +269,7 @@ void MainWindow::initUI()
     // When exclusion zone is set to -1, the X11 emulation puts the window to the center.
     // When exclusion zone is set to 0, DDE Dock will not occupy the space before clipboard (works like -1 in Wayland)
     layerShellWnd->setExclusiveZone(m_isWayland ? -1 : 0);
-
+    layerShellWnd->setKeyboardInteractivity(ds::DLayerShellWindow::KeyboardInteractivityOnDemand);
     // Initial size
     setFixedWidth(WindowWidth);
 }
@@ -470,4 +470,13 @@ void MainWindow::hideEvent(QHideEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(false);
     DBlurEffectWidget::hideEvent(event);
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowDeactivate) {
+        hideAni();
+    }
+
+    return DBlurEffectWidget::event(event);
 }
