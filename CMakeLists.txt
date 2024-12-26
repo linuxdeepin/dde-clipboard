@@ -265,4 +265,7 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE
 
 # 设置执行 make install 时哪个目标应该被 install 到哪个位置
 install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION lib/dde-dock/plugins)
+# for dcc-v23
 install(FILES "dock-clipboard-plugin/resources/clipboard.svg" DESTINATION share/dde-dock/icons/dcc-setting)
+# for dcc-v25
+install(FILES "dock-clipboard-plugin/resources/dcc-clipboard.dci" DESTINATION share/dde-dock/icons/dcc-setting)
