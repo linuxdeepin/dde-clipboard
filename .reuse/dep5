@@ -59,6 +59,6 @@ Copyright: None
 License: CC0-1.0
 
 # Images
-Files: dock-clipboard-plugin/resources/**.svg
+Files: dock-clipboard-plugin/resources/*.svg dock-clipboard-plugin/resources/*.dci
 Copyright: UnionTech Software Technology Co., Ltd.
 License: GPL-3.0-or-later
