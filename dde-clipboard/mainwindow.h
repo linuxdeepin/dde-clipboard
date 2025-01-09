@@ -5,12 +5,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QListView>
-
 #include "clipboardmodel.h"
 #include "itemdelegate.h"
 #include "constants.h"
-#include "dbusdockinterface.h"
 #include "listview.h"
 #include "iconbutton.h"
 #include "display1interface.h"
@@ -109,6 +106,8 @@ private Q_SLOTS:
 
     bool clipboardVisible() const { return isVisible(); }
 
+    void updatePrimaryScreen();
+
 private:
     /*!
      * \~chinese \name initUI
@@ -152,7 +151,6 @@ protected:
 private:
     DBusDisplay *m_displayInter;
     DBusDaemonDock *m_daemonDockInter;
-    DBusDockInterface *m_dockInter;
     DDBusInterface *m_appearanceInter;
     DRegionMonitor *m_regionMonitor;
 
