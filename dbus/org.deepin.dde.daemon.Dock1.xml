@@ -1,100 +1,49 @@
-<interface name="org.deepin.dde.daemon.Dock1">
-  <method name="ActivateWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="CancelPreviewWindow"/>
-  <method name="CloseWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="GetDockedAppsDesktopFiles">
-    <arg type="as" direction="out"/>
-  </method>
-  <method name="GetEntryIDs">
-    <arg type="as" direction="out"/>
-  </method>
-  <method name="GetPluginSettings">
-    <arg type="s" direction="out"/>
-  </method>
-  <method name="IsDocked">
-    <arg type="s" direction="in"/>
-    <arg type="b" direction="out"/>
-  </method>
-  <method name="IsOnDock">
-    <arg type="s" direction="in"/>
-    <arg type="b" direction="out"/>
-  </method>
-  <method name="MakeWindowAbove">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="MaximizeWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="MinimizeWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="MoveEntry">
-    <arg type="i" direction="in"/>
-    <arg type="i" direction="in"/>
-  </method>
-  <method name="MoveWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="PreviewWindow">
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="QueryWindowIdentifyMethod">
-    <arg type="u" direction="in"/>
-    <arg type="s" direction="out"/>
-  </method>
-  <method name="RemovePluginSettings">
-    <arg type="s" direction="in"/>
-    <arg type="as" direction="in"/>
-  </method>
-  <method name="RequestDock">
-    <arg type="s" direction="in"/>
-    <arg type="i" direction="in"/>
-    <arg type="b" direction="out"/>
-  </method>
-  <method name="RequestUndock">
-    <arg type="s" direction="in"/>
-    <arg type="b" direction="out"/>
-  </method>
-  <method name="SetFrontendWindowRect">
-    <arg type="i" direction="in"/>
-    <arg type="i" direction="in"/>
-    <arg type="u" direction="in"/>
-    <arg type="u" direction="in"/>
-  </method>
-  <method name="SetPluginSettings">
-    <arg type="s" direction="in"/>
-  </method>
-  <method name="MergePluginSettings">
-    <arg type="s" direction="in"/>
-  </method>
-  <signal name="ServiceRestarted"/>
-  <signal name="EntryAdded">
-    <arg type="o"/>
-    <arg type="i"/>
-  </signal>
-  <signal name="EntryRemoved">
-    <arg type="s"/>
-  </signal>
-  <signal name="PluginSettingsSynced"/>
-  <signal name="DockAppSettingsSynced"/>
-  <property name="Entries" type="ao" access="read"/>
-  <property name="HideMode" type="i" access="readwrite"/>
-  <property name="DisplayMode" type="i" access="readwrite"/>
-  <property name="Position" type="i" access="readwrite"/>
-  <property name="IconSize" type="u" access="readwrite"/>
-  <property name="WindowSize" type="u" access="readwrite"/>
-  <property name="WindowSizeEfficient" type="u" access="readwrite"/>
-  <property name="WindowSizeFashion" type="u" access="readwrite"/>
-  <property name="ShowTimeout" type="u" access="readwrite"/>
-  <property name="HideTimeout" type="u" access="readwrite"/>
-  <property name="DockedApps" type="as" access="read"/>
-  <property name="HideState" type="i" access="read"/>
-  <property name="FrontendWindowRect" type="(iiuu)" access="read">
-    <annotation name="org.qtproject.QtDBus.QtTypeName" value="DockRect"/>
-  </property>
-  <property name="Opacity" type="d" access="readwrite"/>
-</interface>
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.deepin.dde.daemon.Dock1">
+    <property name="DisplayMode" type="i" access="readwrite"/>
+    <property name="FrontendWindowRect" type="(iiii)" access="read">
+      <annotation name="org.qtproject.QtDBus.QtTypeName" value="QRect"/>
+    </property>
+    <property name="HideMode" type="i" access="readwrite"/>
+    <property name="HideState" type="i" access="read"/>
+    <property name="Position" type="i" access="readwrite"/>
+    <property name="WindowSizeEfficient" type="u" access="readwrite"/>
+    <property name="WindowSizeFashion" type="u" access="readwrite"/>
+    <signal name="DisplayModeChanged">
+      <arg name="displaymode" type="i" direction="out"/>
+    </signal>
+    <signal name="FrontendWindowRectChanged">
+      <arg name="FrontendWindowRect" type="(iiii)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QRect"/>
+    </signal>
+    <signal name="HideModeChanged">
+      <arg name="hideMode" type="i" direction="out"/>
+    </signal>
+    <signal name="HideStateChanged">
+      <arg name="hideState" type="i" direction="out"/>
+    </signal>
+    <signal name="PositionChanged">
+      <arg name="Position" type="i" direction="out"/>
+    </signal>
+    <signal name="WindowSizeEfficientChanged">
+      <arg name="size" type="u" direction="out"/>
+    </signal>
+    <signal name="WindowSizeFashionChanged">
+      <arg name="size" type="u" direction="out"/>
+    </signal>
+    <method name="IsDocked">
+      <arg type="b" direction="out"/>
+      <arg name="desktopFile" type="s" direction="in"/>
+    </method>
+    <method name="RequestDock">
+      <arg type="b" direction="out"/>
+      <arg name="desktopFile" type="s" direction="in"/>
+      <arg name="index" type="i" direction="in"/>
+    </method>
+    <method name="RequestUndock">
+      <arg type="b" direction="out"/>
+      <arg name="desktopFile" type="s" direction="in"/>
+    </method>
+  </interface>
+</node>

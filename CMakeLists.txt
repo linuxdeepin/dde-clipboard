@@ -63,7 +63,7 @@ include_directories(
 qt_add_dbus_adaptor(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dde-clipboard/org.deepin.dde.Clipboard1.xml mainwindow.h MainWindow)
 dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.Monitor.xml display1monitorinterface)
 dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.Display1.xml display1interface)
-dtk_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.daemon.Dock1.xml dock1interface)
+qt_add_dbus_interface(DBUS_INTERFACES ${CMAKE_SOURCE_DIR}/dbus/org.deepin.dde.daemon.Dock1.xml dock1interface)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/dbus/interface

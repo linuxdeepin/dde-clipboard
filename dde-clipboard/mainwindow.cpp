@@ -37,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_displayInter(new DBusDisplay("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::sessionBus(), this))
     , m_daemonDockInter(new DBusDaemonDock("org.deepin.dde.daemon.Dock1", "/org/deepin/dde/daemon/Dock1", QDBusConnection::sessionBus(), this))
-    , m_dockInter(new DBusDockInterface)
     , m_appearanceInter(new DDBusInterface(AppearanceService, AppearancePath, AppearanceInterface, QDBusConnection::sessionBus(), this))
     , m_regionMonitor(nullptr)
     , m_content(new DWidget(parent))
@@ -90,13 +89,16 @@ void MainWindow::geometryChanged()
     // Wayland layer-shell implementation
     auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
     QMargins margins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
-    auto dockGeometry = m_dockInter->geometry();
+    auto dockGeometry = m_daemonDockInter->frontendWindowRect();
 
-    switch (m_daemonDockInter->position()) {
-        case DOCK_TOP: margins.setTop(dockGeometry.height() + WindowMargin); break;
-        case DOCK_BOTTOM: margins.setBottom(dockGeometry.height() + WindowMargin); break;
-        case DOCK_LEFT: margins.setLeft(dockGeometry.width() + WindowMargin); break;
-        case DOCK_RIGHT: break;
+    // dock not hide and in current screen
+    if (m_daemonDockInter->hideState() != 2 && (window() && window()->screen()->geometry().contains(dockGeometry))) {
+        switch (m_daemonDockInter->position()) {
+            case DOCK_TOP: margins.setTop(dockGeometry.height() + WindowMargin); break;
+            case DOCK_BOTTOM: margins.setBottom(dockGeometry.height() + WindowMargin); break;
+            case DOCK_LEFT: margins.setLeft(dockGeometry.width() + WindowMargin); break;
+            case DOCK_RIGHT: break;
+        }
     }
 
     layerShellWnd->setLeftMargin(margins.left());
@@ -120,8 +122,6 @@ void MainWindow::showAni()
     m_trickTimer->start();
 
     if (!m_hasComposite) {
-        move(m_rect.x() + WindowMargin, m_rect.y());
-        // setFixedWidth(m_rect.width());
         show();
         return;
     }
@@ -205,6 +205,15 @@ void MainWindow::registerMonitor()
     });
 }
 
+void MainWindow::updatePrimaryScreen()
+{
+    if (!window())
+        return;
+
+    window()->setScreen(qApp->primaryScreen());
+    updateGeometry();
+}
+
 void MainWindow::initUI()
 {
     setWindowFlags(Qt::FramelessWindowHint);
@@ -272,6 +281,8 @@ void MainWindow::initUI()
     layerShellWnd->setKeyboardInteractivity(ds::DLayerShellWindow::KeyboardInteractivityOnDemand);
     // Initial size
     setFixedWidth(WindowWidth);
+
+    updatePrimaryScreen();
 }
 
 void MainWindow::initAni()
@@ -292,6 +303,7 @@ void MainWindow::initAni()
 
 void MainWindow::initConnect()
 {
+    connect(qApp, &QGuiApplication::primaryScreenChanged, this, &MainWindow::updatePrimaryScreen, Qt::UniqueConnection);
     connect(DisplayManager::instance(), &DisplayManager::screenInfoChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
     connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
 
@@ -303,12 +315,8 @@ void MainWindow::initConnect()
         hideAni();
     });
 
-    // connect(m_dockInter, &DBusDockInterface::geometryChanged, this, &MainWindow::geometryChanged, Qt::UniqueConnection);
-
-    connect(m_daemonDockInter, &DBusDaemonDock::PositionChanged, [=](int i) {
-        Q_UNUSED(i);
-        geometryChanged();
-    });
+    connect(m_daemonDockInter, &DBusDaemonDock::FrontendWindowRectChanged, this, &MainWindow::geometryChanged);
+    connect(m_daemonDockInter, &DBusDaemonDock::PositionChanged, this, &MainWindow::geometryChanged);
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
 
@@ -375,7 +383,7 @@ void MainWindow::adjustPosition()
     rect.setWidth(WindowWidth);
     rect.setHeight(int(std::round(qreal(rect.height()))));
 
-    QRect dockRect = m_dockInter->geometry();
+    QRect dockRect = m_daemonDockInter->frontendWindowRect();
     dockRect.setWidth(int(std::round(qreal(dockRect.width()))));
     dockRect.setHeight(int(std::round(qreal(dockRect.height()))));
 
@@ -422,7 +430,7 @@ void MainWindow::adjustPosition()
 
 QRect MainWindow::getDisplayScreen()
 {
-    QPoint dockCenterPoint = QRect(m_dockInter->geometry()).center() / qApp->devicePixelRatio();
+    QPoint dockCenterPoint = QRect(m_daemonDockInter->frontendWindowRect()).center() / qApp->devicePixelRatio();
 
     for (auto s : qApp->screens()) {
         QRect rect(s->geometry().x() / qApp->devicePixelRatio(),
