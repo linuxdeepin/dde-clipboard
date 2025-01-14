@@ -7,9 +7,12 @@ After=dde-session-pre.target
 Requisite=dde-session-initialized.target
 PartOf=dde-session-initialized.target
 Before=dde-session-initialized.target
+StartLimitBurst=3
 
 [Service]
 Type=dbus
 BusName=org.deepin.dde.Clipboard1
 ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/dde-clipboard
 Slice=session.slice
+Restart=on-failure
+RestartSec=3s
