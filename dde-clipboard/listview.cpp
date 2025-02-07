@@ -78,7 +78,9 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
         setCurrentIndex(index);
     }
 
-    if (!geometry().contains(event->pos()) && m_mousePressed) {
+    // 如果是触摸屏，当鼠标拖动到剪切板外部的时候才认为是拖拽行为，否则认为是滑动剪切板列表。
+    if (((event->source() == Qt::MouseEventSynthesizedByQt && !geometry().contains(event->pos()))
+         || event->source() != Qt::MouseEventSynthesizedByQt) && m_mousePressed) {
         m_mousePressed = false;
         if (m_mimeData) {
             QDrag *drag = new QDrag(this);
@@ -188,12 +190,26 @@ void ListView::mousePressEvent(QMouseEvent *event)
         ++itor;
     }
 
-    // 如果是触摸屏，当鼠标拖动到剪切板外部的时候才认为是拖拽行为，否则认为是滑动剪切板列表。
-    if (event->source() == Qt::MouseEventSynthesizedByQt) {
-        m_mousePressed = true;
-    } else {
-        QDrag *drag = new QDrag(this);
-        drag->setMimeData(m_mimeData);
-        drag->exec(Qt::CopyAction);
+    m_mousePressed = true;
+}
+
+void ListView::mouseReleaseEvent(QMouseEvent *event)
+{
+    QListView::mouseReleaseEvent(event);
+    resetReadyDragState();
+}
+
+void ListView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QListView::mouseDoubleClickEvent(event);
+    resetReadyDragState();
+}
+
+void ListView::resetReadyDragState()
+{
+    m_mousePressed = false;
+    if (m_mimeData) {
+        m_mimeData->deleteLater();
+        m_mimeData = nullptr;
     }
 }
