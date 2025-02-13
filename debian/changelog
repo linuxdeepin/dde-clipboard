@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.6) unstable; urgency=medium
+
+  * fix: double click can't select item
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 13 Feb 2025 20:36:47 +0800
+
 dde-clipboard (1:6.1.5) unstable; urgency=medium
 
   * feat: add restart when failed
