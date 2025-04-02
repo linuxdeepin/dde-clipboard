@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.7) unstable; urgency=medium
+
+  * chore: remove startdde dependency
+
+ -- fuleyi <fuleyi@uniontech.com>  Wed, 02 Apr 2025 11:26:28 +0800
+
 dde-clipboard (1:6.1.6) unstable; urgency=medium
 
   * fix: double click can't select item
