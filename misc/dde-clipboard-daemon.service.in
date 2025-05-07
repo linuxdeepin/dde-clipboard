@@ -1,5 +1,11 @@
 [Unit]
 Description=dde-clipboard-daemon
+Requisite=dde-session-pre.target
+After=dde-session-pre.target
+
+Requisite=dde-session-initialized.target
+PartOf=dde-session-initialized.target
+Before=dde-session-initialized.target
 StartLimitBurst=3
 
 [Service]
