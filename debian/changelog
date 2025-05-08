@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.8) unstable; urgency=medium
+
+  * fix: update dde-clipboard-daemon service dependencies
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 08 May 2025 17:43:38 +0800
+
 dde-clipboard (1:6.1.7) unstable; urgency=medium
 
   * chore: remove startdde dependency
