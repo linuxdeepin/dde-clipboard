@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.9) unstable; urgency=medium
+
+  * chore: remove unused Spanish translation file
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Mon, 23 Jun 2025 17:16:01 +0800
+
 dde-clipboard (1:6.1.8) unstable; urgency=medium
 
   * fix: update dde-clipboard-daemon service dependencies
