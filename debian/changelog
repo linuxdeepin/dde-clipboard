@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.10) unstable; urgency=medium
+
+  * fix: enhance build security hardening options
+
+ -- WuJiangYu <wujiangyu@uniontech.com>  Thu, 03 Jul 2025 19:57:07 +0800
+
 dde-clipboard (1:6.1.9) unstable; urgency=medium
 
   * chore: remove unused Spanish translation file
