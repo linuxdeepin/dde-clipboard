@@ -2,6 +2,10 @@
 include /usr/share/dpkg/default.mk
 
 export QT_SELECT = qt6
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export DEB_CFLAGS_MAINT_APPEND = -Wall
+export DEB_CXXFLAGS_MAINT_APPEND = -Wall
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-E
 
 %:
 	dh $@ --parallel
