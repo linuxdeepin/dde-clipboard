@@ -9,7 +9,7 @@ rm -rf $BUILD_DIR
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 
-cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COV=ON ..
 make -j 8
 
 mkdir -p ../tests/$HTML_DIR
