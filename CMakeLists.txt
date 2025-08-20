@@ -4,6 +4,8 @@ set(BIN_NAME dde-clipboard)
 
 project(${BIN_NAME})
 
+option(ENABLE_COV "Enable code coverage" OFF)
+
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -221,7 +223,9 @@ add_executable(${UT_BIN_NAME}
     ${DBUS_TYPES}
 )
 # 用于测试覆盖率的编译条件
-target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
+if (ENABLE_COV)
+    target_compile_options(${UT_BIN_NAME} PRIVATE -fprofile-arcs -ftest-coverage)
+endif()
 
 target_link_libraries(${UT_BIN_NAME} PRIVATE
     Dtk${DTK_VERSION_MAJOR}::Widget
