@@ -2,41 +2,45 @@ Source: dde-clipboard
 Section: admin
 Priority: optional
 Maintainer: Deepin Sysdev <sysdev@deepin.com>
-Build-Depends: debhelper (>= 8.0.0),
- pkg-config,
+Build-Depends:
+ debhelper-compat (= 13),
  cmake,
- libdtk6widget-dev,
- libdtk6core-dev,
+ dde-tray-loader-dev (>= 0.0.11),
+ extra-cmake-modules,
+ libdde-shell-dev,
  libdtk6core-bin,
- qtchooser,
+ libdtk6core-dev,
+ libdtk6gui-dev,
+ libdtk6widget-dev,
+ libgio-qt-dev,
+ libgtest-dev,
+ pkg-config,
  qmake6,
  qt6-base-dev,
  qt6-base-private-dev,
  qt6-declarative-dev,
- libdtk6gui-dev,
- libdtk6core-bin,
- libdtk6core-dev,
  qt6-l10n-tools,
  qt6-tools-dev,
  qt6-tools-dev-tools,
  qt6-wayland-dev,
- qt6-wayland-private-dev,
  qt6-wayland-dev-tools,
- libdde-shell-dev,
- libgio-qt-dev,
- libgtest-dev,
- extra-cmake-modules,
+ qt6-wayland-private-dev,
+ qtchooser,
  systemd,
- dde-tray-loader-dev (>= 0.0.11)
-Standards-Version: 3.9.5
+Standards-Version: 4.6.2
 Homepage: https://github.com/linuxdeepin/dde-clipboard
 
 Package: dde-clipboard
 Architecture: any
-Depends: ${shlibs:Depends},
- ${misc:Depends},
- dde-daemon (>=6.1.26),
+Depends:
  dde-api (>=2.92.1),
- dde-session (>=1.1.5)
+ dde-daemon (>=6.1.26),
+ dde-session (>=1.1.5),
+ ${misc:Depends},
+ ${shlibs:Depends},
+Breaks:
+ dde-shell (<< 1.99.3),
+Replaces:
+ dde-shell (<< 1.99.3),
 Description: deepin desktop-environment - clipboard module
  Clipboard module of deepin desktop-environment
