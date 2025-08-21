@@ -2,7 +2,8 @@ Source: dde-clipboard
 Section: admin
 Priority: optional
 Maintainer: Deepin Sysdev <sysdev@deepin.com>
-Build-Depends: debhelper (>= 8.0.0),
+Build-Depends:
+ debhelper-compat (= 13),
  pkg-config,
  cmake,
  libdtk6widget-dev,
