@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS language="eo" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="ak" version="2.1">
 <context>
     <name>ClipboardItem</name>
     <message>
@@ -25,12 +25,12 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="128"/>
         <source>Picture</source>
-        <translation>Bildo</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
         <source>Text</source>
-        <translation>Teksto</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
@@ -59,7 +59,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
         <source>Yesterday</source>
-        <translation>Hieraŭ</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
@@ -74,7 +74,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
         <source>%1 minutes ago</source>
-        <translation type="unfinished"/>
+        <translation>%1 minutes ago</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
@@ -84,7 +84,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="457"/>
         <source>%1 hours ago</source>
-        <translation type="unfinished"/>
+        <translation>%1 hours ago</translation>
     </message>
 </context>
 <context>

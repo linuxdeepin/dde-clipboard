@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS language="eo" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="tzm" version="2.1">
 <context>
     <name>ClipboardItem</name>
     <message>
@@ -25,17 +25,17 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="128"/>
         <source>Picture</source>
-        <translation>Bildo</translation>
+        <translation>Tawlaft</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
         <source>Text</source>
-        <translation>Teksto</translation>
+        <translation>Aḍṛiṣ</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
         <source>File</source>
-        <translation type="unfinished"/>
+        <translation>Afaylu</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="144"/>
@@ -48,7 +48,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="369"/>
         <source>%1 files (%2...)</source>
-        <translation type="unfinished"/>
+        <translation>%1 ifuyla (%2...)</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
@@ -59,32 +59,32 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
         <source>Yesterday</source>
-        <translation>Hieraŭ</translation>
+        <translation>Assennaṭ</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
         <source>Just now</source>
-        <translation type="unfinished"/>
+        <translation>Ɣas dɣi</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
         <source>1 minute ago</source>
-        <translation type="unfinished"/>
+        <translation>1 tusdidt aya</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
         <source>%1 minutes ago</source>
-        <translation type="unfinished"/>
+        <translation>%1 tusdidin aya</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
         <source>1 hour ago</source>
-        <translation type="unfinished"/>
+        <translation>1 tesragt aya</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="457"/>
         <source>%1 hours ago</source>
-        <translation type="unfinished"/>
+        <translation>%1 tesragin aya</translation>
     </message>
 </context>
 <context>
@@ -97,7 +97,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="211"/>
         <source>Clear all</source>
-        <translation type="unfinished"/>
+        <translation>Sfeḍ maṛṛa</translation>
     </message>
 </context>
 </TS>

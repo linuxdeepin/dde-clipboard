@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS language="eo" version="2.1">
+<?xml version="1.0" ?><!DOCTYPE TS><TS language="br" version="2.1">
 <context>
     <name>ClipboardItem</name>
     <message>
@@ -25,17 +25,17 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="128"/>
         <source>Picture</source>
-        <translation>Bildo</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
         <source>Text</source>
-        <translation>Teksto</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
         <source>File</source>
-        <translation type="unfinished"/>
+        <translation>Restr</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="144"/>
@@ -59,7 +59,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
         <source>Yesterday</source>
-        <translation>Hieraŭ</translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
