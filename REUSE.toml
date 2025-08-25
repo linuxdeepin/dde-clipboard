@@ -1,0 +1,82 @@
+version = 1
+SPDX-PackageName = "dde-clipboard"
+SPDX-PackageSupplier = "UnionTech Software Technology Co., Ltd.  <>"
+SPDX-PackageDownloadLocation = "https://github.com/linuxdeepin/dde-clipboard"
+
+[[annotations]]
+path = ["translations/**", ".tx/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ".gitignore"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".project", ".github/**", ".gitlab-ci.yml", ".obs/workflows.yml"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["debian/**", "rpm/**", "archlinux/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["README.md", "README.zh_CN.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["**.pro", "**.qrc", "**.pri", "**CMakeLists.txt", "**.cmake", "**.desktop", "**.service", "**.in", ".clang-format"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["lupdate.sh", "tests/test-recoverage.sh", "translate_generation.sh", "generate_gtest_report.sh"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["dde-clipboard/dbus/**", "dbus/**.xml", "dde-clipboard/org.deepin.dde.Clipboard1.xml", "dde-clipboard-daemon/protocol/wlr-data-control-unstable-v1.xml", "dbus/interface/.gitignore"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "dde-clipboard/com.deepin.dde.Clipboard.xml"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["tests/dde-clipboard/qrc/**.buf", "tests/dde-clipboard/ut_img.cpp", "tests/dde-clipboard-daemon/plugin/dde-clipboard-loader/ut_qrc.cpp"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "dock-clipboard-plugin/clipboard.json"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["dock-clipboard-plugin/resources/**.svg", "dock-clipboard-plugin/resources/**.dci"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "toolGenerate/**/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"

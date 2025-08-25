@@ -3,8 +3,8 @@ host = https://www.transifex.com
 minimum_perc = 80
 mode = developer
 
-[o:linuxdeepin:p:deepin-desktop-environment:r:dde-clipboard]
+[o:linuxdeepin:p:deepin-desktop-environment:r:04bf15f9f9aacca8310cf5421a5da817]
 file_filter = translations/dde-clipboard_<lang>.ts
 source_file = translations/dde-clipboard.ts
-source_lang = en
+source_lang = en_US
 type = QT
