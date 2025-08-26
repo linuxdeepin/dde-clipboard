@@ -30,7 +30,7 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
         <source>Text</source>
-        <translation>Editor de Texto</translation>
+        <translation>Texto</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
