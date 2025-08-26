@@ -64,7 +64,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
         <source>Just now</source>
-        <translation>Há pouco</translation>
+        <translation>Agora mesmo</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
