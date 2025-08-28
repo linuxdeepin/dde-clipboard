@@ -1,8 +1,9 @@
 dde-clipboard (1:6.1.10) unstable; urgency=medium
 
+  [ WuJiangYu ]
   * fix: enhance build security hardening options
 
- -- WuJiangYu <wujiangyu@uniontech.com>  Thu, 03 Jul 2025 19:57:07 +0800
+ -- wujiangyu <wujiangyu@uniontech.com>  Thu, 28 Aug 2025 18:06:17 +0800
 
 dde-clipboard (1:6.1.9) unstable; urgency=medium
 
