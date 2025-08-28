@@ -4,12 +4,12 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="34"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation>クリップボード</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="65"/>
         <source>Open</source>
-        <translation type="unfinished"/>
+        <translation>開く</translation>
     </message>
 </context>
 <context>
@@ -17,7 +17,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="43"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation>クリップボード</translation>
     </message>
 </context>
 <context>

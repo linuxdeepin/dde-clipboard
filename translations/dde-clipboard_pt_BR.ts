@@ -30,7 +30,7 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
         <source>Text</source>
-        <translation>Editor de Texto</translation>
+        <translation>Texto</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
@@ -54,7 +54,7 @@
         <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
         <location filename="../dde-clipboard/itemwidget.cpp" line="609"/>
         <source>(File deleted)</source>
-        <translation>(Arquivo Excluído)</translation>
+        <translation>(Arquivo excluído)</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
@@ -64,7 +64,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
         <source>Just now</source>
-        <translation>Há pouco</translation>
+        <translation>Agora mesmo</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
