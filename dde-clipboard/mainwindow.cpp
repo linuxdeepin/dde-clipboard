@@ -96,12 +96,12 @@ void MainWindow::geometryChanged()
         switch (m_daemonDockInter->position()) {
             case DOCK_TOP: margins.setTop(dockGeometry.height() + WindowMargin); break;
             case DOCK_BOTTOM: margins.setBottom(dockGeometry.height() + WindowMargin); break;
-            case DOCK_LEFT: margins.setLeft(dockGeometry.width() + WindowMargin); break;
-            case DOCK_RIGHT: break;
+            case DOCK_LEFT: break;
+            case DOCK_RIGHT: margins.setRight(dockGeometry.width() + WindowMargin); break;
         }
     }
 
-    layerShellWnd->setLeftMargin(margins.left());
+    layerShellWnd->setRightMargin(margins.right());
     layerShellWnd->setBottomMargin(margins.bottom());
     layerShellWnd->setTopMargin(margins.top());
 
@@ -270,7 +270,7 @@ void MainWindow::initUI()
     // LayerShell-implemented anchoring
     auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
 
-    layerShellWnd->setAnchors({ ds::DLayerShellWindow::AnchorLeft,
+    layerShellWnd->setAnchors({ ds::DLayerShellWindow::AnchorRight,
                                 ds::DLayerShellWindow::AnchorBottom,
                                 ds::DLayerShellWindow::AnchorTop });
     layerShellWnd->setLayer(ds::DLayerShellWindow::LayerOverlay);
