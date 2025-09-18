@@ -1,3 +1,12 @@
+dde-clipboard (1:6.1.12) unstable; urgency=medium
+
+  * fix: correct scaling position calculation 
+  * fix: adjust window positioning for right dock 
+  * i18n: Translate dde-clipboard.ts in lo(#206)
+  * i18n: Translate dde-clipboard.ts in de_DE (#204)
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 18 Sep 2025 19:47:54 +0800
+
 dde-clipboard (1:6.1.11) unstable; urgency=medium
 
   * Updates for project Deepin Desktop Environment (#200)
