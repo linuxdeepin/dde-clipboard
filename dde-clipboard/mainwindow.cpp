@@ -90,6 +90,13 @@ void MainWindow::geometryChanged()
     auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
     QMargins margins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
     auto dockGeometry = m_daemonDockInter->frontendWindowRect();
+    // frontendWindowRect is physical screen rect, we need to convert it to logical screen rect.
+    dockGeometry = QRect(
+        dockGeometry.x() / qApp->devicePixelRatio(),
+        dockGeometry.y() / qApp->devicePixelRatio(),
+        dockGeometry.width() / qApp->devicePixelRatio(),
+        dockGeometry.height() / qApp->devicePixelRatio()
+    );
 
     // dock not hide and in current screen
     if (m_daemonDockInter->hideState() != 2 && (window() && window()->screen()->geometry().contains(dockGeometry))) {
