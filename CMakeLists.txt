@@ -105,7 +105,7 @@ target_link_libraries(${BIN_NAME} PRIVATE
 set(TRANSLATION_LANGUAGES
     af am_ET ar ast az bg bn bo ca cs da de el_GR el en_AU en_GB eo es_419 es
     et fa fi fr gl_ES he hi_IN hi hr hu hy id it ja kab ko ku_IQ ku ky@Arab
-    lt lv ml mn ms nb ne nl pa pl pt_BR pt ro ru si sk sl sq sr sv sw ta tr
+    lo lt lv ml mn ms nb ne nl pa pl pt_BR pt ro ru si sk sl sq sr sv sw ta tr
     ug uk vi zh_CN zh_HK zh_TW
 )
 
