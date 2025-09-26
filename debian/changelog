@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.13) unstable; urgency=medium
+
+  * chore: add `lo` to TRANSLATION_LANGUAGES list
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Fri, 26 Sep 2025 16:07:50 +0800
+
 dde-clipboard (1:6.1.12) unstable; urgency=medium
 
   * fix: correct scaling position calculation 
