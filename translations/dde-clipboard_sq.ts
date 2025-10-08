@@ -54,7 +54,7 @@
         <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
         <location filename="../dde-clipboard/itemwidget.cpp" line="609"/>
         <source>(File deleted)</source>
-        <translation>(Kartela e fshirë)</translation>
+        <translation>(Kartela u fshi)</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
