@@ -41,6 +41,15 @@ set(DTK_VERSION_MAJOR 6)
 find_package(PkgConfig REQUIRED)
 find_package(Dtk${DTK_VERSION_MAJOR} COMPONENTS Widget Core Tools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Gui Widgets DBus WaylandClient Test Concurrent LinguistTools REQUIRED)
+
+if (Qt6Gui_VERSION VERSION_GREATER_EQUAL 6.10)
+    find_package(Qt6 COMPONENTS GuiPrivate REQUIRED)
+endif()
+
+if (Qt6WaylandClient_VERSION VERSION_GREATER_EQUAL 6.10)
+    find_package(Qt6 COMPONENTS WaylandClientPrivate REQUIRED)
+endif()
+
 find_package(DDEShell REQUIRED)
 find_package(DdeTrayLoader REQUIRED)
 
