@@ -69,22 +69,22 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
         <source>1 minute ago</source>
-        <translation>1 минуту тому назад</translation>
+        <translation>1 минуту назад</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
         <source>%1 minutes ago</source>
-        <translation>%1 минут тому назад</translation>
+        <translation>%1 мин. назад</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
         <source>1 hour ago</source>
-        <translation>1 час тому назад</translation>
+        <translation>1 час назад</translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="457"/>
         <source>%1 hours ago</source>
-        <translation>%1 часов тому назад</translation>
+        <translation>%1 ч. назад</translation>
     </message>
 </context>
 <context>
