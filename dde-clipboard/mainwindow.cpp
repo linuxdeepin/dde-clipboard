@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_trickTimer(new QTimer)
     , m_windowHandle(new DPlatformWindowHandle(this, this))
     , m_isWayland(qGuiApp->platformName() == QStringLiteral("wayland"))
+    , m_currentMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin)
 {
     initUI();
     initAni();
@@ -114,6 +115,63 @@ void MainWindow::geometryChanged()
 
     // FIXME: Legacy animation?
     //init animation by 'm_rect'
+    m_xAni->setStartValue(WindowMargin);
+    m_xAni->setEndValue(0);
+
+    m_widthAni->setStartValue(m_rect.width());
+    m_widthAni->setEndValue(0);
+}
+
+void MainWindow::onFrontendWindowRectChanged(const QRect &rect)
+{
+    if (!window() || !window()->screen()) {
+        return;
+    }
+
+    QRect dockGeometry = QRect(
+        rect.x() / qApp->devicePixelRatio(),
+        rect.y() / qApp->devicePixelRatio(),
+        rect.width() / qApp->devicePixelRatio(),
+        rect.height() / qApp->devicePixelRatio()
+    );
+
+    QRect screenGeometry = window()->screen()->geometry();
+    QMargins newMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
+    
+    if (dockGeometry.width() > 0 && dockGeometry.height() > 0) {
+        switch (m_daemonDockInter->position()) {
+            case DOCK_TOP: {
+                int visibleHeight = qMax(0, dockGeometry.y() + dockGeometry.height() - screenGeometry.top());
+                newMargins.setTop(visibleHeight + WindowMargin);
+                break;
+            }
+            case DOCK_BOTTOM: {
+                int visibleHeight = qMax(0, screenGeometry.bottom() + 1 - dockGeometry.y());
+                newMargins.setBottom(visibleHeight + WindowMargin);
+                break;
+            }
+            case DOCK_LEFT: {
+                break;
+            }
+            case DOCK_RIGHT: {
+                int visibleWidth = qMax(0, screenGeometry.right() + 1 - dockGeometry.x());
+                newMargins.setRight(visibleWidth + WindowMargin);
+                break;
+            }
+        }
+    }
+
+
+    if (newMargins != m_currentMargins) {
+        m_currentMargins = newMargins;
+        
+        auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
+        layerShellWnd->setLeftMargin(newMargins.left());
+        layerShellWnd->setRightMargin(newMargins.right());
+        layerShellWnd->setBottomMargin(newMargins.bottom());
+        layerShellWnd->setTopMargin(newMargins.top());
+    }
+
     m_xAni->setStartValue(WindowMargin);
     m_xAni->setEndValue(0);
 
@@ -322,7 +380,7 @@ void MainWindow::initConnect()
         hideAni();
     });
 
-    connect(m_daemonDockInter, &DBusDaemonDock::FrontendWindowRectChanged, this, &MainWindow::geometryChanged);
+    connect(m_daemonDockInter, &DBusDaemonDock::FrontendWindowRectChanged, this, &MainWindow::onFrontendWindowRectChanged,  Qt::UniqueConnection);
     connect(m_daemonDockInter, &DBusDaemonDock::PositionChanged, this, &MainWindow::geometryChanged);
 
     connect(m_wmHelper, &DWindowManagerHelper::hasCompositeChanged, this, &MainWindow::CompositeChanged, Qt::QueuedConnection);
