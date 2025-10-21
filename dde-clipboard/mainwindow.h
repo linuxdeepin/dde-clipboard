@@ -91,6 +91,12 @@ private Q_SLOTS:
      */
     void geometryChanged();
     /*!
+     * \~chinese \name onFrontendWindowRectChanged
+     * \~chinese \brief 根据FrontendWindowRectChanged信号传递的dock矩形区域来调整剪贴板的位置
+     * \~chinese \param rect Dock的前端窗口矩形区域
+     */
+    void onFrontendWindowRectChanged(const QRect &rect);
+    /*!
      * \~chinese \name setX
      * \~chinese \brief 设置主窗口X轴的起始坐标
      * \~chinese \param X轴坐标位置
@@ -179,6 +185,8 @@ private:
     DPlatformWindowHandle *m_windowHandle;
 
     bool m_isWayland;
+    
+    QMargins m_currentMargins;
 };
 
 #endif // MAINWINDOW_H
