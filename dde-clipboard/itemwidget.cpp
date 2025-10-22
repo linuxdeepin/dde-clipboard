@@ -442,7 +442,7 @@ QString ItemWidget::CreateTimeString(const QDateTime &time)
     if (time.daysTo(t) >= 1 && time.daysTo(t) < 2) { //昨天发生的
         text = tr("Yesterday") + time.toString(" hh:mm");
     } else if (time.daysTo(t) >= 2 && time.daysTo(t) < 7) { //昨天以前，一周以内
-        text = time.toString("ddd hh:mm");
+        text = QLocale::system().toString(time, "ddd hh:mm");
     } else if (time.daysTo(t) >= 7) { //一周前以前的
         text = time.toString("yyyy/MM/dd");
     } else if (time.secsTo(t) < 60 && time.secsTo(t) >= 0) { //60秒以内
