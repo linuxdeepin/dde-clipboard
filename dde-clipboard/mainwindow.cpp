@@ -17,6 +17,8 @@
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
+#include <DIcon>
+#include <DDciIcon>
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
@@ -43,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent)
     , m_listview(new ListView(this))
     , m_model(new ClipboardModel(m_listview))
     , m_itemDelegate(new ItemDelegate(m_listview))
+    , m_placeholderWidget(new DWidget(this))
+    , m_placeholderIcon(new DIconButton(this))
+    , m_placeholderLabel(new DLabel(this))
     , m_xAni(new QPropertyAnimation(this))
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
@@ -312,8 +317,32 @@ void MainWindow::initUI()
     m_listview->setItemDelegate(m_itemDelegate);
     m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
 
+    // 初始化占位符组件
+    m_placeholderIcon->setFlat(true);
+    m_placeholderIcon->setFocusPolicy(Qt::NoFocus);
+    m_placeholderIcon->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_placeholderIcon->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_placeholderIcon->setIconSize(QSize(128, 128));
+    m_placeholderIcon->setIcon(DDciIcon::fromTheme("none"));
+
+    m_placeholderLabel->setText(tr("Copy the content to clipboard"));
+    m_placeholderLabel->setAlignment(Qt::AlignHCenter);
+    DFontSizeManager::instance()->bind(m_placeholderLabel, DFontSizeManager::T8);
+
+    QVBoxLayout *placeholderLayout = new QVBoxLayout(m_placeholderWidget);
+    placeholderLayout->setAlignment(Qt::AlignCenter);
+    placeholderLayout->setContentsMargins(0, 0, 0, 0);
+    placeholderLayout->setSpacing(10);
+    placeholderLayout->addWidget(m_placeholderIcon, 0, Qt::AlignHCenter);
+    placeholderLayout->addWidget(m_placeholderLabel);
+
+    bool hasInitialData = m_model->data().size() != 0;
+    m_placeholderWidget->setVisible(!hasInitialData);
+    m_listview->setVisible(hasInitialData);
+
     mainLayout->addWidget(titleWidget);
     mainLayout->addWidget(m_listview);
+    mainLayout->addWidget(m_placeholderWidget);
 
     m_content->setLayout(mainLayout);
 
@@ -373,7 +402,10 @@ void MainWindow::initConnect()
     connect(m_displayInter, &DBusDisplay::PrimaryRectChanged, this, &MainWindow::geometryChanged, Qt::QueuedConnection);
 
     connect(m_model, &ClipboardModel::dataChanged, this, [ = ] {
-        m_clearButton->setVisible(m_model->data().size() != 0);
+        bool hasData = m_model->data().size() != 0;
+        m_clearButton->setVisible(hasData);
+        m_listview->setVisible(hasData);
+        m_placeholderWidget->setVisible(!hasData);
     });
 
     connect(m_model, &ClipboardModel::dataReborn, this, [ = ] {
