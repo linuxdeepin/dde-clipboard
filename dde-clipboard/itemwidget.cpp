@@ -72,8 +72,6 @@ void ItemWidget::setTextShown(const QString &length)
 {
     QFont font = m_contentLabel->font();
 
-    font.setItalic(true);
-
     m_contentLabel->setFont(font);
 
     m_contentLabel->setText(true);

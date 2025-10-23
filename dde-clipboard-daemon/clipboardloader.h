@@ -43,12 +43,18 @@ Q_SIGNALS:
     void dataComing(const QByteArray &buf);
 
 private:
+    void extracted(const QMimeData *&mimeData, bool &dataChanged);
+
+private:
     QClipboard *m_board;
     QByteArray m_lastTimeStamp;
     QImage m_lastImage;
     WlrDataControlClipboardInterface *m_wlrClipboard;
 
     static QString m_pixPath;
+
+    QMap<QString, QByteArray> m_lastFormatMap;
+    bool m_clearLastData = false;
 };
 
 #endif // CLIPBOARDLOADER_H
