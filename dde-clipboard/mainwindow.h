@@ -20,6 +20,8 @@
 #include <DDBusInterface>
 #include <DPlatformWindowHandle>
 #include <DGuiApplicationHelper>
+#include <DLabel>
+#include <DIconButton>
 #include <dde-shell/dlayershellwindow.h>
 
 DCORE_USE_NAMESPACE
@@ -165,6 +167,9 @@ private:
     ListView *m_listview;
     ClipboardModel *m_model;
     ItemDelegate *m_itemDelegate;
+    DWidget *m_placeholderWidget;
+    DIconButton *m_placeholderIcon;
+    DLabel *m_placeholderLabel;
 
     QPropertyAnimation *m_xAni;
     QPropertyAnimation *m_widthAni;

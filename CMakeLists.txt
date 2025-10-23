@@ -88,6 +88,7 @@ add_executable(${BIN_NAME}
     ${Clipboard_SCRS}
     ${Clipboard_DBUS_SCRS}
     dde-clipboard/main.cpp
+    dde-clipboard/resources.qrc
     ${DBUS_INTERFACES}
     ${DBUS_TYPES}
 )

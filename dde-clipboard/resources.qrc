@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>dsg/built-in-icons/none.dci</file>
+    </qresource>
+</RCC>
+
