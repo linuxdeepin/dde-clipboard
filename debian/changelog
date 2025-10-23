@@ -1,3 +1,11 @@
+dde-clipboard (1:6.1.14) unstable; urgency=medium
+
+  * fix: Fix the issue of multiple records being created when copying text repeatedly
+  * fix: Fix the issue of weekdays not being translated 
+  * fix: Fix the clipboard not moving with the dock
+
+ -- wujiangyu <wujiangyu@uniontech.com>  Thu, 23 Oct 2025 16:14:45 +0800
+
 dde-clipboard (1:6.1.13) unstable; urgency=medium
 
   * chore: add `lo` to TRANSLATION_LANGUAGES list
