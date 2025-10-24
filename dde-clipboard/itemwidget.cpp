@@ -370,20 +370,20 @@ void ItemWidget::initData(QPointer<ItemData> data)
 
             bool getByUrl = true;
             //判断文件管理器是否提供,提供不全或图标为空时，通过url获取图标
-            if (data->IconDataList().size() == data->urls().size()) {
+            if (!data->IconDataList().isEmpty()) {
                 QList<QPixmap> pixmapList;
                 foreach (auto iconData, data->IconDataList()) {
                     if (iconData.fileIcon.isNull()) {
-                        break;
+                        continue;
                     }
                     QPixmap pix = GetFileIcon(iconData);
                     pixmapList.push_back(pix);
                     if (pixmapList.size() == 3) {
-                        getByUrl = false;
                         break;
                     }
                 }
-                if (!getByUrl) {
+                if (!pixmapList.isEmpty()) {
+                    getByUrl = false;
                     std::sort(pixmapList.begin(), pixmapList.end(), [ = ](const QPixmap & pix1, const QPixmap & pix2) {
                         return pix1.size().width() < pix2.size().width();
                     });
