@@ -28,7 +28,7 @@ ListView::ListView(QWidget *parent)
 
     setSelectionMode(QListView::SingleSelection);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setFrameShape(QFrame::NoFrame);
     setVerticalScrollMode(QListView::ScrollPerPixel);
 
