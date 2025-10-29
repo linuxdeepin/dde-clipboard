@@ -142,6 +142,11 @@ private:
      * \~chinese \brief 获取显示屏幕的坐标
      */
     QRect getDisplayScreen();
+    /*!
+     * \~chinese \name getDockGeometryLogical
+     * \~chinese \brief 获取 Dock 的逻辑坐标几何信息（已转换设备像素比）
+     */
+    QRect getDockGeometryLogical() const;
 
 
     int getWidth() const { return this->width(); }

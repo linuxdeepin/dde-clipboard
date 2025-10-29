@@ -33,9 +33,14 @@ inline constexpr int PixmapyStep = 5;
 inline constexpr int ContentMargin = 21;
 inline constexpr int TextContentTopMargin = 20;
 inline constexpr int AnimationTime = 300;           //ms
+inline constexpr int TipsWindowHeight = 46;         // 提示窗口高度
+inline constexpr int MaxTipsWindowNum = 3;          // 最多同时显示的提示窗口数量
+inline constexpr int TipWidgetWidth = 360;          // 提示控件宽度
+inline constexpr int TipWidgetHeight = 68;          // 提示控件高度
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
 static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";
+static const QString ShowTipsWidget = "showTipsWidget";
 
 static const QString TextUriListLiteral QStringLiteral("text/uri-list");
 static const QString TextHtmlLiteral QStringLiteral("text/html");

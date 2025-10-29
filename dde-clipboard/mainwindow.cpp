@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "displaymanager.h"
 #include "constants.h"
+#include "messagewindow.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -90,19 +91,26 @@ void MainWindow::Toggle()
     }
 }
 
-void MainWindow::geometryChanged()
+QRect MainWindow::getDockGeometryLogical() const
 {
-    // Wayland layer-shell implementation
-    auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
-    QMargins margins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
-    auto dockGeometry = m_daemonDockInter->frontendWindowRect();
+    QRect dockGeometry = m_daemonDockInter->frontendWindowRect();
     // frontendWindowRect is physical screen rect, we need to convert it to logical screen rect.
-    dockGeometry = QRect(
+    return QRect(
         dockGeometry.x() / qApp->devicePixelRatio(),
         dockGeometry.y() / qApp->devicePixelRatio(),
         dockGeometry.width() / qApp->devicePixelRatio(),
         dockGeometry.height() / qApp->devicePixelRatio()
     );
+}
+
+void MainWindow::geometryChanged()
+{
+    adjustPosition();
+    
+    // Wayland layer-shell implementation
+    auto layerShellWnd = ds::DLayerShellWindow::get(windowHandle());
+    QMargins margins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
+    QRect dockGeometry = getDockGeometryLogical();
 
     // dock not hide and in current screen
     if (m_daemonDockInter->hideState() != 2 && (window() && window()->screen()->geometry().contains(dockGeometry))) {
@@ -129,16 +137,13 @@ void MainWindow::geometryChanged()
 
 void MainWindow::onFrontendWindowRectChanged(const QRect &rect)
 {
+    Q_UNUSED(rect);  // 使用辅助函数获取，不需要参数
+    
     if (!window() || !window()->screen()) {
         return;
     }
 
-    QRect dockGeometry = QRect(
-        rect.x() / qApp->devicePixelRatio(),
-        rect.y() / qApp->devicePixelRatio(),
-        rect.width() / qApp->devicePixelRatio(),
-        rect.height() / qApp->devicePixelRatio()
-    );
+    QRect dockGeometry = getDockGeometryLogical();
 
     QRect screenGeometry = window()->screen()->geometry();
     QMargins newMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
@@ -410,6 +415,9 @@ void MainWindow::initConnect()
 
     connect(m_model, &ClipboardModel::dataReborn, this, [ = ] {
         hideAni();
+        
+        // 显示"已复制"提示
+        MessageWindowManager::instance()->showMessage(tr("Copied"), QIcon::fromTheme("icon_ok"), 2000);
     });
 
     connect(m_daemonDockInter, &DBusDaemonDock::FrontendWindowRectChanged, this, &MainWindow::onFrontendWindowRectChanged,  Qt::UniqueConnection);
@@ -477,24 +485,32 @@ void MainWindow::adjustPosition()
 {
     // 屏幕尺寸
     QRect rect = getDisplayScreen();
-    rect.setWidth(WindowWidth);
     rect.setHeight(int(std::round(qreal(rect.height()))));
 
-    QRect dockRect = m_daemonDockInter->frontendWindowRect();
-    dockRect.setWidth(int(std::round(qreal(dockRect.width()))));
-    dockRect.setHeight(int(std::round(qreal(dockRect.height()))));
+    // 弹出提示框显示区域（需要在修改 rect 宽度之前获取完整屏幕）
+    QRect tipsDisplayRt = rect;  // 保持完整屏幕宽度
+
+    // 剪贴板窗口只需要 300 像素宽
+    rect.setWidth(WindowWidth);
+
+    // 获取 Dock 的逻辑坐标几何信息（已转换设备像素比）
+    QRect dockRect = getDockGeometryLogical();
 
     // 初始化剪切板位置
     switch (m_daemonDockInter->position()) {
     case DOCK_TOP:
         rect.moveTop(rect.top() + dockRect.height());
         rect.setHeight(rect.height() - dockRect.height());
+        // 提示框始终在屏幕底部，不受顶部 dock 影响
         break;
     case DOCK_BOTTOM:
         rect.setHeight(rect.height() - dockRect.height());
+        // 提示框需要在 dock 上方显示
+        tipsDisplayRt.setHeight(tipsDisplayRt.height() - dockRect.height());
         break;
     case DOCK_LEFT:
         rect.moveLeft(rect.left() + dockRect.width());
+        // 提示框始终在屏幕底部中央，不受左侧 dock 影响
         break;
     default:;
     }
@@ -511,6 +527,7 @@ void MainWindow::adjustPosition()
             break;
         case DOCK_BOTTOM:
             rect -= QMargins(0, 0, 0, WindowMargin);
+            tipsDisplayRt -= QMargins(0, 0, 0, WindowMargin);
             break;
         case DOCK_LEFT:
             rect -= QMargins(WindowMargin, 0, 0, 0);
@@ -518,6 +535,9 @@ void MainWindow::adjustPosition()
         default:;
         }
     }
+
+    // 更新提示窗口的显示区域
+    MessageWindowManager::instance()->updateDisplayRect(tipsDisplayRt);
 
     setGeometry(rect);
     m_rect = rect;
