@@ -316,6 +316,7 @@ void MainWindow::initUI()
     m_listview->setModel(m_model);
     m_listview->setItemDelegate(m_itemDelegate);
     m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
+    DFontSizeManager::instance()->bind(m_listview, DFontSizeManager::T8);
 
     // 初始化占位符组件
     m_placeholderIcon->setFlat(true);

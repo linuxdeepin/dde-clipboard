@@ -283,6 +283,8 @@ void ItemWidget::initUI()
     m_nameLabel->setMouseTracking(true);
     m_timeLabel->setMouseTracking(true);
     m_statusLabel->setMouseTracking(true);
+
+    DFontSizeManager::instance()->bind(m_contentLabel, DFontSizeManager::T8);
 }
 
 void ItemWidget::initData(QPointer<ItemData> data)
