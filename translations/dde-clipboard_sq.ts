@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="sq">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="sq">
 <context>
     <name>ItemData</name>
     <message>
@@ -83,7 +81,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="328"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopjoje lëndën në të papastër</translation>
     </message>
 </context>
 </TS>

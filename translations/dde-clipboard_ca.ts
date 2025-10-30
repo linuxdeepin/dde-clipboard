@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="ca">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="ca">
 <context>
     <name>ItemData</name>
     <message>
@@ -83,7 +81,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="328"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Copia el contingut al porta-retalls</translation>
     </message>
 </context>
 </TS>

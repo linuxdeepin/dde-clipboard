@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="fa">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="fa">
 <context>
     <name>ItemData</name>
     <message>
@@ -21,7 +19,7 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="146"/>
         <source>%1 characters</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -29,13 +27,13 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="367"/>
         <source>%1 files (%2...)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="418"/>
         <location filename="../dde-clipboard/itemwidget.cpp" line="607"/>
         <source>(File deleted)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="441"/>
@@ -50,7 +48,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
         <source>1 minute ago</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
@@ -60,7 +58,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
         <source>1 hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
@@ -83,7 +81,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="328"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
 </context>
 </TS>
