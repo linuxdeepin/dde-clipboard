@@ -12,6 +12,9 @@
 
 #include <QLabel>
 #include <QFontMetrics>
+#include <DFontSizeManager>
+
+DWIDGET_USE_NAMESPACE
 
 static inline QString textUriListLiteral() { return QStringLiteral("text/uri-list"); }
 static inline QString textPlainLiteral() { return QStringLiteral("text/plain"); }
@@ -100,8 +103,7 @@ ItemData::ItemData(const QByteArray &buf)
     m_iconDataList = info.m_iconDataList;
     m_formatMap = info.m_formatMap;
     QString textBefore = m_text.replace("\n"," ");
-    QFont font = QApplication::font();
-    font.setItalic(true);
+    QFont font = DFontSizeManager::instance()->t8();
     QFontMetrics fontMetrics(font);
     while (!textBefore.isEmpty()) {
         int index = 0;
@@ -216,7 +218,7 @@ int ItemData::itemHeight(int fontHeight)
 {
     if (m_type == Text) {
         auto length = m_text_list.length() > 4 ? 4 : m_text_list.length();
-        return length * fontHeight + ItemTitleHeight + ItemStatusBarHeight + TextContentTopMargin;
+        return length * fontHeight + (length - 1) * TextLineSpacing + ItemTitleHeight + ItemStatusBarHeight + TextContentTopMargin;
     }
     return ItemHeight;
 }

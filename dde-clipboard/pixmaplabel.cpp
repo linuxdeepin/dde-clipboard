@@ -13,13 +13,15 @@
 #include <QTextLine>
 #include <QVBoxLayout>
 #include <QFontMetrics>
+#include <DFontSizeManager>
 
 PixmapLabel::PixmapLabel(QPointer<ItemData> data,QWidget *parent)
     : DLabel(parent)
     , m_istext(false)
     , m_data(data)
 {
-
+    // QFont font = DFontSizeManager::instance()->t8();
+    // setFont(font);
 }
 
 /*!
@@ -121,10 +123,11 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         //drawText
         QStringList labelTexts = m_data->get_text();
         int lineNum = labelTexts.length() > 4 ? 4 : labelTexts.length();
-        int lineHeight = (height() - TextContentTopMargin) / lineNum;
+        int fontHeight = fontMetrics().height();
         for (int i  = 0 ; i < lineNum; ++i) {
-            QPoint start(0, (i + 1)*lineHeight + TextContentTopMargin);
-            QPoint end(width(), (i + 1)*lineHeight + TextContentTopMargin);
+            int lineY = TextContentTopMargin + (i + 1) * fontHeight + i * TextLineSpacing;
+            QPoint start(0, lineY);
+            QPoint end(width(), lineY);
             painter.setPen(QPen(palette().color(QPalette::Shadow), 2));
             painter.drawLine(start, end);
         }
@@ -136,7 +139,8 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             if (textIndex > (maxLineCount - 1)) {
                 break;
             }
-            QRect textRect(0, rectIndex * lineHeight + TextContentTopMargin, width(), lineHeight);
+            int rectY = TextContentTopMargin + rectIndex * (fontHeight + TextLineSpacing);
+            QRect textRect(0, rectY, width(), fontHeight);
             QTextOption option;
             option.setAlignment(Qt::AlignBottom);
             option.setWrapMode(QTextOption::NoWrap);//设置文本不能换行
