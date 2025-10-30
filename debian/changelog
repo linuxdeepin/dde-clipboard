@@ -1,3 +1,12 @@
+dde-clipboard (1:6.1.15) unstable; urgency=medium
+
+  * fix: Fix the issue of excessively high text height
+  * fix: enable vertical scrollbar in clipboard list view
+  * fix: Fix the abnormal display of the copy icon
+  * fix: Add no-data icon and prompt
+
+ -- Robertkill <lvpeilong@uniontech.com>  Thu, 30 Oct 2025 19:13:13 +0800
+
 dde-clipboard (1:6.1.14) unstable; urgency=medium
 
   * fix: Fix the issue of multiple records being created when copying text repeatedly
