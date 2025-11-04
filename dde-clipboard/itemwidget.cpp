@@ -87,7 +87,8 @@ void ItemWidget::setThumnail(const QPixmap &pixmap)
         QPixmap pix = Globals::pixmapScaled(pixmap);//先缩放,再设置圆角,保证缩略图边框宽度在显示后不会变化
         m_contentLabel->setPixmap(Globals::GetRoundPixmap(pix, palette().color(QPalette::Base)));
         if (m_data->type() == Image) {
-            m_statusLabel->setText(QString("%1X%2px").arg(m_data->pixSize().width()).arg(m_data->pixSize().height()));
+            m_originalStatusText = QString("%1X%2px").arg(m_data->pixSize().width()).arg(m_data->pixSize().height());
+            m_statusLabel->setText(m_originalStatusText);
         }
     }
 }
@@ -244,9 +245,6 @@ void ItemWidget::initUI()
 
     titleWidget->setFixedHeight(ItemTitleHeight);
 
-    QFont font = DFontSizeManager::instance()->t4();
-    font.setWeight(QFont::Thin);
-    m_nameLabel->setFont(font);
     m_nameLabel->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     m_timeLabel->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
 
@@ -284,7 +282,12 @@ void ItemWidget::initUI()
     m_timeLabel->setMouseTracking(true);
     m_statusLabel->setMouseTracking(true);
 
+    DFontSizeManager::instance()->bind(m_nameLabel, DFontSizeManager::T4);
+    DFontSizeManager::instance()->bind(m_timeLabel, DFontSizeManager::T8);
     DFontSizeManager::instance()->bind(m_contentLabel, DFontSizeManager::T8);
+    DFontSizeManager::instance()->bind(m_statusLabel, DFontSizeManager::T8);
+    
+    m_statusLabel->installEventFilter(this);
 }
 
 void ItemWidget::initData(QPointer<ItemData> data)
@@ -360,14 +363,15 @@ void ItemWidget::initData(QPointer<ItemData> data)
                 }
             }
 
+            m_originalStatusText = url.fileName();
             QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString text = metrix.elidedText(url.fileName(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+            QString text = metrix.elidedText(m_originalStatusText, Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
         } else if (data->urls().size() > 1) {
+            m_originalStatusText = tr("%1 files (%2...)").arg(data->urls().size()).arg(url.fileName());
             QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString text = metrix.elidedText(tr("%1 files (%2...)").arg(data->urls().size()).arg(url.fileName()),
-                                             Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+            QString text = metrix.elidedText(m_originalStatusText, Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
             m_statusLabel->setText(text);
 
             bool getByUrl = true;
@@ -416,11 +420,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
 
     if (!data->dataEnabled()) {
         m_contentLabel->setEnabled(false);
-        QFontMetrics metrix = m_statusLabel->fontMetrics();
-        QString tips = tr("(File deleted)");
-        int tipsWidth = metrix.horizontalAdvance(tips);
-        QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
-        m_statusLabel->setText(text + tips);
+        updateStatusLabel();
     }
 }
 
@@ -605,11 +605,7 @@ void ItemWidget::onSelect()
             m_data->setDataEnabled(false);
             //源文件被删除需要提示
             m_contentLabel->setEnabled(false);
-            QFontMetrics metrix = m_statusLabel->fontMetrics();
-            QString tips = tr("(File deleted)");
-            int tipsWidth = metrix.horizontalAdvance(tips);
-            QString text = metrix.elidedText(m_statusLabel->text(), Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
-            m_statusLabel->setText(text + tips);
+            updateStatusLabel();
 
             return;
         }
@@ -705,6 +701,31 @@ bool ItemWidget::eventFilter(QObject *watcher, QEvent *event)
     if (watcher == qApp && event->type() == QEvent::ThemeChange) {
         setThumnail(m_pixmap);
     }
+    
+    if (watcher == m_statusLabel && event->type() == QEvent::FontChange) {
+        updateStatusLabel();
+        updateGeometry();
+        update();
+    }
 
     return false;
+}
+
+void ItemWidget::updateStatusLabel()
+{
+    if (m_originalStatusText.isEmpty() || !m_data) {
+        return;
+    }
+
+    QFontMetrics metrix = m_statusLabel->fontMetrics();
+    
+    if (!m_data->dataEnabled()) {
+        QString tips = tr("(File deleted)");
+        int tipsWidth = metrix.horizontalAdvance(tips);
+        QString text = metrix.elidedText(m_originalStatusText, Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10 - tipsWidth, 0);
+        m_statusLabel->setText(text + tips);
+    } else {
+        QString text = metrix.elidedText(m_originalStatusText, Qt::ElideMiddle, WindowWidth - 2 * ItemMargin - 10, 0);
+        m_statusLabel->setText(text);
+    }
 }
