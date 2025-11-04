@@ -56,22 +56,75 @@ QSize PixmapLabel::minimumSizeHint() const
  */
 QSize PixmapLabel::sizeHint() const
 {
-    return QSize(ItemWidth - ContentMargin * 2, ItemHeight - ItemTitleHeight);
+    int textAreaWidth = getTextAreaWidth();
+    
+    if (m_istext && !m_data.isNull()) {
+        int lineCount = calculateTextLineCount();
+        int fontHeight = fontMetrics().height();
+        int totalHeight = TextContentTopMargin + lineCount * fontHeight + (lineCount - 1) * TextLineSpacing;
+        return QSize(textAreaWidth, totalHeight);
+    }
+    
+    return QSize(textAreaWidth, ItemHeight - ItemTitleHeight);
 }
 
-
-QPair<QString, int> PixmapLabel::getNextValidString(const QStringList &list, int from)
+bool PixmapLabel::calculateTextLines(const QFontMetrics &fm, QStringList &outLines) const
 {
-    if (from < 0 || from > list.size() - 1)
-        return QPair<QString, int>("", list.size() - 1);
-
-    for (int i = from; i < list.size(); ++i) {
-        if (!list.at(i).trimmed().isEmpty()) {
-            return QPair<QString, int>(list.at(i).trimmed(), i + 1);
-        }
+    outLines.clear();
+    
+    if (!m_istext || m_data.isNull()) {
+        return false;
     }
 
-    return QPair<QString, int>("", list.size() - 1);
+    QString originalText = m_data->text();
+    originalText.replace("\n", " ");
+    
+    const int textAreaWidth = getTextAreaWidth();
+    const int ellipsisWidth = fm.horizontalAdvance(ELLIPSIS);
+    
+    QString remainingText = originalText;
+    while (!remainingText.isEmpty() && outLines.size() < MAX_TEXT_LINES) {
+        const bool isLastLine = (outLines.size() == MAX_TEXT_LINES - 1);
+        int currentLineWidth = textAreaWidth;
+        
+        if (isLastLine && fm.horizontalAdvance(remainingText) > textAreaWidth) {
+            currentLineWidth = textAreaWidth - ellipsisWidth;
+        }
+        
+        int currentWidth = 0;
+        int index = 0;
+        while (index < remainingText.length()) {
+            QChar ch = remainingText.at(index);
+            int charWidth = fm.horizontalAdvance(ch);
+            
+            if (currentWidth + charWidth > currentLineWidth) {
+                if (index == 0) {
+                    index = 1; // 至少保证一个字符
+                }
+                break;
+            }
+            
+            currentWidth += charWidth;
+            index++;
+        }
+        
+        outLines.push_back(remainingText.left(index));
+        remainingText.remove(0, index);
+    }
+    
+    return !remainingText.isEmpty();
+}
+
+int PixmapLabel::calculateTextLineCount() const
+{
+    if (!m_istext || m_data.isNull()) {
+        return 0;
+    }
+
+    QStringList lines;
+    QFontMetrics fm = fontMetrics();
+    calculateTextLines(fm, lines);
+    return lines.size();
 }
 
 void PixmapLabel::paintEvent(QPaintEvent *event)
@@ -120,49 +173,48 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
 
     //draw lines
     if (m_istext) {
-        //drawText
-        QStringList labelTexts = m_data->get_text();
-        int lineNum = labelTexts.length() > 4 ? 4 : labelTexts.length();
-        int fontHeight = fontMetrics().height();
-        for (int i  = 0 ; i < lineNum; ++i) {
-            int lineY = TextContentTopMargin + (i + 1) * fontHeight + i * TextLineSpacing;
-            QPoint start(0, lineY);
-            QPoint end(width(), lineY);
+        const QFontMetrics fm = fontMetrics();
+        QStringList labelTexts;
+        
+        const bool hasMoreText = calculateTextLines(fm, labelTexts);
+        
+        const int lineNum = labelTexts.length();
+        const int fontHeight = fm.height();
+        const int textAreaWidth = getTextAreaWidth();
+        
+        for (int i = 0; i < lineNum; ++i) {
+            const int lineY = TextContentTopMargin + (i + 1) * fontHeight + i * TextLineSpacing;
             painter.setPen(QPen(palette().color(QPalette::Shadow), 2));
-            painter.drawLine(start, end);
+            painter.drawLine(QPoint(0, lineY), QPoint(width(), lineY));
         }
 
-        int maxLineCount = labelTexts.length() > 4 ? 4 : labelTexts.length();
-        int textIndex = 0;
-        int lineFrom = 0;
-        for (int rectIndex = 0; textIndex < labelTexts.length(); rectIndex++, textIndex++) {
-            if (textIndex > (maxLineCount - 1)) {
-                break;
+        // 绘制文本
+        QTextOption option;
+        option.setAlignment(Qt::AlignBottom);
+        option.setWrapMode(QTextOption::NoWrap);
+        painter.setPen(palette().color(QPalette::Text));
+        
+        for (int i = 0; i < lineNum; i++) {
+            const int rectY = TextContentTopMargin + i * (fontHeight + TextLineSpacing);
+            const QRect textRect(0, rectY, textAreaWidth, fontHeight);
+            
+            QString textToDraw = labelTexts.at(i);
+            
+            if (i == lineNum - 1 && lineNum == MAX_TEXT_LINES && hasMoreText) {
+                textToDraw += ELLIPSIS;
             }
-            int rectY = TextContentTopMargin + rectIndex * (fontHeight + TextLineSpacing);
-            QRect textRect(0, rectY, width(), fontHeight);
-            QTextOption option;
-            option.setAlignment(Qt::AlignBottom);
-            option.setWrapMode(QTextOption::NoWrap);//设置文本不能换行
-            painter.setPen(palette().color(QPalette::Text));
-
-            QPair<QString, int> pair = getNextValidString(labelTexts, lineFrom);
-            lineFrom = pair.second;
-            QString str = pair.first.trimmed();
-            if (lineFrom == maxLineCount && maxLineCount == 4) {
-                str.replace(str.size() - 3, 3, "...");
-            }
-            if (rectIndex == (maxLineCount-1) && maxLineCount == 4) {
-                QString lastStr = pair.first.trimmed();
-                pair = getNextValidString(labelTexts, lineFrom);
-                lineFrom = pair.second;
-                lastStr += pair.first.trimmed();
-                painter.drawText(textRect,fontMetrics().elidedText(lastStr,Qt::ElideRight,width()-2),option);
-            }
-            else {
-                painter.drawText(textRect, pair.first.trimmed(), option);
-            }
+            
+            painter.drawText(textRect, textToDraw, option);
         }
     }
     return DLabel::paintEvent(event);
+}
+
+void PixmapLabel::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        updateGeometry();
+        update();
+    }
+    return DLabel::changeEvent(event);
 }

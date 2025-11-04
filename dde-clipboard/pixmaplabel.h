@@ -37,16 +37,39 @@ public:
     virtual QSize sizeHint() const override;
 
 private:
+    static constexpr int MAX_TEXT_LINES = 4;        // 最大显示行数
+    static constexpr const char* ELLIPSIS = "...";   // 省略号
+    
+    /*!
+     * \~chinese \name getTextAreaWidth
+     * \~chinese \brief 获取文本显示区域的宽度
+     * \~chinese \return 返回可用于显示文本的宽度
+     */
+    inline int getTextAreaWidth() const { return ItemWidth - ContentMargin * 2; }
+    /*!
+     * \~chinese \name calculateTextLineCount
+     * \~chinese \brief 根据当前字体动态计算文本行数
+     * \~chinese \return 返回文本实际显示的行数（最多4行）
+     */
+    int calculateTextLineCount() const;
+    
+    /*!
+     * \~chinese \name calculateTextLines
+     * \~chinese \brief 根据当前字体动态计算文本分行，并返回是否有更多文本
+     * \~chinese \param fm 字体度量对象
+     * \~chinese \param outLines 输出的文本行列表
+     * \~chinese \return 返回是否有更多文本被截断（超过4行）
+     */
+    bool calculateTextLines(const QFontMetrics &fm, QStringList &outLines) const;
+    
     bool m_istext;
 
     QPointer<ItemData> m_data;
     QList<QPixmap> m_pixmapList;
 
-private:
-    QPair<QString, int> getNextValidString(const QStringList &list, int from);
-
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
+    virtual void changeEvent(QEvent *event) override;
 };
 
 #endif // PIXMAPLABEL_H

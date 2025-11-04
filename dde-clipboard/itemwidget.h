@@ -131,6 +131,11 @@ private:
      */
     void onSelect();
 
+    /*!
+     * \~chinese \name updateStatusLabel
+     * \~chinese \brief 根据当前字体更新状态标签的显示
+     */
+    void updateStatusLabel();
 
 private:
     QPointer<ItemData> m_data;
@@ -149,6 +154,7 @@ private:
     //--- data
     QPixmap m_pixmap;       //显示的缩略图原图
     QDateTime m_createTime;
+    QString m_originalStatusText;  //原始的状态文本（未省略）
 
     //--- set style
     int m_radius = 0;

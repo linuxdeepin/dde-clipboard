@@ -40,6 +40,23 @@ public:
     QSize sizeHint(int height);
 
     int itemHeight(int fontHeight);
+    
+    /*!
+     * \~chinese \name calculateTextLineCount
+     * \~chinese \brief 根据给定的字体度量动态计算文本行数
+     * \~chinese \param fm 字体度量对象
+     * \~chinese \return 返回文本实际显示的行数（最多4行）
+     */
+    int calculateTextLineCount(const QFontMetrics &fm) const;
+    
+    /*!
+     * \~chinese \name itemHeightWithFontMetrics
+     * \~chinese \brief 根据给定的字体度量动态计算Item高度
+     * \~chinese \param fm 字体度量对象
+     * \~chinese \return 返回Item的高度
+     */
+    int itemHeightWithFontMetrics(const QFontMetrics &fm) const;
+    
     inline bool dataEnabled() { return m_enable; }
     void setDataEnabled(bool enable) { m_enable = enable; }
 

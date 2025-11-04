@@ -213,3 +213,18 @@ void ListView::resetReadyDragState()
         m_mimeData = nullptr;
     }
 }
+
+void ListView::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        if (model()) {
+            QModelIndex topLeft = model()->index(0, 0);
+            QModelIndex bottomRight = model()->index(model()->rowCount() - 1, 0);
+            if (topLeft.isValid() && bottomRight.isValid()) {
+                emit model()->dataChanged(topLeft, bottomRight, {Qt::SizeHintRole});
+            }
+        }
+        scheduleDelayedItemsLayout();
+    }
+    return QListView::changeEvent(event);
+}

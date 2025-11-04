@@ -245,3 +245,48 @@ const QSize &ItemData::pixSize() const
 {
     return m_pixSize;
 }
+
+int ItemData::calculateTextLineCount(const QFontMetrics &fm) const
+{
+    if (m_type != Text || m_text.isEmpty()) {
+        return 0;
+    }
+
+    QString originalText = m_text;
+    originalText.replace("\n", " ");
+    
+    int reservedWidth = ItemWidth - ContentMargin * 2;
+    
+    int lineCount = 0;
+    QString remainingText = originalText;
+    while (!remainingText.isEmpty() && lineCount < 4) {
+        int index = 0;
+        while (index < remainingText.length()) {
+            if (fm.horizontalAdvance(remainingText.left(index + 1)) > reservedWidth) {
+                if (index == 0) {
+                    index = 1; // 至少保证一个字符
+                }
+                remainingText.remove(0, index);
+                break;
+            }
+            index += 1;
+            if (index == remainingText.length()) {
+                remainingText.clear();
+                break;
+            }
+        }
+        lineCount++;
+    }
+    
+    return lineCount;
+}
+
+int ItemData::itemHeightWithFontMetrics(const QFontMetrics &fm) const
+{
+    if (m_type == Text) {
+        int lineCount = calculateTextLineCount(fm);
+        int fontHeight = fm.height();
+        return lineCount * fontHeight + (lineCount - 1) * TextLineSpacing + ItemTitleHeight + ItemStatusBarHeight + TextContentTopMargin;
+    }
+    return ItemHeight;
+}

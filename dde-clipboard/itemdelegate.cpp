@@ -39,9 +39,9 @@ QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem 
 QSize ItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
-    int height = option.fontMetrics.height();
+    int height = data->itemHeightWithFontMetrics(option.fontMetrics);
 
-    return data->sizeHint(height);
+    return QSize(ItemWidth, height + ItemMargin);
 }
 
 void ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -49,8 +49,8 @@ void ItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewI
     Q_UNUSED(index);
     QRect rect = option.rect;
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
-    int height = option.fontMetrics.height();
-    editor->setGeometry(rect.x() + ItemMargin, rect.y(), ItemWidth, data->itemHeight(height));
+    int height = data->itemHeightWithFontMetrics(option.fontMetrics);
+    editor->setGeometry(rect.x() + ItemMargin, rect.y(), ItemWidth, height);
 }
 
 bool ItemDelegate::eventFilter(QObject *obj, QEvent *event)
