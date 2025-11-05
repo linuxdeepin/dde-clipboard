@@ -1,4 +1,27 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="lt">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="lt">
+<context>
+    <name>ClipboardItem</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Iškarpinė</translation>
+    </message>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ClipboardPlugin</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Iškarpinė</translation>
+    </message>
+</context>
 <context>
     <name>ItemData</name>
     <message>
@@ -25,43 +48,43 @@
 <context>
     <name>ItemWidget</name>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="367"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="369"/>
         <source>%1 files (%2...)</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="418"/>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="607"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="609"/>
         <source>(File deleted)</source>
         <translation>(Failas ištrintas)</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="441"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
         <source>Yesterday</source>
         <translation>Vakar</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="447"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
         <source>Just now</source>
         <translation>Ką tik</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
         <source>1 minute ago</source>
         <translation>prieš 1 min.</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
         <source>%1 minutes ago</source>
         <translation>prieš %1 min.</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
         <source>1 hour ago</source>
         <translation>prieš 1 val.</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="457"/>
         <source>%1 hours ago</source>
         <translation>prieš %1 val.</translation>
     </message>
@@ -79,9 +102,9 @@
         <translation>Išvalyti viską</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="328"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="329"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
