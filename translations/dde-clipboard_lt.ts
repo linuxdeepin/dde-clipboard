@@ -1,15 +1,17 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="lt">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="lt">
 <context>
     <name>ClipboardItem</name>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished">Iškarpinė</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17,7 +19,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished">Iškarpinė</translation>
     </message>
 </context>
 <context>
@@ -48,7 +50,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="369"/>
         <source>%1 files (%2...)</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
@@ -102,7 +104,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="329"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

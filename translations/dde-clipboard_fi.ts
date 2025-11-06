@@ -1,15 +1,17 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="fi">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="fi">
 <context>
     <name>ClipboardItem</name>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation>Leikepöytä</translation>
+        <translation type="unfinished">Leikepöytä</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation>Avaa</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17,7 +19,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation>Leikepöytä</translation>
+        <translation type="unfinished">Leikepöytä</translation>
     </message>
 </context>
 <context>

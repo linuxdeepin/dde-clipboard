@@ -1,15 +1,17 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="ug">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="ug">
 <context>
     <name>ClipboardItem</name>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation>چاپلاش تاختىسى</translation>
+        <translation type="unfinished">چاپلاش تاختىسى</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation>ئېچىش</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17,7 +19,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation>چاپلاش تاختىسى</translation>
+        <translation type="unfinished">چاپلاش تاختىسى</translation>
     </message>
 </context>
 <context>

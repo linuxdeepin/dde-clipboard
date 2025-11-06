@@ -1,15 +1,17 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="ru">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="ru">
 <context>
     <name>ClipboardItem</name>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation>Буфер обмена</translation>
+        <translation type="unfinished">Буфер обмена</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation>Открыть</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -17,7 +19,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation>Буфер обмена</translation>
+        <translation type="unfinished">Буфер обмена</translation>
     </message>
 </context>
 <context>
