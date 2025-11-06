@@ -8,8 +8,10 @@
 #include <QSize>
 #include <QPixmap>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPalette>
 #include <QBitmap>
+#include <QImage>
 #include <QTimer>
 #include <QIcon>
 
@@ -97,38 +99,44 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
         return QPixmap();
     }
 
-    int radius = 10;
-    int borderWidth = 10;
-//    if (pix.width() > pix.height()) {
-//        radius = int(8 * 1.0 / PixmapWidth * pix.width());
-//        borderWidth = int(10 * 1.0 / PixmapWidth * pix.width());
-//    } else {
-//        radius = int(8 * 1.0 / PixmapHeight * pix.height());
-//        borderWidth = int(10 * 1.0 / PixmapHeight * pix.height());
-//    }
+    const int radius = 10;
+    const qreal borderWidth = 4.0;
 
-    QPixmap pixmap = pix;
-    //绘制边框
-    QPainter pixPainter(&pixmap);
-    pixPainter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    borderColor.setAlpha(60);
-    pixPainter.setPen(QPen(borderColor, borderWidth));
-    pixPainter.setBrush(Qt::transparent);
-    pixPainter.drawRoundedRect(pixmap.rect(), radius, radius);
+    const qreal dpr = pix.devicePixelRatioF();
+    const QSize logicalSize = pix.size();
 
-    //设置圆角
-    QSize size(pixmap.size());
-    QBitmap mask(size);
-    QPainter painter(&mask);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    painter.fillRect(mask.rect(), Qt::color0);
-    painter.setBrush(Qt::color1);
-    painter.drawRoundedRect(mask.rect(), radius, radius);
+    QImage target(logicalSize * dpr, QImage::Format_ARGB32_Premultiplied);
+    target.setDevicePixelRatio(dpr);
+    target.fill(Qt::transparent);
 
-    //遮罩
-    QPixmap image = pixmap;
-    image.setMask(mask);
-    return image;
+    QPainter painter(&target);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    const QRectF rect(QPointF(0, 0), QSizeF(logicalSize));
+
+    {
+        QPainterPath outerClip;
+        outerClip.addRoundedRect(rect, radius, radius);
+        painter.setClipPath(outerClip, Qt::ReplaceClip);
+        painter.setOpacity(190.0 / 255.0);
+        painter.drawPixmap(rect, pix, pix.rect());
+        painter.setOpacity(1.0);
+    }
+
+    const qreal inset = borderWidth;
+    const QRectF innerRect = rect.adjusted(inset, inset, -inset, -inset);
+    qreal innerRadius = radius - inset;
+    if (innerRadius < 0.0)
+        innerRadius = 0.0;
+
+    QPainterPath innerClip;
+    innerClip.addRoundedRect(innerRect, innerRadius, innerRadius);
+    painter.setClipPath(innerClip, Qt::ReplaceClip);
+    painter.drawPixmap(rect, pix, pix.rect());
+
+    painter.end();
+    return QPixmap::fromImage(target);
 }
 } ;
 #endif // CONSTANTS_H
