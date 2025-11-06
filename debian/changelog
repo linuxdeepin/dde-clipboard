@@ -1,3 +1,13 @@
+dde-clipboard (1:6.1.16) unstable; urgency=medium
+
+  * fix: Fix the rounded corner jagged edges issue
+  * i18n: Updates for project Deepin Desktop Environment (#228)
+  * fix: Update translate
+  * fix: Fix some text fonts not changing
+  * i18n: Updates for project Deepin Desktop Environment (#224)
+
+ -- caixiangrong <caixiangrong@uniontech.com>  Thu, 06 Nov 2025 15:55:19 +0800
+
 dde-clipboard (1:6.1.15) unstable; urgency=medium
 
   * fix: Fix the issue of excessively high text height
