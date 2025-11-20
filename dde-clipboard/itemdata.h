@@ -97,6 +97,7 @@ private:
     QSize m_pixSize;
     QString m_text;
     QStringList m_text_list;
+    int m_textSize = 0;
     bool m_enable;
     QDateTime m_createTime;
     QList<FileIconData> m_iconDataList;
