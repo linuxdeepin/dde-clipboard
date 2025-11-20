@@ -26,6 +26,7 @@ struct ItemInfo {
     QSize m_pixSize;
     bool m_enable;
     QString m_text;
+    int m_textSize = 0;
     QDateTime m_createTime;
     QList<FileIconData> m_iconDataList;
 };

@@ -17,6 +17,7 @@
 
 const QString PixCacheDir = QStringLiteral("/clipboard-pix");  // 图片缓存目录名
 const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
+const int MAX_PREVIEW_TEXT_CHARS = 4096;        // 文本预览最大字符数，避免前端处理超长文本
 const int X11_PROTOCOL = 0;                     // x11协议
 const int WAYLAND_PROTOCOL = 1;                 // wayland协议
 const QString PngImageLiteral = QStringLiteral("image/png");  // PNG图片格式
@@ -43,6 +44,7 @@ QByteArray Info2Buf(const ItemInfo &info)
     }
     stream  << info.m_enable
             << info.m_text
+            << info.m_textSize
             << info.m_createTime
             << iconBuf;
 
@@ -70,6 +72,7 @@ ItemInfo Buf2Info(const QByteArray &buf)
 
     stream >> info.m_enable
            >> info.m_text
+           >> info.m_textSize
            >> info.m_createTime
            >> iconBuf;
 
@@ -404,20 +407,27 @@ void ClipboardLoader::doWork(int protocolType)
 
         info.m_type = File;
     } else {
+        QString fullText;
         if (mimeData->hasText()) {
-            info.m_text = mimeData->text();
+            fullText = mimeData->text();
             // X11下，按住ctrl+c不放会出现hasText但是text/plain格式为空的情况，这里特殊处理一下
-            if (info.m_text.isEmpty() && protocolType != WAYLAND_PROTOCOL)
-                info.m_text = m_lastFormatMap.value("text/plain");
+            if (fullText.isEmpty() && protocolType != WAYLAND_PROTOCOL)
+                fullText = m_lastFormatMap.value("text/plain");
         } else if (mimeData->hasHtml()) {
-            info.m_text = mimeData->html();
+            fullText = mimeData->html();
         } else {
             return;
         }
 
-        const QByteArray &textByteArray = info.m_text.toUtf8();
-        if (info.m_text.isEmpty() || textByteArray.size() > MAX_BETYARRAY_SIZE)
+        const QByteArray textByteArray = fullText.toUtf8();
+        if (fullText.isEmpty() || textByteArray.size() > MAX_BETYARRAY_SIZE)
             return;
+
+        info.m_textSize = fullText.size();
+        info.m_text = fullText;
+        if (info.m_text.size() > MAX_PREVIEW_TEXT_CHARS) {
+            info.m_text.truncate(MAX_PREVIEW_TEXT_CHARS);
+        }
 
         // 保存所有数据，确保正常粘贴,缺少任意一种格式都可能导致粘贴失败
         for (auto f : mimeData->formats()) {

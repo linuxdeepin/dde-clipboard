@@ -43,6 +43,7 @@ ItemInfo Buf2Info(const QByteArray &buf)
 
     stream >> info.m_enable
            >> info.m_text
+           >> info.m_textSize
            >> info.m_createTime
            >> iconBuf;
 
@@ -102,10 +103,12 @@ ItemData::ItemData(const QByteArray &buf)
     m_enable = true;
     m_iconDataList = info.m_iconDataList;
     m_formatMap = info.m_formatMap;
+    m_textSize = info.m_textSize;
     QString textBefore = m_text.replace("\n"," ");
     QFont font = DFontSizeManager::instance()->t8();
     QFontMetrics fontMetrics(font);
-    while (!textBefore.isEmpty()) {
+    int lineCount = 0;
+    while (!textBefore.isEmpty() && lineCount < 4) {
         int index = 0;
         while (true) {
             if (fontMetrics.horizontalAdvance(textBefore.left(index + 1)) > RESERVED_WIDTH_FOR_TEXT) {
@@ -120,6 +123,7 @@ ItemData::ItemData(const QByteArray &buf)
                 break;
             }
         }
+        ++lineCount;
     }
 }
 
@@ -143,7 +147,7 @@ QString ItemData::subTitle()
     case Image:
         return "";
     case Text:
-        return QString(tr("%1 characters")).arg(m_text.length());
+        return QString(tr("%1 characters")).arg(m_textSize > 0 ? m_textSize : m_text.length());
     case File:
         return "";
     default:
