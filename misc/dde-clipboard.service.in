@@ -1,10 +1,9 @@
 [Unit]
 Description=Deepin Clipboard
 
-Requisite=dde-session-pre.target
-After=dde-session-pre.target
+Requisite=dde-session-core.target
+After=dde-session-core.target
 
-Requisite=dde-session-initialized.target
 PartOf=dde-session-initialized.target
 Before=dde-session-initialized.target
 StartLimitBurst=3
