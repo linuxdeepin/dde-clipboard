@@ -1,3 +1,11 @@
+dde-clipboard (1:6.1.17) unstable; urgency=medium
+
+  * chore: modify service
+  * chore: update copyright annotations for clipboard icons
+  * fix: Fix lag when copying very long text
+
+ -- zhaoyingzhen <zhaoyingzhen@uniontech.com>  Thu, 27 Nov 2025 17:27:19 +0800
+
 dde-clipboard (1:6.1.16) unstable; urgency=medium
 
   * fix: Fix the rounded corner jagged edges issue
