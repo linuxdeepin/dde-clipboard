@@ -289,7 +289,8 @@ int ItemData::itemHeightWithFontMetrics(const QFontMetrics &fm) const
 {
     if (m_type == Text) {
         int lineCount = calculateTextLineCount(fm);
-        int fontHeight = fm.height();
+        // Use ascent + descent + leading to ensure special fonts have enough rendering space
+        int fontHeight = fm.ascent() + fm.descent() + qMax(fm.leading(), MinFontLeading);
         return lineCount * fontHeight + (lineCount - 1) * TextLineSpacing + ItemTitleHeight + ItemStatusBarHeight + TextContentTopMargin;
     }
     return ItemHeight;

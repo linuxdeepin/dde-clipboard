@@ -60,7 +60,9 @@ QSize PixmapLabel::sizeHint() const
     
     if (m_istext && !m_data.isNull()) {
         int lineCount = calculateTextLineCount();
-        int fontHeight = fontMetrics().height();
+        // Use ascent + descent + leading to ensure special fonts have enough rendering space
+        const QFontMetrics fm = fontMetrics();
+        int fontHeight = fm.ascent() + fm.descent() + qMax(fm.leading(), MinFontLeading);
         int totalHeight = TextContentTopMargin + lineCount * fontHeight + (lineCount - 1) * TextLineSpacing;
         return QSize(textAreaWidth, totalHeight);
     }
@@ -181,8 +183,8 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
         const bool hasMoreText = calculateTextLines(fm, labelTexts);
         
         const int lineNum = labelTexts.length();
-        const int fontHeight = fm.height();
-        const int textAreaWidth = getTextAreaWidth();
+        // Use ascent + descent + leading to ensure special fonts have enough rendering space
+        const int fontHeight = fm.ascent() + fm.descent() + qMax(fm.leading(), MinFontLeading);
         
         for (int i = 0; i < lineNum; ++i) {
             const int lineY = TextContentTopMargin + (i + 1) * fontHeight + i * TextLineSpacing;
@@ -190,23 +192,23 @@ void PixmapLabel::paintEvent(QPaintEvent *event)
             painter.drawLine(QPoint(0, lineY), QPoint(width(), lineY));
         }
 
-        // 绘制文本
-        QTextOption option;
-        option.setAlignment(Qt::AlignBottom);
-        option.setWrapMode(QTextOption::NoWrap);
+        // Draw text using ascent as baseline offset to ensure complete display
         painter.setPen(palette().color(QPalette::Text));
-        
+        const int textAreaWidth = getTextAreaWidth();
         for (int i = 0; i < lineNum; i++) {
-            const int rectY = TextContentTopMargin + i * (fontHeight + TextLineSpacing);
-            const QRect textRect(0, rectY, textAreaWidth, fontHeight);
-            
+            // Calculate baseline: top margin + line index * (line height + line spacing) + ascent
+            const int baselineY = TextContentTopMargin + i * (fontHeight + TextLineSpacing) + fm.ascent();
             QString textToDraw = labelTexts.at(i);
-            
             if (i == lineNum - 1 && lineNum == MAX_TEXT_LINES && hasMoreText) {
                 textToDraw += ELLIPSIS;
             }
-            
-            painter.drawText(textRect, textToDraw, option);
+            // Boundary check before drawing text
+            if (textToDraw.isEmpty() || baselineY < 0 || baselineY > height()) {
+                continue;
+            }
+            // Draw text using rect with baseline alignment for better rendering
+            const QRect textRect(0, baselineY - fm.ascent(), textAreaWidth, fm.height());
+            painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, textToDraw);
         }
     }
     return DLabel::paintEvent(event);
