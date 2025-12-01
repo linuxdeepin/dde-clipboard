@@ -35,6 +35,7 @@ inline constexpr int PixmapyStep = 5;
 inline constexpr int ContentMargin = 21;
 inline constexpr int TextContentTopMargin = 20;
 inline constexpr int TextLineSpacing = 8;           //文本行间距
+inline constexpr int MinFontLeading = 2;            // Minimum font leading for special fonts
 inline constexpr int AnimationTime = 300;           //ms
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
