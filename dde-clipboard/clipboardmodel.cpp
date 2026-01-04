@@ -30,6 +30,8 @@ void ClipboardModel::clear()
     m_data.clear();
     endResetModel();
 
+    m_loaderInter->dataReborned(QByteArrayLiteral("CLEAN_LAST_DATA"));
+
     Q_EMIT dataChanged();
 }
 
