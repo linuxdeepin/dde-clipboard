@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.19) unstable; urgency=medium
+
+  * fix: Fix issue where copying is not possible after clearing
+
+ -- zhangkun <zhangkun2@uniontech.com>  Wed, 07 Jan 2026 09:57:33 +0800
+
 dde-clipboard (1:6.1.18) unstable; urgency=medium
 
   * fix: resolve Chinese text top clipping in clipboard text records
