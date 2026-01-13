@@ -349,10 +349,7 @@ void ClipboardLoader::doWork(int protocolType)
         if (info.m_variantImage.isNull())
             return;
 
-        // 正常数据时间戳不为空，这里增加判断限制 时间戳为空+图片内容不变 重复数据不展示
-        // wayland下时间戳可能为空
-        // 消除两次间隔小于500ms的重复图片数据
-        if((currTimeStamp.isEmpty() || offerDuration < 500) && srcImage == m_lastImage && (QStringLiteral("wayland") != qGuiApp->platformName())) {
+        if (srcImage == m_lastImage) {
             qDebug() << "system repeat image";
             return;
         }
@@ -406,6 +403,7 @@ void ClipboardLoader::doWork(int protocolType)
             return;
 
         info.m_type = File;
+        m_lastImage = QImage();  // 清空上次图片记录，避免影响后续图片去重判断
     } else {
         QString fullText;
         if (mimeData->hasText()) {
@@ -443,6 +441,7 @@ void ClipboardLoader::doWork(int protocolType)
         }
 
         info.m_type = Text;
+        m_lastImage = QImage();  // 清空上次图片记录，避免影响后续图片去重判断
     }
 
     info.m_createTime = QDateTime::currentDateTime();
