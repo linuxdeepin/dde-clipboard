@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.20) unstable; urgency=medium
+
+  * fix: Fix the issue of copying the same image multiple times
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 15 Jan 2026 19:13:06 +0800
+
 dde-clipboard (1:6.1.19) unstable; urgency=medium
 
   * fix: Fix issue where copying is not possible after clearing
