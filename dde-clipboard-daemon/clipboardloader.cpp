@@ -143,6 +143,7 @@ void ClipboardLoader::dataReborned(const QByteArray &buf)
     if (buf == CleanLastData) {
         m_clearLastData = true;
         m_lastFormatMap.clear();
+        m_lastImage = QImage();
         return;
     }
 
