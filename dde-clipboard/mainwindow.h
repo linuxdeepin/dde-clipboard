@@ -142,6 +142,13 @@ private:
      * \~chinese \brief 获取显示屏幕的坐标
      */
     QRect getDisplayScreen();
+    /*!
+     * \~chinese \name screenForDockCenter
+     * \~chinese \brief 根据 dock 中心点所在的屏幕，如果找不到则回退到主屏幕
+     * \~chinese \param dockRectInDevicePixels Dock 的设备像素矩形
+     * \~chinese \return 包含 dock 的屏幕，如果找不到则返回主屏幕
+     */
+    QScreen *screenForDockCenter(const QRect &dockRectInDevicePixels) const;
 
 
     int getWidth() const { return this->width(); }
