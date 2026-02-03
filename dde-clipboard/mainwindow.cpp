@@ -133,6 +133,15 @@ void MainWindow::onFrontendWindowRectChanged(const QRect &rect)
         return;
     }
 
+    // Check if dock has moved to a different screen
+    QScreen *currentScreen = window()->screen();
+    QScreen *targetScreen = screenForDockCenter(rect);
+    
+    // If dock has moved to a different screen, update the window screen
+    if (targetScreen != currentScreen) {
+        window()->setScreen(targetScreen);
+    }
+
     QRect dockGeometry = QRect(
         rect.x() / qApp->devicePixelRatio(),
         rect.y() / qApp->devicePixelRatio(),
@@ -280,7 +289,11 @@ void MainWindow::updatePrimaryScreen()
     if (!window())
         return;
 
-    window()->setScreen(qApp->primaryScreen());
+    // Get the screen where dock is located instead of always using primary screen
+    QRect dockRect = m_daemonDockInter->frontendWindowRect();
+    QScreen *targetScreen = screenForDockCenter(dockRect);
+
+    window()->setScreen(targetScreen);
     updateGeometry();
 }
 
@@ -528,17 +541,10 @@ void MainWindow::adjustPosition()
 
 QRect MainWindow::getDisplayScreen()
 {
-    QPoint dockCenterPoint = QRect(m_daemonDockInter->frontendWindowRect()).center() / qApp->devicePixelRatio();
-
-    for (auto s : qApp->screens()) {
-        QRect rect(s->geometry().x() / qApp->devicePixelRatio(),
-                   s->geometry().y() / qApp->devicePixelRatio(),
-                   s->geometry().width(), s->geometry().height());
-        if (rect.contains(dockCenterPoint)) {
-            return s->geometry();
-        }
-    }
-    return qApp->primaryScreen() ? qApp->primaryScreen()->geometry() : QRect();
+    QRect dockRect = m_daemonDockInter->frontendWindowRect();
+    QScreen *targetScreen = screenForDockCenter(dockRect);
+    
+    return targetScreen->geometry();
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
@@ -576,6 +582,29 @@ void MainWindow::hideEvent(QHideEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(false);
     DBlurEffectWidget::hideEvent(event);
+}
+
+QScreen *MainWindow::screenForDockCenter(const QRect &dockRectInDevicePixels) const
+{
+    if (dockRectInDevicePixels.isEmpty()) {
+        return qApp->primaryScreen();
+    }
+
+    const qreal dpr = qApp->devicePixelRatio();
+    
+    // Convert dock center to logical coordinates
+    QPoint dockCenterPoint = dockRectInDevicePixels.center() / dpr;
+    
+    // Find the screen containing the dock center point
+    // Screen geometry is already in logical coordinates, no conversion needed
+    for (auto s : qApp->screens()) {
+        if (s->geometry().contains(dockCenterPoint)) {
+            return s;
+        }
+    }
+    
+    // Fall back to primary screen if dock screen not found
+    return qApp->primaryScreen();
 }
 
 bool MainWindow::event(QEvent *event)
