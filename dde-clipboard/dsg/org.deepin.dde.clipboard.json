@@ -1,0 +1,17 @@
+{
+    "magic": "dsg.config.meta",
+    "version": "1.0",
+    "contents": {
+        "showTipsWidget": {
+            "value": true,
+            "serial": 0,
+            "flags": [],
+            "name": "showTipsWidget",
+            "name[zh_CN]": "显示提示组件",
+            "description": "Whether to show the tips widget",
+            "description[zh_CN]": "是否显示剪贴板提示组件",
+            "permissions": "readwrite",
+            "visibility": "public"
+        }
+    }
+}

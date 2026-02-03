@@ -19,6 +19,7 @@
 #include <DGuiApplicationHelper>
 #include <DIcon>
 #include <DDciIcon>
+#include <DConfig>
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
@@ -48,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_placeholderWidget(new DWidget(this))
     , m_placeholderIcon(new DIconButton(this))
     , m_placeholderLabel(new DLabel(this))
+    , m_tipsWidget(nullptr)
     , m_xAni(new QPropertyAnimation(this))
     , m_widthAni(new QPropertyAnimation(this))
     , m_aniGroup(new QSequentialAnimationGroup(this))
@@ -57,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_isWayland(qGuiApp->platformName() == QStringLiteral("wayland"))
     , m_currentMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin)
 {
+    initConfig();
     initUI();
     initAni();
     initConnect();
@@ -326,6 +329,23 @@ void MainWindow::initUI()
     m_clearButton->setVisible(false);
     titleWidget->setFixedSize(WindowWidth, WindowTitleHeight);
 
+    // Tips widget shows when data is copied, supports closing
+    if (m_tipsWidget) {
+        m_tipsWidget->setFixedSize(TipWidgetWidth, TipWidgetHeight);
+        m_tipsWidget->setVisible(false);
+        connect(m_tipsWidget, &TipsWidget::closeTips, [ = ] {
+            m_showTipsWidget = false;
+            // Create temporary config to save the value
+            Dtk::Core::DConfig *config = Dtk::Core::DConfig::create("org.deepin.dde.clipboard", "org.deepin.dde.clipboard", QString(), nullptr);
+            if (config && config->isValid()) {
+                config->setValue(ShowTipsWidget, false);
+                config->deleteLater();
+            }
+            // Immediately hide tips
+            m_tipsWidget->setVisible(false);
+        });
+    }
+
     m_listview->setModel(m_model);
     m_listview->setItemDelegate(m_itemDelegate);
     m_listview->setFixedWidth(WindowWidth);//需固定，否则动画会变形
@@ -355,6 +375,10 @@ void MainWindow::initUI()
     m_listview->setVisible(hasInitialData);
 
     mainLayout->addWidget(titleWidget);
+    if (m_tipsWidget) {
+        mainLayout->addWidget(m_tipsWidget, 0, Qt::AlignHCenter);
+        mainLayout->addSpacing(5);
+    }
     mainLayout->addWidget(m_listview);
     mainLayout->addWidget(m_placeholderWidget);
 
@@ -409,6 +433,38 @@ void MainWindow::initAni()
     m_aniGroup->addAnimation(m_widthAni);
 }
 
+void MainWindow::initConfig()
+{
+    // Create temporary config to read the value once
+    Dtk::Core::DConfig *config = Dtk::Core::DConfig::create("org.deepin.dde.clipboard", "org.deepin.dde.clipboard", QString(), nullptr);
+    
+    if (!config || !config->isValid()) {
+        if (config) {
+            qWarning() << QString("DConfig is invalid, name:[%1], subpath:[%2]")
+                .arg(config->name(), config->subpath());
+            config->deleteLater();
+        }
+        return;
+    }
+
+    m_showTipsWidget = config->value(ShowTipsWidget, true).toBool();
+    config->deleteLater();
+    
+    if (m_showTipsWidget) {
+        m_tipsWidget = new TipsWidget(this);
+    }
+}
+
+void MainWindow::updateTipsVisibility()
+{
+    if (!m_tipsWidget) {
+        return;
+    }
+
+    bool hasData = m_model->data().size() != 0;
+    m_tipsWidget->setVisible(hasData && m_showTipsWidget);
+}
+
 void MainWindow::initConnect()
 {
     connect(qApp, &QGuiApplication::primaryScreenChanged, this, &MainWindow::updatePrimaryScreen, Qt::UniqueConnection);
@@ -420,6 +476,8 @@ void MainWindow::initConnect()
         m_clearButton->setVisible(hasData);
         m_listview->setVisible(hasData);
         m_placeholderWidget->setVisible(!hasData);
+        
+        updateTipsVisibility();
     });
 
     connect(m_model, &ClipboardModel::dataReborn, this, [ = ] {

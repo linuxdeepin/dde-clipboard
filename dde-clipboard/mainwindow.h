@@ -13,6 +13,7 @@
 #include "display1interface.h"
 #include "display1monitorinterface.h"
 #include "dock1interface.h"
+#include "tipswidget.h"
 
 #include <DBlurEffectWidget>
 #include <DWindowManagerHelper>
@@ -22,6 +23,7 @@
 #include <DGuiApplicationHelper>
 #include <DLabel>
 #include <DIconButton>
+#include <DConfig>
 #include <dde-shell/dlayershellwindow.h>
 
 DCORE_USE_NAMESPACE
@@ -59,6 +61,14 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *e) override;
+    /*!
+     * \~chinese \name initConnect
+     * \~chinese \brief 重写mouseMoveEvent事件禁止窗口被移动
+     */
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+    bool event(QEvent *event) override;
 
 signals:
     void OpacityChanged(double value) const;
@@ -115,6 +125,9 @@ private Q_SLOTS:
     bool clipboardVisible() const { return isVisible(); }
 
     void updatePrimaryScreen();
+    void updateTipsVisibility();
+
+    void initConfig();
 
 private:
     /*!
@@ -150,18 +163,8 @@ private:
      */
     QScreen *screenForDockCenter(const QRect &dockRectInDevicePixels) const;
 
-
     int getWidth() const { return this->width(); }
     int getX() const { return this->pos().x(); }
-protected:
-    /*!
-     * \~chinese \name initConnect
-     * \~chinese \brief 重写mouseMoveEvent事件禁止窗口被移动
-     */
-    virtual void mouseMoveEvent(QMouseEvent *event) override;
-    void showEvent(QShowEvent *event) override;
-    void hideEvent(QHideEvent *event) override;
-    bool event(QEvent *event) override;
 
 private:
     DBusDisplay *m_displayInter;
@@ -177,6 +180,7 @@ private:
     DWidget *m_placeholderWidget;
     DIconButton *m_placeholderIcon;
     DLabel *m_placeholderLabel;
+    TipsWidget *m_tipsWidget;
 
     QPropertyAnimation *m_xAni;
     QPropertyAnimation *m_widthAni;
@@ -199,6 +203,8 @@ private:
     bool m_isWayland;
     
     QMargins m_currentMargins;
+    
+    bool m_showTipsWidget = true;
 };
 
 #endif // MAINWINDOW_H
