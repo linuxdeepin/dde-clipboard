@@ -155,6 +155,17 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard.service DESTINATION ${SY
 
 install_symlink(dde-clipboard.service dde-session-initialized.target.wants)
 
+## dsg config
+# Collect all dconfig configuration files
+file(GLOB DCONFIG_FILES "${CMAKE_CURRENT_SOURCE_DIR}/dde-clipboard/dsg/*.json")
+
+# Register application-specific configuration
+dtk_add_config_meta_files(
+    APPID org.deepin.dde.clipboard
+    BASE dde-clipboard/dsg
+    FILES ${DCONFIG_FILES}
+)
+
 ## bin
 install(TARGETS ${BIN_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 

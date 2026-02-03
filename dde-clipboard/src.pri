@@ -11,6 +11,7 @@ SOURCES += \
     $$PWD/listview.cpp \
     $$PWD/mainwindow.cpp \
     $$PWD/pixmaplabel.cpp \
+    $$PWD/tipswidget.cpp \
     $$PWD/displaymanager/displaymanager.cpp
 
 HEADERS += \
@@ -26,5 +27,6 @@ HEADERS += \
     $$PWD/listview.h \
     $$PWD/mainwindow.h \
     $$PWD/pixmaplabel.h \
+    $$PWD/tipswidget.h \
     $$PWD/refreshtimer.h \
     $$PWD/displaymanager/displaymanager.h

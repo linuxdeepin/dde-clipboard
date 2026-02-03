@@ -37,9 +37,13 @@ inline constexpr int TextContentTopMargin = 20;
 inline constexpr int TextLineSpacing = 8;           //文本行间距
 inline constexpr int MinFontLeading = 2;            // Minimum font leading for special fonts
 inline constexpr int AnimationTime = 300;           //ms
+inline constexpr int CloseButtonSize = 20;
+inline constexpr int TipWidgetWidth = 280;
+inline constexpr int TipWidgetHeight = 30;
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
 static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";
+static const QString ShowTipsWidget = "showTipsWidget"; // 显示提示控件
 
 static const QString TextUriListLiteral QStringLiteral("text/uri-list");
 static const QString TextHtmlLiteral QStringLiteral("text/html");
