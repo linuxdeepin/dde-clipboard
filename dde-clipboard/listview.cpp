@@ -95,7 +95,6 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
 void ListView::showEvent(QShowEvent *event)
 {
     RefreshTimer::instance()->forceRefresh();
-    activateWindow();
 
     QTimer::singleShot(0, this, [ = ] {
         scrollToTop();
