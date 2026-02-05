@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="pt_BR">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="pt_BR">
 <context>
     <name>ItemData</name>
     <message>
@@ -90,7 +88,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Clique duplo na área de conteúdo para copiar</translation>
     </message>
 </context>
 </TS>
