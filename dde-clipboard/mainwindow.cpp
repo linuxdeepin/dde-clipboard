@@ -634,6 +634,7 @@ void MainWindow::showEvent(QShowEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(true);
     DBlurEffectWidget::showEvent(event);
+    activateWindow();
 }
 
 void MainWindow::hideEvent(QHideEvent *event)
