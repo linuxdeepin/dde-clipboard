@@ -1,44 +1,25 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="zh_CN">
-<context>
-    <name>ClipboardItem</name>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
-        <source>Clipboard</source>
-        <translation>剪贴板</translation>
-    </message>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
-        <source>Open</source>
-        <translation>打开</translation>
-    </message>
-</context>
-<context>
-    <name>ClipboardPlugin</name>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
-        <source>Clipboard</source>
-        <translation>剪贴板</translation>
-    </message>
-</context>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="zh_CN">
 <context>
     <name>ItemData</name>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="134"/>
         <source>Picture</source>
         <translation>图片</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="136"/>
         <source>Text</source>
         <translation>文本</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="134"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="138"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="146"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="150"/>
         <source>%1 characters</source>
         <translation>%1个字符</translation>
     </message>
@@ -46,13 +27,12 @@
 <context>
     <name>ItemWidget</name>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="369"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="372"/>
         <source>%1 files (%2...)</source>
         <translation>%2 等%1个文件</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="609"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="723"/>
         <source>(File deleted)</source>
         <translation>（源文件已被删除）</translation>
     </message>
@@ -90,19 +70,27 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="301"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="317"/>
         <source>Clipboard</source>
         <translation>剪贴板</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="304"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="320"/>
         <source>Clear all</source>
         <translation>全部清除</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="329"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="362"/>
         <source>Copy the content to clipboard</source>
         <translation>复制内容进剪贴板</translation>
+    </message>
+</context>
+<context>
+    <name>TipsWidget</name>
+    <message>
+        <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
+        <source>Double-click the content area to copy</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
