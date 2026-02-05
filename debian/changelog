@@ -1,3 +1,14 @@
+dde-clipboard (1:6.1.21) unstable; urgency=medium
+
+  * chore: Update translation files
+  * fix: activate clipboard window on show
+  * fix: Show double-click prompt when adding or copying to the
+    clipboard
+  * fix: Fix duplicate records when copying the same image
+  * fix: Fix the issue where the clipboard does not follow the taskbar
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 05 Feb 2026 19:24:12 +0800
+
 dde-clipboard (1:6.1.20) unstable; urgency=medium
 
   * fix: Fix the issue of copying the same image multiple times
