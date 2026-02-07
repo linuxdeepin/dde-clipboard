@@ -1,44 +1,23 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="ky@Arab">
 <context>
-    <name>ClipboardItem</name>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
-        <source>Clipboard</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
-        <source>Open</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>ClipboardPlugin</name>
-    <message>
-        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
-        <source>Clipboard</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
     <name>ItemData</name>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="130"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="134"/>
         <source>Picture</source>
         <translation>سۉرۅت</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="132"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="136"/>
         <source>Text</source>
         <translation>تەكىست</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="134"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="138"/>
         <source>File</source>
         <translation>ۅجۅت</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemdata.cpp" line="146"/>
+        <location filename="../dde-clipboard/itemdata.cpp" line="150"/>
         <source>%1 characters</source>
         <translation>%1 تامعا</translation>
     </message>
@@ -46,13 +25,12 @@
 <context>
     <name>ItemWidget</name>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="369"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="372"/>
         <source>%1 files (%2...)</source>
         <translation>% 1 ۅجۅت (% 2 ...)</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="420"/>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="609"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="723"/>
         <source>(File deleted)</source>
         <translation>(ۅجۅت ۅچۉرۉلدۉ)</translation>
     </message>
@@ -90,18 +68,26 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="301"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="317"/>
         <source>Clipboard</source>
         <translation>كەسىپ چاپتوو تاقتاسى</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="304"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="320"/>
         <source>Clear all</source>
         <translation>بااردىعىن تازالوو</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="329"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="362"/>
         <source>Copy the content to clipboard</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>TipsWidget</name>
+    <message>
+        <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
+        <source>Double-click the content area to copy</source>
         <translation type="unfinished"/>
     </message>
 </context>

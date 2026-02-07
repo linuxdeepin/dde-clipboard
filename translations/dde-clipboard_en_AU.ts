@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="en_AU">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="en_AU">
 <context>
     <name>ItemData</name>
     <message>
@@ -82,7 +80,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="362"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -90,7 +88,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished"/>
     </message>
 </context>
 </TS>
