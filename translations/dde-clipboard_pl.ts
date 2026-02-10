@@ -1,4 +1,27 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="pl">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="pl">
+<context>
+    <name>ClipboardItem</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Schowek</translation>
+    </message>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ClipboardPlugin</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Schowek</translation>
+    </message>
+</context>
 <context>
     <name>ItemData</name>
     <message>
@@ -25,42 +48,42 @@
 <context>
     <name>ItemWidget</name>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="372"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="373"/>
         <source>%1 files (%2...)</source>
         <translation>%1 pliki (%2...)</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="723"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="729"/>
         <source>(File deleted)</source>
         <translation>(Plik usunięty)</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="443"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="444"/>
         <source>Yesterday</source>
         <translation>Wczoraj</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="449"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="450"/>
         <source>Just now</source>
         <translation>Właśnie teraz</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="451"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="452"/>
         <source>1 minute ago</source>
         <translation>1 minutę temu</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="453"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="454"/>
         <source>%1 minutes ago</source>
         <translation>%1 minut temu</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="455"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="456"/>
         <source>1 hour ago</source>
         <translation>1 godzinę temu</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/itemwidget.cpp" line="457"/>
+        <location filename="../dde-clipboard/itemwidget.cpp" line="458"/>
         <source>%1 hours ago</source>
         <translation>%1 godzin temu</translation>
     </message>
@@ -68,19 +91,27 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="317"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="320"/>
         <source>Clipboard</source>
         <translation>Schowek</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="320"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="323"/>
         <source>Clear all</source>
         <translation>Wyczyść wszystko</translation>
     </message>
     <message>
-        <location filename="../dde-clipboard/mainwindow.cpp" line="362"/>
+        <location filename="../dde-clipboard/mainwindow.cpp" line="365"/>
         <source>Copy the content to clipboard</source>
         <translation>Kopiuj zawartość do schowka</translation>
+    </message>
+</context>
+<context>
+    <name>MessageManager</name>
+    <message>
+        <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
+        <source>Copied</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -33,6 +33,7 @@ QWidget *ItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem 
     QPointer<ItemData> data = index.data().value<QPointer<ItemData>>();
     ItemWidget *w = new ItemWidget(data, parent);
     w->installEventFilter(parent);
+    connect(w, &ItemWidget::hideWindow, this, &ItemDelegate::hideWindow);
     return w;
 }
 

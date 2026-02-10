@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -40,6 +40,7 @@ inline constexpr int AnimationTime = 300;           //ms
 inline constexpr int CloseButtonSize = 20;
 inline constexpr int TipWidgetWidth = 280;
 inline constexpr int TipWidgetHeight = 30;
+inline constexpr int MessageAutoHideDelay = 2000;  // 消息自动隐藏延迟时间(ms)
 
 static const QString DBusClipBoardService = "org.deepin.dde.Clipboard1";
 static const QString DBusClipBoardPath = "/org/deepin/dde/Clipboard1";

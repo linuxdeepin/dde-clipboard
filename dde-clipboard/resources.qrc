@@ -2,6 +2,6 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>dsg/built-in-icons/none.dci</file>
+        <file>dsg/built-in-icons/dialog-ok.dci</file>
     </qresource>
 </RCC>
-

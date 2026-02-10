@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,6 +6,7 @@
 #include "constants.h"
 #include "pixmaplabel.h"
 #include "refreshtimer.h"
+#include "messagemanager.h"
 
 #include <QPainter>
 #include <QPainterPath>
@@ -611,7 +612,12 @@ void ItemWidget::onSelect()
         }
     }
 
-    m_data->popTop();
+    MessageManager::instance()->sendMessage(this);
+    
+    QTimer::singleShot(500, this, [this]() {
+        m_data->popTop();
+        Q_EMIT hideWindow();
+    });
 }
 
 void ItemWidget::keyPressEvent(QKeyEvent *event)

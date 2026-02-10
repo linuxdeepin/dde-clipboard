@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -71,6 +71,11 @@ public:
 
 Q_SIGNALS:
     void close();
+    /*!
+     * \~chinese \name hideWindow
+     * \~chinese \brief 请求隐藏主窗口的信号
+     */
+    void hideWindow();
     /*!
      * \~chinese \name hoverStateChanged
      * \~chinese \brief 当鼠标或焦点移入移出该控件时发出该信号
