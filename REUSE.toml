@@ -6,7 +6,7 @@ SPDX-PackageDownloadLocation = "https://github.com/linuxdeepin/dde-clipboard"
 [[annotations]]
 path = ["translations/**", ".tx/**"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-FileCopyrightText = "2018 - 2026 UnionTech Software Technology Co., Ltd."
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
@@ -72,7 +72,7 @@ SPDX-License-Identifier = "CC0-1.0"
 [[annotations]]
 path = ["dock-clipboard-plugin/resources/**.svg", "dock-clipboard-plugin/resources/**.dci", "dde-clipboard/dsg/built-in-icons/**.dci"]
 precedence = "aggregate"
-SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-FileCopyrightText = "2018 - 2026 UnionTech Software Technology Co., Ltd."
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]

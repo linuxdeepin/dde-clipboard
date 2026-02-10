@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,6 +15,8 @@
  */
 class ItemDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
+
 public:
     explicit ItemDelegate(QObject *parent = nullptr);
 
@@ -42,9 +44,16 @@ public:
 
     /*!
      * \~chinese \name eventFilter
-     * \~chinese \brief 过滤Qt::Key_Tab,Qt::Key_Backtab事件,将其转变为特殊按键事件，表示切换内部‘焦点’
+     * \~chinese \brief 过滤Qt::Key_Tab,Qt::Key_Backtab事件,将其转变为特殊按键事件，表示切换内部'焦点'
      */
     bool eventFilter(QObject *obj, QEvent *event) override;
+
+Q_SIGNALS:
+    /*!
+     * \~chinese \name hideWindow
+     * \~chinese \brief 请求隐藏主窗口的信号
+     */
+    void hideWindow();
 };
 
 #endif // LISTDELEGATE_H

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,6 +20,9 @@
 #include <DIcon>
 #include <DDciIcon>
 #include <DConfig>
+#include <DFloatingMessage>
+
+#include "messagemanager.h"
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
@@ -480,7 +483,7 @@ void MainWindow::initConnect()
         updateTipsVisibility();
     });
 
-    connect(m_model, &ClipboardModel::dataReborn, this, [ = ] {
+    connect(m_itemDelegate, &ItemDelegate::hideWindow, this, [ = ] {
         hideAni();
     });
 
