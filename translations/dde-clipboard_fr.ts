@@ -1,4 +1,27 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="fr">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="fr">
+<context>
+    <name>ClipboardItem</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Presse-papiers</translation>
+    </message>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ClipboardPlugin</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">Presse-papiers</translation>
+    </message>
+</context>
 <context>
     <name>ItemData</name>
     <message>
