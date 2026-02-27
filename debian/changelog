@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.22) unstable; urgency=medium
+
+  * i18n: Updates for project Deepin Desktop Environment (#246)
+
+ -- zhangkun <zhangkun2@uniontech.com>  Fri, 27 Feb 2026 17:03:35 +0800
+
 dde-clipboard (1:6.1.21) unstable; urgency=medium
 
   * chore: Update translation files
