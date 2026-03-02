@@ -1,17 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="zh_HK">
+<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="zh_HK">
 <context>
     <name>ClipboardItem</name>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation type="unfinished">剪貼簿</translation>
+        <translation>剪貼板</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>打開</translation>
     </message>
 </context>
 <context>
@@ -19,7 +17,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation type="unfinished">剪貼簿</translation>
+        <translation>剪貼板</translation>
     </message>
 </context>
 <context>
@@ -111,7 +109,7 @@
     <message>
         <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
         <source>Copied</source>
-        <translation type="unfinished"></translation>
+        <translation>已複製</translation>
     </message>
 </context>
 <context>
