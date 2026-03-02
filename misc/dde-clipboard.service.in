@@ -13,5 +13,5 @@ Type=dbus
 BusName=org.deepin.dde.Clipboard1
 ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/dde-clipboard
 Slice=session.slice
-Restart=on-failure
+Restart=always
 RestartSec=3s
