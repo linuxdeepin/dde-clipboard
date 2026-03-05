@@ -1,3 +1,11 @@
+dde-clipboard (1:6.1.23) unstable; urgency=medium
+
+  * fix: change clipboard service restart policy to always
+  * i18n: Updates for project Deepin Desktop Environment (#251)
+  * fix: Fix the pop-up prompt that appears when double-clicking to copy
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 05 Mar 2026 20:43:43 +0800
+
 dde-clipboard (1:6.1.22) unstable; urgency=medium
 
   * i18n: Updates for project Deepin Desktop Environment (#246)
