@@ -1,4 +1,27 @@
-<?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="fa">
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS>
+<TS version="2.1" language="fa">
+<context>
+    <name>ClipboardItem</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">کلیپ بورد</translation>
+    </message>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ClipboardPlugin</name>
+    <message>
+        <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
+        <source>Clipboard</source>
+        <translation type="unfinished">کلیپ بورد</translation>
+    </message>
+</context>
 <context>
     <name>ClipboardItem</name>
     <message>
@@ -40,7 +63,7 @@
     <message>
         <location filename="../dde-clipboard/itemdata.cpp" line="150"/>
         <source>%1 characters</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -48,12 +71,12 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="373"/>
         <source>%1 files (%2...)</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="729"/>
         <source>(File deleted)</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="444"/>
@@ -68,7 +91,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="452"/>
         <source>1 minute ago</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="454"/>
@@ -78,7 +101,7 @@
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="456"/>
         <source>1 hour ago</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../dde-clipboard/itemwidget.cpp" line="458"/>
@@ -101,7 +124,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="365"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -117,7 +140,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation type="unfinished"/>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
