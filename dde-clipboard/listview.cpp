@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -21,6 +21,7 @@
 ListView::ListView(QWidget *parent)
     : QListView(parent)
     , m_mousePressed(false)
+    , m_pressSource(Qt::MouseEventNotSynthesized)
     , m_mimeData(nullptr)
 {
     setAutoFillBackground(false);
@@ -78,14 +79,28 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
         setCurrentIndex(index);
     }
 
-    // 如果是触摸屏，当鼠标拖动到剪切板外部的时候才认为是拖拽行为，否则认为是滑动剪切板列表。
-    if (((event->source() == Qt::MouseEventSynthesizedByQt && !geometry().contains(event->pos()))
-         || event->source() != Qt::MouseEventSynthesizedByQt) && m_mousePressed) {
-        m_mousePressed = false;
-        if (m_mimeData) {
-            QDrag *drag = new QDrag(this);
-            drag->setMimeData(m_mimeData);
-            drag->exec(Qt::CopyAction);
+    if (m_mousePressed) {
+        bool shouldDrag = false;
+        
+        if (m_pressSource == Qt::MouseEventSynthesizedByQt) {
+            if (event->source() == Qt::MouseEventSynthesizedByQt && !geometry().contains(event->pos())) {
+                shouldDrag = true;
+            }
+        } else {
+            if (!geometry().contains(event->pos())) {
+                shouldDrag = true;
+            }
+        }
+        
+        if (shouldDrag) {
+            m_mousePressed = false;
+            if (m_mimeData) {
+                QDrag *drag = new QDrag(this);
+                QMimeData *mimeData = m_mimeData;
+                m_mimeData = nullptr;
+                drag->setMimeData(mimeData);
+                drag->exec(Qt::CopyAction);
+            }
         }
     }
 
@@ -190,6 +205,7 @@ void ListView::mousePressEvent(QMouseEvent *event)
     }
 
     m_mousePressed = true;
+    m_pressSource = event->source();
 }
 
 void ListView::mouseReleaseEvent(QMouseEvent *event)
