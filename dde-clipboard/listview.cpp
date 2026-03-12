@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -78,13 +78,13 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
         setCurrentIndex(index);
     }
 
-    // 如果是触摸屏，当鼠标拖动到剪切板外部的时候才认为是拖拽行为，否则认为是滑动剪切板列表。
-    if (((event->source() == Qt::MouseEventSynthesizedByQt && !geometry().contains(event->pos()))
-         || event->source() != Qt::MouseEventSynthesizedByQt) && m_mousePressed) {
+    if (m_mousePressed && !geometry().contains(event->pos())) {
         m_mousePressed = false;
         if (m_mimeData) {
             QDrag *drag = new QDrag(this);
-            drag->setMimeData(m_mimeData);
+            QMimeData *mimeData = m_mimeData;
+            m_mimeData = nullptr;
+            drag->setMimeData(mimeData);
             drag->exec(Qt::CopyAction);
         }
     }
