@@ -109,7 +109,7 @@
     <message>
         <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
         <source>Copied</source>
-        <translation type="unfinished"/>
+        <translation>Skopiowano</translation>
     </message>
 </context>
 <context>
