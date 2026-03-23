@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,6 +17,7 @@
 #include <QScroller>
 #include <QDrag>
 #include <QMimeData>
+#include <QGestureEvent>
 
 ListView::ListView(QWidget *parent)
     : QListView(parent)
@@ -226,4 +227,18 @@ void ListView::changeEvent(QEvent *event)
         scheduleDelayedItemsLayout();
     }
     return QListView::changeEvent(event);
+}
+
+bool ListView::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture) {
+        QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(event);
+        for (QGesture *gesture : gestureEvent->gestures()) {
+            if (gesture->state() == Qt::GestureFinished || gesture->state() == Qt::GestureCanceled) {
+                resetReadyDragState();
+                break;
+            }
+        }
+    }
+    return QListView::event(event);
 }
