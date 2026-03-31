@@ -69,6 +69,9 @@ public:
     static QPixmap GetFileIcon(QString path);
     static QPixmap GetFileIcon(const FileIconData &data);
 
+    bool closeButtonHasFocus() const { return m_closeFocus; }
+    void setCloseButtonFocusState(bool focus);
+
 Q_SIGNALS:
     void close();
     /*!

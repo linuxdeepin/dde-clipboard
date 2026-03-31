@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -71,6 +71,9 @@ protected:
     virtual void leaveEvent(QEvent *event) override;
     virtual void resizeEvent(QResizeEvent *event) override;
     virtual QSize sizeHint() const override;
+    virtual void focusInEvent(QFocusEvent *event) override;
+    virtual void focusOutEvent(QFocusEvent *event) override;
+    virtual void keyPressEvent(QKeyEvent *event) override;
 };
 
 #endif // ICONBUTTON_
