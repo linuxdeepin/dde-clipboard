@@ -702,6 +702,12 @@ void ItemWidget::focusOutEvent(QFocusEvent *event)
     return DWidget::focusOutEvent(event);
 }
 
+void ItemWidget::setCloseButtonFocusState(bool focus)
+{
+    m_closeFocus = focus;
+    Q_EMIT closeHasFocus(focus);
+}
+
 bool ItemWidget::eventFilter(QObject *watcher, QEvent *event)
 {
     if (watcher == qApp && event->type() == QEvent::ThemeChange) {
