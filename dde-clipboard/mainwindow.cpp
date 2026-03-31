@@ -23,6 +23,7 @@
 #include <DFloatingMessage>
 
 #include "messagemanager.h"
+#include "itemwidget.h"
 
 #define DOCK_TOP        0
 #define DOCK_RIGHT      1
@@ -329,7 +330,9 @@ void MainWindow::initUI()
     m_clearButton->setFixedHeight(36);
     m_clearButton->setBackOpacity(200);
     m_clearButton->setRadius(8);
+    m_clearButton->setFocusPolicy(Qt::StrongFocus);
     m_clearButton->setVisible(false);
+    m_clearButton->installEventFilter(this);
     titleWidget->setFixedSize(WindowWidth, WindowTitleHeight);
 
     // Tips widget shows when data is copied, supports closing
@@ -485,6 +488,29 @@ void MainWindow::initConnect()
 
     connect(m_itemDelegate, &ItemDelegate::hideWindow, this, [ = ] {
         hideAni();
+    });
+
+    connect(m_itemDelegate, &ItemDelegate::focusEscapeRequested, this, [this](bool forward) {
+        QModelIndex currentIdx = m_listview->currentIndex();
+        int rowCount = m_model->data().size();
+
+        if (forward) {
+            // Tab: 尝试跳到下一个 item，如果是最后一个则跳到清除按钮
+            int nextRow = currentIdx.isValid() ? currentIdx.row() + 1 : 0;
+            if (nextRow < rowCount) {
+                setFocusToItem(nextRow);
+            } else {
+                m_clearButton->setFocus();
+            }
+        } else {
+            // Backtab: 尝试跳到上一个 item 的关闭按钮，如果是第一个则跳到清除按钮
+            int prevRow = currentIdx.isValid() ? currentIdx.row() - 1 : rowCount - 1;
+            if (prevRow >= 0) {
+                setFocusToItem(prevRow, true);
+            } else {
+                m_clearButton->setFocus();
+            }
+        }
     });
 
     connect(m_daemonDockInter, &DBusDaemonDock::FrontendWindowRectChanged, this, &MainWindow::onFrontendWindowRectChanged,  Qt::UniqueConnection);
@@ -676,4 +702,40 @@ bool MainWindow::event(QEvent *event)
     }
 
     return DBlurEffectWidget::event(event);
+}
+
+void MainWindow::setFocusToItem(int row, bool focusCloseButton)
+{
+    QModelIndex idx = m_model->index(row, 0);
+    if (!idx.isValid())
+        return;
+
+    m_listview->setCurrentIndex(idx);
+    if (QWidget *w = m_listview->indexWidget(idx)) {
+        w->setFocus();
+        if (focusCloseButton) {
+            if (ItemWidget *item = qobject_cast<ItemWidget *>(w))
+                item->setCloseButtonFocusState(true);
+        }
+    }
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == m_clearButton && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Tab) {
+            // 从清除按钮按 Tab，跳到第一个 item
+            setFocusToItem(0);
+            return true;
+        } else if (keyEvent->key() == Qt::Key_Backtab) {
+            // 从清除按钮按 Backtab，跳到最后一个 item 的关闭按钮
+            int lastRow = m_model->data().size() - 1;
+            if (lastRow >= 0) {
+                setFocusToItem(lastRow, true);
+            }
+            return true;
+        }
+    }
+    return DBlurEffectWidget::eventFilter(watched, event);
 }

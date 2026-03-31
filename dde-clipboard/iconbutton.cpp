@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -55,7 +55,10 @@ void IconButton::paintEvent(QPaintEvent *event)
     QColor color;
     if (m_hasBackColor) {
         color = palette().color(QPalette::Base);
-        color.setAlpha(m_hover ? m_opacity : (m_opacity / 2));
+        if (m_hasFocus)
+            color.setAlpha(m_opacity);
+        else
+            color.setAlpha(m_hover ? m_opacity : (m_opacity / 2));
     } else {
         color = palette().color(QPalette::WindowText);
         color.setAlpha(m_hasFocus ? 80 : (m_hover ? 50 : 20));
@@ -153,4 +156,27 @@ void IconButton::leaveEvent(QEvent *event)
     update();
 
     return DWidget::leaveEvent(event);
+}
+
+void IconButton::focusInEvent(QFocusEvent *event)
+{
+    m_hasFocus = true;
+    update();
+    DWidget::focusInEvent(event);
+}
+
+void IconButton::focusOutEvent(QFocusEvent *event)
+{
+    m_hasFocus = false;
+    update();
+    DWidget::focusOutEvent(event);
+}
+
+void IconButton::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+        Q_EMIT clicked();
+        return;
+    }
+    DWidget::keyPressEvent(event);
 }
