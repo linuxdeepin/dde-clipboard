@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -69,6 +69,7 @@ protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
     bool event(QEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void OpacityChanged(double value) const;
@@ -165,6 +166,14 @@ private:
 
     int getWidth() const { return this->width(); }
     int getX() const { return this->pos().x(); }
+
+    /*!
+     * \~chinese \name setFocusToItem
+     * \~chinese \brief 设置焦点到指定行的 item
+     * \~chinese \param row 行号
+     * \~chinese \param focusCloseButton 是否将焦点设置到关闭按钮
+     */
+    void setFocusToItem(int row, bool focusCloseButton = false);
 
 private:
     DBusDisplay *m_displayInter;

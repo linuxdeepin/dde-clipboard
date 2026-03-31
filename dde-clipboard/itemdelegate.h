@@ -54,6 +54,7 @@ Q_SIGNALS:
      * \~chinese \brief 请求隐藏主窗口的信号
      */
     void hideWindow();
+    void focusEscapeRequested(bool forward);
 };
 
 #endif // LISTDELEGATE_H
