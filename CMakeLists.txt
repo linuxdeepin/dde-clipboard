@@ -153,7 +153,16 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/org.deepin.dde.Clipboard1.service DEST
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
 
-install_symlink(dde-clipboard.service dde-session-initialized.target.wants)
+# XDG autostart 替代 systemd wants 自动启动，保留 systemd service 作为 D-Bus 激活
+# install_symlink(dde-clipboard.service dde-session-initialized.target.wants)
+
+configure_file(
+    misc/dde-clipboard.desktop.in
+    dde-clipboard.desktop
+    @ONLY
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-clipboard.desktop DESTINATION /etc/xdg/autostart)
 
 ## dsg config
 # Collect all dconfig configuration files

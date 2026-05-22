@@ -663,6 +663,14 @@ void MainWindow::showEvent(QShowEvent *event)
 {
     Q_EMIT clipboardVisibleChanged(true);
     DBlurEffectWidget::showEvent(event);
+
+    static bool firstShow = true;
+    if (firstShow) {
+        firstShow = false;
+        m_windowHandle->setEnableBlurWindow(false);
+        m_windowHandle->setEnableBlurWindow(true);
+    }
+
     activateWindow();
 }
 
@@ -740,4 +748,16 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return DBlurEffectWidget::eventFilter(watched, event);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    DBlurEffectWidget::resizeEvent(event);
+
+    static bool firstResize = true;
+    if (firstResize) {
+        firstResize = false;
+        m_windowHandle->setEnableBlurWindow(false);
+        m_windowHandle->setEnableBlurWindow(true);
+    }
 }
