@@ -112,7 +112,7 @@ void MainWindow::geometryChanged()
     );
 
     // dock not hide and in current screen
-    if (m_daemonDockInter->hideState() != 2 && (window() && window()->screen()->geometry().contains(dockGeometry))) {
+    if (!m_isWayland && m_daemonDockInter->hideState() != 2 && (window() && window()->screen()->geometry().contains(dockGeometry))) {
         switch (m_daemonDockInter->position()) {
             case DOCK_TOP: margins.setTop(dockGeometry.height() + WindowMargin); break;
             case DOCK_BOTTOM: margins.setBottom(dockGeometry.height() + WindowMargin); break;
@@ -159,7 +159,7 @@ void MainWindow::onFrontendWindowRectChanged(const QRect &rect)
     QRect screenGeometry = window()->screen()->geometry();
     QMargins newMargins(WindowMargin, WindowMargin, WindowMargin, WindowMargin);
     
-    if (dockGeometry.width() > 0 && dockGeometry.height() > 0) {
+    if (!m_isWayland && dockGeometry.width() > 0 && dockGeometry.height() > 0) {
         switch (m_daemonDockInter->position()) {
             case DOCK_TOP: {
                 int visibleHeight = qMax(0, dockGeometry.y() + dockGeometry.height() - screenGeometry.top());
@@ -412,10 +412,8 @@ void MainWindow::initUI()
                                 ds::DLayerShellWindow::AnchorBottom,
                                 ds::DLayerShellWindow::AnchorTop });
     layerShellWnd->setLayer(ds::DLayerShellWindow::LayerOverlay);
-    // FIXME: X11 layer shell emulation is broken.
-    // When exclusion zone is set to -1, the X11 emulation puts the window to the center.
-    // When exclusion zone is set to 0, DDE Dock will not occupy the space before clipboard (works like -1 in Wayland)
-    layerShellWnd->setExclusiveZone(m_isWayland ? -1 : 0);
+    // Let the compositor avoid dock exclusive zones on Wayland; X11 emulation already uses 0.
+    layerShellWnd->setExclusiveZone(0);
     layerShellWnd->setKeyboardInteractivity(ds::DLayerShellWindow::KeyboardInteractivityOnDemand);
     // Initial size
     setFixedWidth(WindowWidth);
