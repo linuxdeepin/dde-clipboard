@@ -17,6 +17,7 @@
 
 #include <DFontSizeManager>
 #include <DGuiApplicationHelper>
+#include <DPlatformTheme>
 #include <DIcon>
 #include <DDciIcon>
 #include <DConfig>
@@ -401,7 +402,11 @@ void MainWindow::initUI()
     m_trickTimer->setInterval(300);
     m_trickTimer->setSingleShot(true);
 
-    m_cornerRadius = m_windowHandle->windowRadius();
+    // 从应用主题获取圆角值并设置到窗口
+    DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
+    m_cornerRadius = theme->windowRadius();
+    m_windowHandle->setWindowRadius(m_cornerRadius);
+
     m_themeType= DGuiApplicationHelper::instance()->themeType();
     m_windowHandle->setBorderWidth(1);
 
@@ -557,6 +562,16 @@ void MainWindow::initConnect()
             return;
 
         m_cornerRadius = m_windowHandle->windowRadius();
+        update();
+    });
+
+    // 监听应用主题圆角变化
+    DPlatformTheme *theme = DGuiApplicationHelper::instance()->applicationTheme();
+    connect(theme, &DPlatformTheme::windowRadiusChanged, this, [this](int newRadius){
+        if (m_cornerRadius == newRadius)
+            return;
+        m_cornerRadius = newRadius;
+        m_windowHandle->setWindowRadius(m_cornerRadius);
         update();
     });
 
