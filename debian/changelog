@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.30) unstable; urgency=medium
+
+  * fix: use application theme window radius and listen for changes
+
+ -- zhangkun <zhangkun2@uniontech.com>  Wed, 17 Jun 2026 17:13:34 +0800
+
 dde-clipboard (1:6.1.29) unstable; urgency=medium
 
   * fix: Avoid manual dock margins on Wayland
