@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Deepin Clipboard
 Comment=Deepin Clipboard
-Exec=@CMAKE_INSTALL_FULL_BINDIR@/dde-clipboard
+Exec=systemctl --user start dde-clipboard.service
 NoDisplay=true
 OnlyShowIn=DDE
 Type=Application
