@@ -1,5 +1,5 @@
 // Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
-// SPDX-FileCopyrightText: 2018 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -95,7 +95,8 @@ static bool shouldIgnoreSaveTarget(const QString& format)
     // 这些系统格式不需要保存用于比对
     static QSet<QString> ignoreSaveTargetSet = {
         "SAVE_TARGETS", "TARGETS", "TIMESTAMP", "MULTIPLE",
-        "DELETE", "INSERT_PROPERTY", "INSERT_SELECTION"
+        "DELETE", "INSERT_PROPERTY", "INSERT_SELECTION",
+        PrivateMimeSavedForWayland
     };
 
     if (ignoreSaveTargetSet.contains(format))

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "wlrdatacontrolclipboardinterface.h"
 #include "wlrdatacontrolofferintegration.h"
 #include "dwaylandmimedata.h"
+#include "dde-clipboard-daemon/constants.h"
 #include <private/qwaylandnativeinterface_p.h>
 #include <private/qwaylandintegration_p.h>
 #include <private/qinternalmimedata_p.h>
@@ -12,20 +13,51 @@
 #include <QImageReader>
 #include <QImageWriter>
 #include <QBuffer>
+#include <QPixmap>
+#include <QElapsedTimer>
+#include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <poll.h>
+#include <string.h>
 
 using namespace Qt::StringLiterals;
 
-const QString PrivateMimeSavedForWayland = u"application/x.deepin-clipboard-daemon.saved-for-wayland"_s;
+constexpr qsizetype MaxMimePayloadSize = 64 * 1024 * 1024;
+constexpr int PipeReadChunkSize = 4096;
+constexpr int PipeReadTimeoutMs = 10 * 1000;
+constexpr int PipePollIntervalMs = 1000;
 
 // File descriptor close guard
 class FdGuard {
 public:
     FdGuard(int fd) : m_fd(fd) {}
-    ~FdGuard() { close(m_fd); }
+    ~FdGuard()
+    {
+        if (m_fd >= 0)
+            close(m_fd);
+    }
 private:
     int m_fd;
+};
+
+struct PipeReadRequest {
+    QString mimeType;
+    int fd = -1;
+};
+
+struct PipeReadPayload {
+    QString mimeType;
+    QByteArray data;
+    bool success = false;
+};
+
+struct PipeReadState {
+    QString mimeType;
+    int fd = -1;
+    QByteArray data;
+    bool success = false;
+    bool finished = false;
 };
 
 // Extra MIME Type Preprocessing
@@ -49,6 +81,210 @@ static inline QStringList imageReadMimeFormats()
     return imageMimeFormats(QImageReader::supportedImageFormats());
 }
 
+static inline QStringList imageWriteMimeFormats()
+{
+    return imageMimeFormats(QImageWriter::supportedImageFormats());
+}
+
+static inline bool isImageMimeType(const QString &mimeType)
+{
+    return mimeType.startsWith(QLatin1String("image/"));
+}
+
+static QStringList optimizedReadMimeTypes(const QStringList &mimeTypes)
+{
+    QStringList imageTypes;
+    QStringList otherTypes;
+
+    for (const QString &mimeType : mimeTypes) {
+        if (isImageMimeType(mimeType))
+            imageTypes.append(mimeType);
+        else
+            otherTypes.append(mimeType);
+    }
+
+    if (imageTypes.size() <= 1)
+        return mimeTypes;
+
+    QString preferredImageType;
+    if (imageTypes.contains(QLatin1String("image/png"))) {
+        preferredImageType = QLatin1String("image/png");
+    } else if (imageTypes.contains(QLatin1String("image/jpeg"))) {
+        preferredImageType = QLatin1String("image/jpeg");
+    } else {
+        preferredImageType = imageTypes.constFirst();
+    }
+
+    otherTypes.prepend(preferredImageType);
+    return otherTypes;
+}
+
+static void closePipeState(PipeReadState &state)
+{
+    if (state.fd >= 0) {
+        close(state.fd);
+        state.fd = -1;
+    }
+}
+
+static void finishPipeState(PipeReadState &state, bool success)
+{
+    state.success = success;
+    state.finished = true;
+    closePipeState(state);
+}
+
+static void closePipeStates(QList<PipeReadState> &states)
+{
+    for (PipeReadState &state : states)
+        closePipeState(state);
+}
+
+static QList<PipeReadPayload> readPipeData(QList<PipeReadRequest> requests,
+                                           const std::shared_ptr<std::atomic_bool> &cancelFlag)
+{
+    QList<PipeReadState> states;
+    states.reserve(requests.size());
+    for (const PipeReadRequest &request : requests)
+        states.append({request.mimeType, request.fd});
+
+    QElapsedTimer timer;
+    timer.start();
+    qsizetype activeCount = states.size();
+
+    while (activeCount > 0) {
+        if (cancelFlag && cancelFlag->load()) {
+            closePipeStates(states);
+            return {};
+        }
+
+        const qint64 elapsed = timer.elapsed();
+        if (elapsed >= PipeReadTimeoutMs) {
+            for (PipeReadState &state : states) {
+                if (!state.finished)
+                    qWarning() << "Timeout reading Wayland clipboard MIME:" << state.mimeType;
+            }
+            closePipeStates(states);
+            break;
+        }
+
+        QList<pollfd> pollFds;
+        QList<qsizetype> stateIndexes;
+        pollFds.reserve(activeCount);
+        stateIndexes.reserve(activeCount);
+
+        for (qsizetype i = 0; i < states.size(); ++i) {
+            const PipeReadState &state = states.at(i);
+            if (state.finished)
+                continue;
+
+            pollfd pfd;
+            pfd.fd = state.fd;
+            pfd.events = POLLIN | POLLHUP | POLLERR;
+            pfd.revents = 0;
+            pollFds.append(pfd);
+            stateIndexes.append(i);
+        }
+
+        const int waitMs = qMin(PipePollIntervalMs, int(PipeReadTimeoutMs - elapsed));
+        const int ready = poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), waitMs);
+        if (ready < 0) {
+            if (errno == EINTR)
+                continue;
+
+            qWarning() << "Failed to poll Wayland clipboard pipes:" << strerror(errno);
+            closePipeStates(states);
+            break;
+        }
+
+        if (ready == 0)
+            continue;
+
+        for (qsizetype i = 0; i < pollFds.size(); ++i) {
+            if (pollFds.at(i).revents == 0)
+                continue;
+
+            PipeReadState &state = states[stateIndexes.at(i)];
+            if (pollFds.at(i).revents & (POLLERR | POLLNVAL)) {
+                qWarning() << "Wayland clipboard pipe error for MIME:" << state.mimeType;
+                finishPipeState(state, false);
+                --activeCount;
+                continue;
+            }
+
+            char buffer[PipeReadChunkSize];
+            const ssize_t readSize = read(state.fd, buffer, sizeof(buffer));
+            if (readSize < 0) {
+                if (errno == EINTR)
+                    continue;
+
+                qWarning() << "Failed to read Wayland clipboard pipe for MIME"
+                           << state.mimeType << strerror(errno);
+                finishPipeState(state, false);
+                --activeCount;
+                continue;
+            }
+
+            if (readSize == 0) {
+                finishPipeState(state, true);
+                --activeCount;
+                continue;
+            }
+
+            if (state.data.size() + readSize > MaxMimePayloadSize) {
+                qWarning() << "Wayland clipboard MIME payload is too large:"
+                           << state.mimeType << state.data.size() + readSize;
+                finishPipeState(state, false);
+                --activeCount;
+                continue;
+            }
+
+            state.data.append(buffer, readSize);
+        }
+    }
+
+    QList<PipeReadPayload> payloads;
+    payloads.reserve(states.size());
+    for (const PipeReadState &state : states)
+        payloads.append({state.mimeType, state.data, state.success});
+
+    return payloads;
+}
+
+static bool canStorePayload(const PipeReadPayload &payload)
+{
+    if (!payload.success || payload.data.isEmpty())
+        return false;
+
+    if (!isImageMimeType(payload.mimeType))
+        return true;
+
+    return !QImage::fromData(payload.data).isNull();
+}
+
+static WaylandMimeReadResult readMimeDataFromPipes(quint64 readTaskId,
+                                                   QList<PipeReadRequest> requests,
+                                                   std::shared_ptr<std::atomic_bool> cancelFlag)
+{
+    WaylandMimeReadResult result;
+    result.readTaskId = readTaskId;
+
+    const QList<PipeReadPayload> payloads = readPipeData(std::move(requests), cancelFlag);
+    if (cancelFlag && cancelFlag->load())
+        return result;
+
+    for (const PipeReadPayload &payload : payloads) {
+        if (!canStorePayload(payload)) {
+            qWarning() << "Skip invalid Wayland clipboard MIME payload:" << payload.mimeType;
+            continue;
+        }
+
+        result.payloads.append({payload.mimeType, payload.data});
+    }
+
+    return result;
+}
+
 // Used when a historical data is replayed (reborn) to retrieve desired data type from q plain QMimeData
 static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
 {
@@ -58,19 +294,25 @@ static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
     } else if (mimeData->hasImage()
                && (mimeType == QLatin1String("application/x-qt-image")
                    || mimeType.startsWith(QLatin1String("image/")))) {
-        QImage image = qvariant_cast<QImage>(mimeData->imageData());
+        const QVariant imageData = mimeData->imageData();
+        QImage image = qvariant_cast<QImage>(imageData);
+        if (image.isNull()) {
+            const QPixmap pixmap = qvariant_cast<QPixmap>(imageData);
+            if (!pixmap.isNull())
+                image = pixmap.toImage();
+        }
         if (!image.isNull()) {
             QBuffer buf;
             buf.open(QIODevice::ReadWrite);
             QByteArray fmt = "PNG";
             if (mimeType.startsWith(QLatin1String("image/"))) {
-                QByteArray imgFmt = mimeType.mid(6).toUpper().toLatin1();
+                QByteArray imgFmt = mimeType.mid(6).toLower().toLatin1();
                 if (QImageWriter::supportedImageFormats().contains(imgFmt))
                     fmt = imgFmt;
             }
             QImageWriter wr(&buf, fmt);
-            wr.write(image);
-            content = buf.buffer();
+            if (wr.write(image))
+                content = buf.buffer();
         }
     } else if (mimeType == QLatin1String("application/x-color")) {
         content = qvariant_cast<QColor>(mimeData->colorData()).name().toLatin1();
@@ -88,8 +330,12 @@ static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
 
 WlrDataControlClipboardInterface::WlrDataControlClipboardInterface(QObject *parent)
     : QObject{parent}
-    , m_readLock(1)
 {   
+    // Use one read thread so clipboard read tasks are handled in order.
+    m_readThreadPool.setMaxThreadCount(1);
+    // Keep writes off the read thread to avoid blocking self-produced offers.
+    m_writeThreadPool.setMaxThreadCount(2);
+
     m_dcManager = std::make_unique<WlrDataControlManagerIntegration>();
 
     // Wait until manager is ready, obtain device & source by then
@@ -97,7 +343,7 @@ WlrDataControlClipboardInterface::WlrDataControlClipboardInterface(QObject *pare
             this, &WlrDataControlClipboardInterface::onActiveChanged);
 
     // Clipboard read / write completion signal
-    connect(&m_readTaskWatcher, &QFutureWatcher<std::unique_ptr<QMimeData>>::finished,
+    connect(&m_readTaskWatcher, &QFutureWatcher<WaylandMimeReadResult>::finished,
             this, &WlrDataControlClipboardInterface::onReadTaskFinished);
 }
 
@@ -114,9 +360,13 @@ void WlrDataControlClipboardInterface::setMimeData(QMimeData *mimeData)
         return;
     }
 
-    // Replace MIME data
+    // Invalidate pending async reads before replacing clipboard data.
+    qInfo() << "Replacing Wayland clipboard data from local source, formats:" << mimeData->formats();
+    cancelPendingRead();
+    mimeData->setData(PrivateMimeSavedForWayland, QByteArray());
     m_mimeData = std::unique_ptr<QMimeData>(mimeData);
     takeoverClipboardDataSource();
+    Q_EMIT dataChanged();
 }
 
 void WlrDataControlClipboardInterface::refreshDataControlSourceDevice()
@@ -136,35 +386,84 @@ void WlrDataControlClipboardInterface::takeoverClipboardDataSource()
     connect(m_dcSource.get(), &WlrDataControlSourceIntegration::send,
             this, &WlrDataControlClipboardInterface::onSourceSend);
 
+    QStringList offeredMimeTypes;
+    auto offerMimeType = [this, &offeredMimeTypes](const QString &mimeType) {
+        if (offeredMimeTypes.contains(mimeType))
+            return;
+
+        m_dcSource->offer(mimeType);
+        offeredMimeTypes.append(mimeType);
+    };
+
     // Send MIME type offers
     for (const QString &format : m_mimeData->formats()) {
         // 如果是application/x-qt-image类型则需要提供image的全部类型, 比如image/png
         if (u"application/x-qt-image"_s == format) {
-            for (auto &i : imageReadMimeFormats()) {
-                m_dcSource->offer(i);
-            }
+            for (const auto &i : imageWriteMimeFormats())
+                offerMimeType(i);
         } else {
-            m_dcSource->offer(format);
+            offerMimeType(format);
         }
     }
+    qInfo() << "Take over Wayland clipboard ownership, offered MIME types:" << offeredMimeTypes;
 
     // Tell the compositor that the clipboard content has changed.
     // Next time someone pastes stuff, we'll receive a signal and enter Stage 2.
     m_dcDevice->set_selection(m_dcSource.get()->object());
 }
 
-void WlrDataControlClipboardInterface::abortLastRead()
+quint64 WlrDataControlClipboardInterface::beginReadTask()
 {
+    // A new task id makes older async read results stale.
+    ++m_activeReadTaskId;
+    requestReadTaskCancel();
+    return m_activeReadTaskId;
+}
+
+void WlrDataControlClipboardInterface::cancelPendingRead()
+{
+    // Bump the task id even if the worker cannot stop immediately.
+    ++m_activeReadTaskId;
+    requestReadTaskCancel();
+}
+
+void WlrDataControlClipboardInterface::requestReadTaskCancel()
+{
+    if (m_readCancelFlag)
+        m_readCancelFlag->store(true);
+
     if (m_readTaskFuture.isRunning()) {
-        qWarning() << "An ongoing read was aborted.";
+        qWarning() << "An ongoing Wayland clipboard read was aborted, active task id:" << m_activeReadTaskId;
         m_readTaskFuture.cancel();
     }
+}
+
+bool WlrDataControlClipboardInterface::isCurrentReadTask(quint64 readTaskId) const
+{
+    return readTaskId == m_activeReadTaskId;
+}
+
+void WlrDataControlClipboardInterface::completeRead(std::unique_ptr<QMimeData> mimeData)
+{
+    if (!mimeData || mimeData->formats().isEmpty()) {
+        qWarning() << "Wayland clipboard read finished without valid MIME data.";
+        return;
+    }
+
+    m_mimeData = std::move(mimeData);
+
+    Q_EMIT dataChanged();
+
+    // Take over the Wayland clipboard data source so data remains pasteable after the source app exits.
+    // The private MIME type prevents the manager from reading back the offer it just published.
+    m_mimeData->setData(PrivateMimeSavedForWayland, QByteArray());
+    takeoverClipboardDataSource();
 }
 
 void WlrDataControlClipboardInterface::onDataControlDeviceFinished()
 {
     // Abort an ongoing read, if any
-    abortLastRead();
+    cancelPendingRead();
 
     auto waylandIface = static_cast<QtWaylandClient::QWaylandNativeInterface *>(qGuiApp->platformNativeInterface());
     m_dcDevice = std::make_unique<WlrDataControlDeviceIntegration>(m_dcManager->get_data_device(waylandIface->seat()));
@@ -185,11 +484,16 @@ void WlrDataControlClipboardInterface::onNewSelection(WlrDataControlOfferIntegra
         return;
     }
 
+    // Delete offer object automatically.
+    auto offerGuard = std::unique_ptr<WlrDataControlOfferIntegration>(offer);
+
     // Filter MIME types.
     auto mimeTypes = QStringList(offer->availableMimeTypes());
+    qInfo() << "Received Wayland clipboard offer, MIME types:" << mimeTypes;
 
     // Detect recursion caused by saving clipboard content (see onReadTaskFinished for explanation)
     if (mimeTypes.contains(PrivateMimeSavedForWayland)) {
+        qInfo() << "Ignore self-produced Wayland clipboard offer.";
         return;
     }
 
@@ -209,89 +513,82 @@ void WlrDataControlClipboardInterface::onNewSelection(WlrDataControlOfferIntegra
         return;
     }
 
-    // Abort ongoing read if any, wait until it fully stops
-    if (!m_readLock.tryAcquire()) {
-        abortLastRead();
-        m_readLock.acquire();
+    const quint64 readTaskId = beginReadTask();
+    auto cancelFlag = std::make_shared<std::atomic_bool>(false);
+    m_readCancelFlag = cancelFlag;
+    auto display = QtWaylandClient::QWaylandIntegration::instance()->display();
+    if (!display) {
+        qWarning() << "Cannot read Wayland clipboard: display is not available.";
+        m_readCancelFlag.reset();
+        return;
     }
 
-    // Stage 3: Start a read.
-    // QMimeData is "not move constructible" so we had to wrap it with a unique_ptr
-    auto result = std::make_unique<DWaylandMimeData>();
-
-    // Delete offer object automatically
-    auto offerGuard = std::unique_ptr<WlrDataControlOfferIntegration>(offer);
-
-    // Auto release semaphore
-    QSemaphoreReleaser semReleaser(m_readLock);
-
-    // Used to force roundtrip
-    auto display = QtWaylandClient::QWaylandIntegration::instance()->display();
-
-    // Read each requested MIME type
-    for (auto i : mimeTypes) {
+    QList<PipeReadRequest> requests;
+    const QStringList readMimeTypes = optimizedReadMimeTypes(mimeTypes);
+    qInfo() << "Start Wayland clipboard read task:" << readTaskId
+            << "offered MIME count:" << mimeTypes.size()
+            << "accepted MIME types:" << mimeTypes
+            << "read MIME types:" << readMimeTypes;
+    for (const QString &mimeType : readMimeTypes) {
         // Open communication pipe
         int pipefd[2];
         if (pipe(pipefd) != 0) {
-            // Fail
             qCritical() << "Failed to create pipe, errno =" << errno;
-            return;
-        }
-
-        // Close pipe read end automatically in case of error
-        FdGuard fdGuard(pipefd[0]);
-
-        // Tell it what MIME type we want, and close our copy of pipe write end
-        offer->receive(i, pipefd[1]);
-        close(pipefd[1]);
-        display->forceRoundTrip(); // FIXME: Sometimes it will deadlock
-
-        // Begin reading from pipe
-        QFile pipeFile;
-        if (!pipeFile.open(pipefd[0], QFile::ReadOnly)) {
-            qWarning() << "Cannot open pipe; error " << pipeFile.errorString();
             continue;
         }
-        if (!pipeFile.isReadable()) {
-            qWarning() << "Pipe is not readable; failing.";
-            return;
-        }
 
-        QByteArray data;
-        constexpr int readLimit = 4096;
-        QByteArray buffer(readLimit, 0);
-        int readCount = 0;
-        do {
-            auto buf = pipeFile.read(readLimit);
-            readCount = buf.size();
-            data.append(buf);
-        } while (readCount == readLimit);
+        fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+        fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
-        result->setData(i, data);
+        // Tell it what MIME type we want, and close our copy of pipe write end
+        offer->receive(mimeType, pipefd[1]);
+        close(pipefd[1]);
+        requests.append({mimeType, pipefd[0]});
     }
-    m_mimeData = std::move(result);
 
-    Q_EMIT dataChanged();
+    if (requests.isEmpty()) {
+        qWarning() << "Wayland clipboard read task has no pipe requests, task id:" << readTaskId;
+        m_readCancelFlag.reset();
+        return;
+    }
 
-    // FIXME: Because clipboard will discard any data other than its known type (if a rich text copied from
-    // word processor can be identified as an image, then all it knows about the content is an image, the
-    // rich text is discarded), we should not use the takeover behavior as it might completely destroy the
-    // user's clipboard content.
-#if 0
-    // Take over the Wayland clipboard data source. This is specific to Wayland: on Wayland the clipboard
-    // content is kept by copy-source application, and when source application is closed, the clipboard
-    // content is lost. We emulate X11 behavior (as it's the most sensible behavior for users) by taking
-    // over clipboard data source.
+    display->flushRequests();
 
-    // Set a private MIME type to break the possible recursion.
-    m_mimeData->setData(PrivateMimeSavedForWayland, QByteArray());
-    // Take over clipboard.
-    takeoverClipboardDataSource();
-#endif
+    m_readTaskFuture = QtConcurrent::run(&m_readThreadPool, readMimeDataFromPipes, readTaskId, requests, cancelFlag);
+    m_readTaskWatcher.setFuture(m_readTaskFuture);
 }
 
 void WlrDataControlClipboardInterface::onReadTaskFinished()
 {
+    const QFuture<WaylandMimeReadResult> future = m_readTaskWatcher.future();
+    if (future.resultCount() == 0) {
+        qWarning() << "Wayland clipboard read task finished without a result.";
+        return;
+    }
+
+    const WaylandMimeReadResult result = future.result();
+    // Drop results from reads that were replaced or canceled later.
+    if (!isCurrentReadTask(result.readTaskId)) {
+        qWarning() << "Discard stale Wayland clipboard read result, task id:"
+                   << result.readTaskId << "active task id:" << m_activeReadTaskId
+                   << "payload count:" << result.payloads.size();
+        return;
+    }
+
+    m_readCancelFlag.reset();
+    QStringList payloadMimeTypes;
+    payloadMimeTypes.reserve(result.payloads.size());
+    for (const WaylandMimePayload &payload : result.payloads)
+        payloadMimeTypes.append(payload.mimeType);
+    qInfo() << "Finish Wayland clipboard read task:" << result.readTaskId
+            << "payload count:" << result.payloads.size()
+            << "payload MIME types:" << payloadMimeTypes;
+
+    auto mimeData = std::make_unique<DWaylandMimeData>();
+    for (const WaylandMimePayload &payload : result.payloads)
+        mimeData->setData(payload.mimeType, payload.data);
+
+    completeRead(std::move(mimeData));
 }
 
 void WlrDataControlClipboardInterface::onSourceSend(QString mimeType, int fd)
@@ -299,7 +596,8 @@ void WlrDataControlClipboardInterface::onSourceSend(QString mimeType, int fd)
     // Write clipboard Stage 3: dispatch write task.
     // This should be put into a thread because daemon itself will also reply on reading
     // the clipboard (design burden)
-    auto _ = QtConcurrent::run([](QByteArray data, int fd){
+    qInfo() << "Wayland clipboard owner received data request, MIME type:" << mimeType;
+    auto _ = QtConcurrent::run(&m_writeThreadPool, [](QByteArray data, int fd){
         FdGuard fdGuard(fd);
         QFile fdFile;
         if (!fdFile.open(fd, QFile::WriteOnly)) {
