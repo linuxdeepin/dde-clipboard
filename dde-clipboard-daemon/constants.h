@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -42,6 +42,8 @@ static const QString TextHtmlLiteral QStringLiteral("text/html");
 static const QString TextPlainLiteral QStringLiteral("text/plain");
 static const QString ApplicationXColorLiteral QStringLiteral("application/x-color");
 static const QString ApplicationXQtImageLiteral QStringLiteral("application/x-qt-image");
+// Marks Wayland offers published by this daemon so they are not read back.
+static const QString PrivateMimeSavedForWayland QStringLiteral("application/x.deepin-clipboard-daemon.saved-for-wayland");
 
 typedef struct {
     QStringList cornerIconList;

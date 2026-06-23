@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -168,6 +168,11 @@ const QDateTime &ItemData::time()
 const QString &ItemData::text()
 {
     return m_text;
+}
+
+int ItemData::textSize() const
+{
+    return m_textSize;
 }
 
 void ItemData::setPixmap(const QPixmap &pixmap)
