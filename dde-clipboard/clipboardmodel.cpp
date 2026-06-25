@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -91,10 +91,8 @@ void ClipboardModel::destroy(ItemData *data)
 void ClipboardModel::reborn(ItemData *data)
 {
     int idx = m_data.indexOf(data);
-    if (idx < 1) {
-        Q_EMIT dataReborn();
+    if (idx == -1)
         return;
-    }
 
     QByteArray buf;
     QDataStream stream(&buf, QIODevice::WriteOnly);
@@ -105,11 +103,17 @@ void ClipboardModel::reborn(ItemData *data)
            << data->imageData().isValid();
     if (data->imageData().isValid()) {
         stream << data->imageData();
+        stream << data->pixSize();
     }
     stream  << data->dataEnabled()
             << data->text()
+            << data->textSize()
             << data->time()
             << iconBuf;
+
+    if (idx == 0) {
+        m_loaderInter->dataReborned(QByteArrayLiteral("CLEAN_LAST_DATA"));
+    }
 
     m_loaderInter->dataReborned(buf);
 

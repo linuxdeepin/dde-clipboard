@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -34,6 +34,7 @@ public:
     const QList<QUrl> &urls();                  // 文件链接
     const QDateTime &time();                    // 复制时间
     const QString &text();                      // 内容预览
+    int textSize() const;                       // 文本真实长度
     QStringList get_text() const {
         return m_text_list;
     };
