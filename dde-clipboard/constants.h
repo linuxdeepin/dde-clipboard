@@ -5,6 +5,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <QGuiApplication>
 #include <QSize>
 #include <QPixmap>
 #include <QPainter>
@@ -106,9 +107,9 @@ inline QPixmap GetRoundPixmap(const QPixmap &pix, QColor borderColor)
     }
 
     const int radius = 10;
-    const qreal borderWidth = 4.0;
+    const qreal borderWidth = 3.0;
 
-    const qreal dpr = pix.devicePixelRatioF();
+    const qreal dpr = qGuiApp ? qGuiApp->devicePixelRatio() : pix.devicePixelRatioF();
     const QSize logicalSize = pix.size();
 
     QImage target(logicalSize * dpr, QImage::Format_ARGB32_Premultiplied);
