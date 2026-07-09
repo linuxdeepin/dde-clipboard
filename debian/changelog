@@ -1,3 +1,12 @@
+dde-clipboard (1:6.1.32) unstable; urgency=medium
+
+  * fix: delegate autostart to systemd for reliable restart
+  * fix(clipboard): fix jagged image under fractional scaling
+  * fix: restore Wayland clipboard image replay
+  * i18n: Updates for project Deepin Desktop Environment (#263)
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 09 Jul 2026 19:29:58 +0800
+
 dde-clipboard (1:6.1.31) unstable; urgency=medium
 
   * chore: Sync by
