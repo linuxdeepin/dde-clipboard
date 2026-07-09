@@ -117,7 +117,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation>Kliknij dwukrotnie zawartość, aby skopiować</translation>
+        <translation>Kliknij dwukrotnie, aby skopiować</translation>
     </message>
 </context>
 </TS>
