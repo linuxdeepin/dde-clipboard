@@ -144,10 +144,27 @@ void MainWindow::onFrontendWindowRectChanged(const QRect &rect)
     // Check if dock has moved to a different screen
     QScreen *currentScreen = window()->screen();
     QScreen *targetScreen = screenForDockCenter(rect);
+
+    int dockFullSize = m_daemonDockInter->displayMode() == 0
+        ? m_daemonDockInter->windowSizeFashion()
+        : m_daemonDockInter->windowSizeEfficient();
     
     // If dock has moved to a different screen, update the window screen
     if (targetScreen != currentScreen) {
-        window()->setScreen(targetScreen);
+        // Determine whether the dock has moved to another screen. 
+        // Only when the dock has moved to another screen, should 
+        // the clipboard window be set to the other screen.
+        QPoint dockCenter = rect.center() / qApp->devicePixelRatio();
+        QRect currentGeo = currentScreen->geometry();
+        int dist = 0;
+        switch (m_daemonDockInter->position()) {
+            case DOCK_TOP:    dist = currentGeo.top() - dockCenter.y(); break;
+            case DOCK_BOTTOM: dist = dockCenter.y() - currentGeo.bottom(); break;
+            case DOCK_LEFT:   dist = currentGeo.left() - dockCenter.x(); break;
+            case DOCK_RIGHT:  dist = dockCenter.x() - currentGeo.right(); break;
+        }
+        if (dist >= dockFullSize)
+            window()->setScreen(targetScreen);
     }
 
     QRect dockGeometry = QRect(
