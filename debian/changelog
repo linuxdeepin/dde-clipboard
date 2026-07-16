@@ -1,3 +1,10 @@
+dde-clipboard (1:6.1.33) unstable; urgency=medium
+
+  * fix(dde-clipboard): fix clipboard flicker and misalignment in
+    extended mode
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 16 Jul 2026 21:45:23 +0800
+
 dde-clipboard (1:6.1.32) unstable; urgency=medium
 
   * fix: delegate autostart to systemd for reliable restart
