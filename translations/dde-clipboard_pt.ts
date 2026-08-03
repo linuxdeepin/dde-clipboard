@@ -109,7 +109,7 @@
     <message>
         <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
         <source>Copied</source>
-        <translation type="unfinished"/>
+        <translation>Copiado</translation>
     </message>
 </context>
 <context>
@@ -117,7 +117,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation>Duplo clique no conteúdo para copiar</translation>
+        <translation>Duplo clique na área de conteúdo para copiar</translation>
     </message>
 </context>
 </TS>
