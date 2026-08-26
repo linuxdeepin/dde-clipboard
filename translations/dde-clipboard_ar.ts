@@ -4,12 +4,12 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="33"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation>الحافظة</translation>
     </message>
     <message>
         <location filename="../dock-clipboard-plugin/clipboarditem.cpp" line="64"/>
         <source>Open</source>
-        <translation type="unfinished"/>
+        <translation>فتح</translation>
     </message>
 </context>
 <context>
@@ -17,7 +17,7 @@
     <message>
         <location filename="../dock-clipboard-plugin/clipboardplugin.cpp" line="44"/>
         <source>Clipboard</source>
-        <translation type="unfinished"/>
+        <translation>الحافظة</translation>
     </message>
 </context>
 <context>
@@ -101,7 +101,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="365"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"/>
+        <translation>نسخ المحتوى إلى الحافظة</translation>
     </message>
 </context>
 <context>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
         <source>Copied</source>
-        <translation type="unfinished"/>
+        <translation>تم النسخ</translation>
     </message>
 </context>
 <context>
@@ -117,7 +117,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation type="unfinished"/>
+        <translation>انقر نقراً مزدوجاً على منطقة المحتوى للنسخ</translation>
     </message>
 </context>
 </TS>
