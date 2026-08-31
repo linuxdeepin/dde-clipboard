@@ -101,7 +101,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="365"/>
         <source>Copy the content to clipboard</source>
-        <translation type="unfinished"/>
+        <translation>クリップボードにコピーしたコンテンツがここに表示されます</translation>
     </message>
 </context>
 <context>
@@ -109,7 +109,7 @@
     <message>
         <location filename="../dde-clipboard/messagemanager.cpp" line="39"/>
         <source>Copied</source>
-        <translation type="unfinished"/>
+        <translation>コピーしました</translation>
     </message>
 </context>
 <context>
@@ -117,7 +117,7 @@
     <message>
         <location filename="../dde-clipboard/tipswidget.cpp" line="29"/>
         <source>Double-click the content area to copy</source>
-        <translation type="unfinished"/>
+        <translation>コンテンツをダブルクリックしてコピーできます</translation>
     </message>
 </context>
 </TS>
