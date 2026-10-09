@@ -86,6 +86,9 @@ void ListView::mouseMoveEvent(QMouseEvent *event)
         if (m_mimeData) {
             QDrag *drag = new QDrag(this);
             drag->setMimeData(m_mimeData);
+            // QDrag owns and deletes the data, so clearing this pointer does not leak it.
+            // Detach now: on X11 the drag may outlive exec().
+            m_mimeData = nullptr;
             drag->exec(Qt::CopyAction);
         }
     }
