@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <poll.h>
+#include <signal.h>
 #include <string.h>
 
 using namespace Qt::StringLiterals;
@@ -294,6 +295,18 @@ static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
     } else if (mimeData->hasImage()
                && (mimeType == QLatin1String("application/x-qt-image")
                    || mimeType.startsWith(QLatin1String("image/")))) {
+        // Prefer the payload stored for the exact MIME type: it is the
+        // original bytes captured from the source application. Re-encoding
+        // through QImage changes the file (different encoder settings, so a
+        // screenshot PNG grows or shrinks) and costs a full decode+encode
+        // round trip. Formats without a stored payload (reborn history
+        // entries only carry an image, or requests for image formats the
+        // source did not offer) fall through to the QImageWriter path below.
+        if (mimeType != QLatin1String("application/x-qt-image")) {
+            const QByteArray stored = mimeData->data(mimeType);
+            if (!stored.isEmpty())
+                return stored;
+        }
         const QVariant imageData = mimeData->imageData();
         QImage image = qvariant_cast<QImage>(imageData);
         if (image.isNull()) {
@@ -326,6 +339,99 @@ static QByteArray getByteArray(QMimeData *mimeData, const QString &mimeType)
         content = mimeData->data(mimeType);
     }
     return content;
+}
+
+// Writes every byte of \a data to the pipe \a fd and returns whether the
+// whole payload was delivered.
+//
+// The compositor hands out O_NONBLOCK pipe ends for selection transfers (see
+// wlroots xwayland/selection/outgoing.c, both pipe fds are set non-blocking),
+// and the peer paces large transfers: for INCR-sized payloads the XWM pauses
+// reading until the X11 requestor consumed the previous chunk. A naive
+// write() therefore stops at the first EAGAIN with only the pipe capacity
+// (~64 KiB) written and silently truncates large payloads such as screenshots.
+//
+// So keep writing after partial writes, wait for writability on EAGAIN,
+// suppress SIGPIPE (a peer closing the pipe is a normal abort path, not a
+// crash) and bound the whole write with a deadline so a stalled reader can
+// never wedge a worker thread permanently.
+static bool writeDataToPipe(int fd, const QByteArray &data, int writeTimeoutMs = 30 * 1000)
+{
+    const auto writeChunk = [fd](const char *pos, size_t count) -> ssize_t {
+        // Linux has no MSG_NOSIGNAL for pipes; block SIGPIPE around the
+        // write instead. pthread_sigmask is used because this runs on a
+        // worker thread of a thread pool.
+        sigset_t blocked, previous;
+        sigemptyset(&blocked);
+        sigaddset(&blocked, SIGPIPE);
+        pthread_sigmask(SIG_BLOCK, &blocked, &previous);
+        const ssize_t written = ::write(fd, pos, count);
+        const int savedErrno = errno;
+        pthread_sigmask(SIG_SETMASK, &previous, nullptr);
+        errno = savedErrno;
+        return written;
+    };
+
+    QElapsedTimer timer;
+    timer.start();
+
+    qsizetype written = 0;
+    const qsizetype total = data.size();
+    while (written < total) {
+        if (timer.elapsed() >= writeTimeoutMs) {
+            qWarning() << "Wayland clipboard pipe write timed out, wrote"
+                       << written << "of" << total << "bytes";
+            return false;
+        }
+
+        const ssize_t chunk = writeChunk(data.constData() + written,
+                                         size_t(total - written));
+        if (chunk > 0) {
+            written += chunk;
+            continue;
+        }
+
+        if (chunk == 0) {
+            // Defensive: a pipe write does not return 0 for a positive count,
+            // but bail out instead of spinning forever if it ever does.
+            qWarning() << "Wayland clipboard pipe write returned 0, wrote"
+                       << written << "of" << total << "bytes";
+            return false;
+        }
+
+        if (errno == EINTR)
+            continue;
+
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            qWarning() << "Wayland clipboard pipe write failed:" << strerror(errno)
+                       << ", wrote" << written << "of" << total << "bytes";
+            return false;
+        }
+
+        // Pipe buffer is full: the compositor paces the transfer, wait until
+        // it drains the pipe again. Never pass a negative timeout to poll():
+        // that would block indefinitely.
+        pollfd pfd;
+        pfd.fd = fd;
+        pfd.events = POLLOUT;
+        pfd.revents = 0;
+        const int remain = writeTimeoutMs - int(timer.elapsed());
+        const int ready = ::poll(&pfd, 1, qBound(0, remain, 1000));
+        if (ready < 0) {
+            if (errno == EINTR)
+                continue;
+            qWarning() << "Failed to poll Wayland clipboard pipe:" << strerror(errno);
+            return false;
+        }
+        if (ready > 0 && (pfd.revents & (POLLERR | POLLHUP | POLLNVAL))) {
+            // Read end closed: the requestor aborted the transfer.
+            qWarning() << "Wayland clipboard pipe peer is gone, wrote"
+                       << written << "of" << total << "bytes";
+            return false;
+        }
+    }
+
+    return true;
 }
 
 WlrDataControlClipboardInterface::WlrDataControlClipboardInterface(QObject *parent)
@@ -597,20 +703,38 @@ void WlrDataControlClipboardInterface::onSourceSend(QString mimeType, int fd)
     // This should be put into a thread because daemon itself will also reply on reading
     // the clipboard (design burden)
     qInfo() << "Wayland clipboard owner received data request, MIME type:" << mimeType;
-    auto _ = QtConcurrent::run(&m_writeThreadPool, [](QByteArray data, int fd){
-        FdGuard fdGuard(fd);
-        QFile fdFile;
-        if (!fdFile.open(fd, QFile::WriteOnly)) {
-            qWarning() << "Cannot open pipe; error:" << fdFile.errorString();
-            return;
-        }
-        if (!fdFile.isWritable()) {
-            qWarning() << "Pipe file is not writable.";
-            return;
-        }
 
-        fdFile.write(data);
-    }, getByteArray(m_mimeData.get(), mimeType), fd);
+    if (!m_mimeData) {
+        // Defensive: a send event cannot arrive without a source, and a
+        // source cannot exist before m_mimeData was set. Close the fd instead
+        // of dereferencing a null QMimeData if that ever changes.
+        qWarning() << "No MIME data to serve for Wayland clipboard send request, MIME type:"
+                   << mimeType;
+        ::close(fd);
+        return;
+    }
+
+    // Evaluate the payload on the owning (GUI) thread: QMimeData is not
+    // thread-safe and m_mimeData may be replaced by new clipboard content at
+    // any time. The returned QByteArray is implicitly shared with atomic
+    // reference counting, so handing it to the worker thread is safe.
+    const QByteArray data = getByteArray(m_mimeData.get(), mimeType);
+
+    auto _ = QtConcurrent::run(&m_writeThreadPool, [data, mimeType](int fd) {
+        FdGuard fdGuard(fd);
+        if (data.isEmpty()) {
+            qWarning() << "No data available for Wayland clipboard send request, MIME type:"
+                       << mimeType;
+            return;
+        }
+        // The fd handed out by the compositor may be non-blocking; writing
+        // must tolerate EAGAIN and short writes, otherwise large payloads
+        // (e.g. screenshots) get truncated after the first pipe buffer.
+        if (!writeDataToPipe(fd, data)) {
+            qWarning() << "Writing Wayland clipboard data failed, MIME type:"
+                       << mimeType << "bytes:" << data.size();
+        }
+    }, fd);
 }
 
 void WlrDataControlClipboardInterface::onSourceCancelled()
