@@ -1,3 +1,9 @@
+dde-clipboard (1:6.1.36) unstable; urgency=medium
+
+  * fix: isolate MIME data between clipboard drags
+
+ -- zhangkun <zhangkun2@uniontech.com>  Mon, 12 Oct 2026 18:18:20 +0800
+
 dde-clipboard (1:6.1.35) unstable; urgency=medium
 
   * i18n: Translate dde-clipboard.ts in ar (#281)
