@@ -32,12 +32,12 @@ widgets:
   class_name: MainWindow
   line: 390
 - variable: m_tipsCloseButton
-  type: DIconButton *
+  type: IconButton *
   object_name: TipsCloseButton
   accessible_id: TipsCloseButton
   source_file: dde-clipboard/tipswidget.cpp
   class_name: TipsWidget
-  line: 38
+  line: 37
 - variable: m_closeButton
   type: IconButton *
   object_name: ItemCloseButton

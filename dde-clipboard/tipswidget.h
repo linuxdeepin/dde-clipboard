@@ -8,7 +8,7 @@
 #include <DWidget>
 #include <DLabel>
 #include <DGuiApplicationHelper>
-#include <DIconButton>
+#include "iconbutton.h"
 
 DGUI_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
@@ -36,7 +36,7 @@ Q_SIGNALS:
     void closeTips();
 
 private:
-    DIconButton *m_tipsCloseButton;
+    IconButton *m_tipsCloseButton;
 };
 
 #endif // TIPSWIDGET_H
