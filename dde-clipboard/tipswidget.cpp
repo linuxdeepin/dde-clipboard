@@ -11,7 +11,6 @@
 #include <QHBoxLayout>
 
 #include <DFontSizeManager>
-#include <DIconButton>
 #include <DPalette>
 
 TipsWidget::TipsWidget(QWidget *parent)
@@ -34,15 +33,13 @@ void TipsWidget::initUI()
     palette.setColor(DPalette::Text, palette.color(DPalette::TextTips));
     tipsLabel->setPalette(palette);
 
-    m_tipsCloseButton = new DIconButton(this);
+    m_tipsCloseButton = new IconButton(this);
     m_tipsCloseButton->setObjectName("TipsCloseButton");
-    m_tipsCloseButton->setIcon(QIcon::fromTheme("window-close"));
-    m_tipsCloseButton->setFlat(true);
     m_tipsCloseButton->setFocusPolicy(Qt::NoFocus);
-    m_tipsCloseButton->setFixedSize(QSize(16, 16));
-    m_tipsCloseButton->setIconSize(QSize(10, 10));
+    m_tipsCloseButton->setFixedSize(QSize(ItemTitleHeight, ItemTitleHeight) * 2 / 3);
+    m_tipsCloseButton->setRadius(ItemTitleHeight);
     m_tipsCloseButton->setVisible(false);
-    connect(m_tipsCloseButton, &DIconButton::clicked, this, [this]() {
+    connect(m_tipsCloseButton, &IconButton::clicked, this, [this]() {
         emit closeTips();
     });
 
