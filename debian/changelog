@@ -1,3 +1,11 @@
+dde-clipboard (1:6.1.37) unstable; urgency=medium
+
+  * i18n: Translate dde-clipboard.ts in mn (#287)
+  * fix: use IconButton for tips bar close button to show circular
+    background
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 15 Oct 2026 21:34:09 +0800
+
 dde-clipboard (1:6.1.36) unstable; urgency=medium
 
   * fix: isolate MIME data between clipboard drags
