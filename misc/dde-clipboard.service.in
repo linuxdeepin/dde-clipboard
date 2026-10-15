@@ -11,6 +11,7 @@ StartLimitBurst=3
 [Service]
 Type=dbus
 BusName=org.deepin.dde.Clipboard1
+ExecStartPre=-/usr/libexec/dde-thp-disable
 ExecStart=@CMAKE_INSTALL_FULL_BINDIR@/dde-clipboard
 Slice=session.slice
 Restart=always
