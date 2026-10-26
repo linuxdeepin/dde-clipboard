@@ -101,7 +101,7 @@
     <message>
         <location filename="../dde-clipboard/mainwindow.cpp" line="365"/>
         <source>Copy the content to clipboard</source>
-        <translation>Kopiuj zawartość do schowka</translation>
+        <translation>Skopiuj zawartość do schowka</translation>
     </message>
 </context>
 <context>
