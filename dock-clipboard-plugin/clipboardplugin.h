@@ -35,7 +35,7 @@ public:
     virtual void setMessageCallback(MessageCallbackFunc cb) override { m_messageCallback = cb; }
     const QString itemCommand(const QString &itemKey) override;
 
-private slots:
+private Q_SLOTS:
     void onClipboardVisibleChanged(bool);
 
 private:

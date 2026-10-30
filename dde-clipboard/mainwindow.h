@@ -72,7 +72,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
 
-signals:
+Q_SIGNALS:
     void OpacityChanged(double value) const;
 
 public Q_SLOTS:

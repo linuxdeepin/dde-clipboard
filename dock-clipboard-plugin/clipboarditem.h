@@ -25,7 +25,7 @@ public:
 protected:
     void resizeEvent(QResizeEvent *e) override;
 
-signals:
+Q_SIGNALS:
     void requestHideApplet();
 
 private:

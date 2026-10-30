@@ -77,7 +77,7 @@ protected:
     QVariant data(const QModelIndex &index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-protected slots:
+protected Q_SLOTS:
     /*!
      * \~chinese \name dataComing
      * \~chinese \brief 当系统剪切块中的数据发生改变时,该槽函数被执行

@@ -14,7 +14,7 @@ public:
     QuickPanelWidget(QWidget *parent = nullptr);
     ~QuickPanelWidget();
 
-signals:
+Q_SIGNALS:
     void requestHideApplet();
 
 private:
