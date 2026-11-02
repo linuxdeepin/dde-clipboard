@@ -24,6 +24,12 @@ static constexpr int RESERVED_WIDTH_FOR_TEXT = ItemWidth - ContentMargin * 2;
 
 ItemInfo Buf2Info(const QByteArray &buf)
 {
+    static constexpr int MAX_BUFFER_SIZE = 100 * 1024 * 1024;
+    if (buf.size() <= 0 || buf.size() > MAX_BUFFER_SIZE) {
+        qWarning() << "Buf2Info: invalid buffer size:" << buf.size();
+        return ItemInfo();
+    }
+
     QByteArray tempBuf = buf;
 
     ItemInfo info;
@@ -36,6 +42,10 @@ ItemInfo Buf2Info(const QByteArray &buf)
            >> type
            >> info.m_urls
            >> info.m_hasImage;
+    if (stream.status() != QDataStream::Ok) {
+        qWarning() << "Buf2Info: stream error after reading header";
+        return ItemInfo();
+    }
     if (info.m_hasImage) {
         stream >> info.m_variantImage;
         stream >> info.m_pixSize;
@@ -46,6 +56,10 @@ ItemInfo Buf2Info(const QByteArray &buf)
            >> info.m_textSize
            >> info.m_createTime
            >> iconBuf;
+    if (stream.status() != QDataStream::Ok) {
+        qWarning() << "Buf2Info: stream error after reading body";
+        return ItemInfo();
+    }
 
     QDataStream stream2(&iconBuf, QIODevice::ReadOnly);
     stream2.setVersion(QDataStream::Qt_5_11);
