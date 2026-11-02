@@ -224,7 +224,7 @@ void ListView::changeEvent(QEvent *event)
             QModelIndex topLeft = model()->index(0, 0);
             QModelIndex bottomRight = model()->index(model()->rowCount() - 1, 0);
             if (topLeft.isValid() && bottomRight.isValid()) {
-                emit model()->dataChanged(topLeft, bottomRight, {Qt::SizeHintRole});
+                Q_EMIT model()->dataChanged(topLeft, bottomRight, {Qt::SizeHintRole});
             }
         }
         scheduleDelayedItemsLayout();

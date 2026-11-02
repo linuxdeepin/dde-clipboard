@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2020 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2020 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -35,7 +35,7 @@ public:
     virtual void setMessageCallback(MessageCallbackFunc cb) override { m_messageCallback = cb; }
     const QString itemCommand(const QString &itemKey) override;
 
-private slots:
+private Q_SLOTS:
     void onClipboardVisibleChanged(bool);
 
 private:
