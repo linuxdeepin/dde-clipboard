@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 #ifndef ICONBUTTON_H
@@ -34,7 +34,7 @@ public Q_SLOTS:
     void setClickable(bool clickable);
     void setRotatable(bool rotatable);
 
-signals:
+Q_SIGNALS:
     void clicked();
 
 protected:

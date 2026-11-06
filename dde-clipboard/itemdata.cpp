@@ -238,7 +238,7 @@ int ItemData::itemHeight(int fontHeight)
  */
 void ItemData::remove()
 {
-    emit destroy(this);
+    Q_EMIT destroy(this);
 }
 
 /*!
@@ -247,7 +247,7 @@ void ItemData::remove()
  */
 void ItemData::popTop()
 {
-    emit reborn(this);
+    Q_EMIT reborn(this);
 }
 
 const QSize &ItemData::pixSize() const
