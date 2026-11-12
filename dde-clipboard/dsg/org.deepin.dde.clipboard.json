@@ -12,6 +12,17 @@
             "description[zh_CN]": "是否显示剪贴板提示组件",
             "permissions": "readwrite",
             "visibility": "public"
+        },
+        "maxExtractedSize": {
+            "value": 10,
+            "serial": 0,
+            "flags": [],
+            "name": "maxExtractedSize",
+            "name[zh_CN]": "最大提取文本大小",
+            "description": "Maximum clipboard text size extracted into history, in MiB",
+            "description[zh_CN]": "允许提取到剪贴板历史的最大文本大小，单位为 MiB",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }
