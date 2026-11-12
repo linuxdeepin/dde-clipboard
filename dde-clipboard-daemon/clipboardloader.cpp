@@ -14,6 +14,7 @@
 #include <QImageWriter>
 #include <QBuffer>
 #include <QSet>
+#include <DConfig>
 
 const QString PixCacheDir = QStringLiteral("/clipboard-pix");  // 图片缓存目录名
 const int MAX_BETYARRAY_SIZE = 10*1024*1024;    // 最大支持的文本大小
@@ -22,6 +23,7 @@ const int X11_PROTOCOL = 0;                     // x11协议
 const int WAYLAND_PROTOCOL = 1;                 // wayland协议
 const QString PngImageLiteral = QStringLiteral("image/png");  // PNG图片格式
 const QByteArray CleanLastData = QByteArrayLiteral("CLEAN_LAST_DATA");  // 清除上次数据的标识
+const QString MaxExtractedSizeKey = QStringLiteral("maxExtractedSize");
 
 QByteArray Info2Buf(const ItemInfo &info)
 {
@@ -119,7 +121,10 @@ ClipboardLoader::ClipboardLoader(QObject *parent)
     : QObject(parent)
     , m_board(nullptr)
     , m_wlrClipboard(nullptr)
+    , m_maxExtractedSizeBytes(MAX_BETYARRAY_SIZE)
 {
+    initConfig();
+
     if (QStringLiteral("wayland") == qGuiApp->platformName()) {
         m_wlrClipboard = new WlrDataControlClipboardInterface(this);
 
@@ -135,6 +140,27 @@ ClipboardLoader::ClipboardLoader(QObject *parent)
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + PixCacheDir);
     if (dir.exists() && dir.removeRecursively()) {
         qDebug() << "ClipboardLoader startup, remove old cache, path:" << dir.path();
+    }
+}
+
+void ClipboardLoader::initConfig()
+{
+    auto *config = Dtk::Core::DConfig::create(QStringLiteral("org.deepin.dde.clipboard"),
+                                               QStringLiteral("org.deepin.dde.clipboard"),
+                                               QString(),
+                                               this);
+    if (config && config->isValid()) {
+        const auto updateMaxExtractedSize = [this, config] {
+            const int maxExtractedSizeMiB = config->value(
+                MaxExtractedSizeKey, MAX_BETYARRAY_SIZE / 1024 / 1024).toInt();
+            m_maxExtractedSizeBytes = maxExtractedSizeMiB * 1024 * 1024;
+        };
+        updateMaxExtractedSize();
+        connect(config, &Dtk::Core::DConfig::valueChanged, this,
+                [updateMaxExtractedSize](const QString &key) {
+            if (key == MaxExtractedSizeKey)
+                updateMaxExtractedSize();
+        });
     }
 }
 
@@ -420,7 +446,7 @@ void ClipboardLoader::doWork(int protocolType)
         }
 
         const QByteArray textByteArray = fullText.toUtf8();
-        if (fullText.isEmpty() || textByteArray.size() > MAX_BETYARRAY_SIZE)
+        if (fullText.isEmpty() || textByteArray.size() > m_maxExtractedSizeBytes)
             return;
 
         info.m_textSize = fullText.size();

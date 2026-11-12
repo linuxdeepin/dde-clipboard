@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -43,6 +43,7 @@ Q_SIGNALS:
     void dataComing(const QByteArray &buf);
 
 private:
+    void initConfig();
     void extracted(const QMimeData *&mimeData, bool &dataChanged);
 
 private:
@@ -50,6 +51,7 @@ private:
     QByteArray m_lastTimeStamp;
     QImage m_lastImage;
     WlrDataControlClipboardInterface *m_wlrClipboard;
+    qint64 m_maxExtractedSizeBytes;
 
     static QString m_pixPath;
 
