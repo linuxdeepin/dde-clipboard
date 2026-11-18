@@ -1,3 +1,10 @@
+dde-clipboard (1:6.1.38) unstable; urgency=medium
+
+  * ci: update actions/checkout to v7 and add allow-unsafe-pr-checkout
+  * feat: make max clipboard text extraction size configurable
+
+ -- zhangkun <zhangkun2@uniontech.com>  Wed, 18 Nov 2026 11:58:31 +0800
+
 dde-clipboard (1:6.1.37) unstable; urgency=medium
 
   * i18n: Translate dde-clipboard.ts in mn (#287)
