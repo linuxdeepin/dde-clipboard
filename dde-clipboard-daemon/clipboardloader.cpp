@@ -346,7 +346,7 @@ void ClipboardLoader::doWork(int protocolType)
     bool hasImage = false;
     QString imageFormat;
     auto supportedFormats = QImageWriter::supportedImageFormats();
-    foreach (auto supportedFormat, supportedFormats) {
+    Q_FOREACH (auto supportedFormat, supportedFormats) {
         imageFormat = "image/" + supportedFormat;
         if (mimeData->formats().contains(imageFormat)) {
             hasImage = true;

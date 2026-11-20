@@ -4,6 +4,8 @@ set(BIN_NAME dde-clipboard)
 
 project(${BIN_NAME})
 
+add_compile_definitions(QT_NO_KEYWORDS)
+
 option(ENABLE_COV "Enable code coverage" OFF)
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)

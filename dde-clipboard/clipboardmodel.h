@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -77,7 +77,7 @@ protected:
     QVariant data(const QModelIndex &index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-protected slots:
+protected Q_SLOTS:
     /*!
      * \~chinese \name dataComing
      * \~chinese \brief 当系统剪切块中的数据发生改变时,该槽函数被执行

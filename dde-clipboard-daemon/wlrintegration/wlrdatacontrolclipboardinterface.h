@@ -48,7 +48,7 @@ protected:
     bool isCurrentReadTask(quint64 readTaskId) const;
     void completeRead(std::unique_ptr<QMimeData> mimeData);
 
-protected slots:
+protected Q_SLOTS:
     void onActiveChanged() { refreshDataControlSourceDevice(); }
     void onDataControlDeviceFinished();
 
@@ -62,7 +62,7 @@ protected slots:
     // Write clipboard (abort signal from compositor)
     void onSourceCancelled();
 
-signals:
+Q_SIGNALS:
     // Notifies daemon the clipboard content changed
     void dataChanged();
 

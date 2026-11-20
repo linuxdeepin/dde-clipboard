@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -64,7 +64,7 @@ TEST_F(TstClipboardLoader, setImageData)
     const QMimeData *mime = qApp->clipboard()->mimeData();
     QMimeData *newData = new QMimeData;
 
-    foreach (auto key, mime->formats()) {
+    Q_FOREACH (auto key, mime->formats()) {
         newData->setData(key, mime->data(key));
         newData->setData("x-dfm-copied/file-icons", "");
         newData->setData("FROM_DEEPIN_CLIPBOARD_MANAGER", "1"); // 还有此数据不会触发剪贴板记录

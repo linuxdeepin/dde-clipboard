@@ -40,7 +40,7 @@ void TipsWidget::initUI()
     m_tipsCloseButton->setRadius(ItemTitleHeight);
     m_tipsCloseButton->setVisible(false);
     connect(m_tipsCloseButton, &IconButton::clicked, this, [this]() {
-        emit closeTips();
+        Q_EMIT closeTips();
     });
 
     layout->addWidget(tipsLabel, 0, Qt::AlignVCenter);

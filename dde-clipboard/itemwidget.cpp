@@ -382,7 +382,7 @@ void ItemWidget::initData(QPointer<ItemData> data)
             //判断文件管理器是否提供,提供不全或图标为空时，通过url获取图标
             if (!data->IconDataList().isEmpty()) {
                 QList<QPixmap> pixmapList;
-                foreach (auto iconData, data->IconDataList()) {
+                Q_FOREACH (auto iconData, data->IconDataList()) {
                     if (iconData.fileIcon.isNull()) {
                         continue;
                     }
@@ -600,7 +600,7 @@ void ItemWidget::onSelect()
     if (m_data->type() == File) {
         QList<QUrl> urls = m_data->urls();
         bool has = false;
-        foreach (auto url, urls) {
+        Q_FOREACH (auto url, urls) {
             if (QDir().exists(url.toLocalFile())) {
                 has = true;
             }

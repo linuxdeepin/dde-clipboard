@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -14,7 +14,7 @@ public:
     QuickPanelWidget(QWidget *parent = nullptr);
     ~QuickPanelWidget();
 
-signals:
+Q_SIGNALS:
     void requestHideApplet();
 
 private:

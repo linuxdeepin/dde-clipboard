@@ -23,7 +23,7 @@ ClipboardModel::ClipboardModel(ListView *list, QObject *parent) : QAbstractListM
 
 void ClipboardModel::clear()
 {
-    foreach (ItemData *item, m_data) {
+    Q_FOREACH (ItemData *item, m_data) {
         item->deleteLater();
     }
     beginResetModel();
